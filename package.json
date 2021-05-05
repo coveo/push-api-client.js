@@ -1,0 +1,27 @@
+{
+  "name": "shovel",
+  "version": "1.0.0",
+  "description": "Push API client",
+  "main": "./dist/index.js",
+  "type": "commonjs",
+  "types": "./dist/definitions/index.d.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "gts": "^3.1.0",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coveo/shovel.js.git"
+  },
+  "author": "",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/coveo/shovel.js/issues"
+  },
+  "homepage": "https://github.com/coveo/shovel.js#readme"
+}
