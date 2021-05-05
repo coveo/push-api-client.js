@@ -5,16 +5,25 @@
   "main": "./dist/index.js",
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
-  "dependencies": {},
+  "dependencies": {
+    "@coveord/platform-client": "^19.1.0",
+    "abortcontroller-polyfill": "^1.7.1",
+    "axios": "^0.21.1",
+    "isomorphic-fetch": "^3.0.0"
+  },
   "devDependencies": {
+    "@types/node": "^15.0.2",
     "cz-conventional-changelog": "^3.3.0",
+    "dotenv": "^9.0.0",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
     "gts": "^3.1.0",
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
+    "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
     "standard-version": "^9.3.0",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   },
   "husky": {
@@ -42,7 +51,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
+    "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/localtest.ts\"",
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
     "prettier:check": "prettier .",
