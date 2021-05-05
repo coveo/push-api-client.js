@@ -14,6 +14,7 @@
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
+    "standard-version": "^9.3.0",
     "typescript": "^4.2.4"
   },
   "husky": {
@@ -46,7 +47,8 @@
     "lint:fix": "eslint --fix .",
     "prettier:check": "prettier .",
     "prettier:fix": "prettier --write .",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
