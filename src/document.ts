@@ -36,9 +36,8 @@ export type compressionType =
   | 'ZLIB';
 
 /**
- * Describe a Single Coveo document
+ * Describe a Coveo document
  *
- * You should be using {@link DocumentBuilder} to properly create this interface.
  */
 export interface Document {
   /**
