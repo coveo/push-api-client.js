@@ -1,7 +1,6 @@
 require('isomorphic-fetch');
 require('abortcontroller-polyfill');
 
-import {Document} from './document';
 import {
   Environment,
   PlatformClient,
@@ -9,8 +8,9 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {Environment} from '@coveord/platform-client';
-import axios from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
+import dayjs = require('dayjs');
 
 export class Source {
   private platformClient: PlatformClient;
@@ -22,7 +22,7 @@ export class Source {
     });
   }
 
-  create(name: string, sourceVisibility: SourceVisibility) {
+  public create(name: string, sourceVisibility: SourceVisibility) {
     return this.platformClient.source.create({
       sourceType: SourceType.PUSH,
       pushEnabled: true,
@@ -31,38 +31,81 @@ export class Source {
     });
   }
 
-  createOrUpdateSecurityIdentityAlias() {
+  public createOrUpdateSecurityIdentityAlias() {
     // TODO;
   }
 
-  deleteSecurityIdentity() {
+  public deleteSecurityIdentity() {
     // TODO;
   }
 
-  deleteOldSecurityIdentities() {
+  public deleteOldSecurityIdentities() {
     // TODO;
   }
 
-  manageSecurityIdentities() {
+  public manageSecurityIdentities() {
     // TODO;
   }
 
-  addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
+  public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
     const doc = docBuilder.build();
     return axios.put(
-      `https://api.cloud.coveo.com/push/v1/organizations/${
-        this.organizationid
-      }/sources/${sourceID}/documents?documentId=${encodeURIComponent(
-        doc.uri
-      )}`,
+      `${this.getBaseAPIURL(sourceID)}${this.queryStringParams({
+        documentId: doc.uri,
+      })}`,
       JSON.stringify(docBuilder.marshal()),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          Authorization: `Bearer ${this.apikey}`,
-        },
-      }
+      this.axiosConfig
     );
+  }
+
+  public deleteDocument(
+    sourceID: string,
+    documentId: string,
+    deleteChildren = false
+  ) {
+    return axios.delete(
+      `${this.getBaseAPIURL(sourceID)}${this.queryStringParams({
+        documentId,
+        deleteChildren,
+      })}`,
+      this.axiosConfig
+    );
+  }
+
+  public deleteDocumentsOlderThan(
+    sourceID: string,
+    olderThan: Date | string | number
+  ) {
+    const date = dayjs(olderThan);
+    return axios.delete(
+      `${this.getBaseAPIURL(sourceID)}/olderthan${this.queryStringParams({
+        orderingId: date.unix(),
+      })}`,
+      this.axiosConfig
+    );
+  }
+
+  private queryStringParams(params: Record<string, string | boolean | number>) {
+    return `?${Object.entries(params).map(
+      ([k, v]) => `${k}=${encodeURIComponent(v)}`
+    )}`;
+  }
+
+  private getBaseAPIURL(sourceID: string) {
+    return `https://api.cloud.coveo.com/push/v1/organizations/${this.organizationid}/sources/${sourceID}/documents`;
+  }
+
+  private get axiosConfig(): AxiosRequestConfig {
+    return {
+      headers: this.requestHeaders,
+    };
+  }
+
+  private get requestHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${this.apikey}`,
+    };
   }
 }
