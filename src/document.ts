@@ -1,3 +1,9 @@
+export type SecurityIdentityType =
+  | 'UNKNOWN'
+  | 'USER'
+  | 'GROUP'
+  | 'VIRTUAL_GROUP';
+
 /**
  * A security identity. See https://docs.coveo.com/en/1719 for more information.
  */
@@ -18,7 +24,7 @@ export interface SecurityIdentity {
    * - `GROUP` : Defines an existing group of identities within the indexed system. Individual members of this group can be of any valid identity Type (USER, GROUP, or VIRTUAL_GROUP).
    * - `VIRTUAL_GROUP` : Defines a group that doesn't exist within the indexed system. Mechanically, a `VIRTUAL_GROUP` is identical to a `GROUP`.
    */
-  identityType: 'UNKNOWN' | 'USER' | 'GROUP' | 'VIRTUAL_GROUP';
+  identityType: SecurityIdentityType;
   /**
    * The security identity provider through which the security identity is updated.
    *
