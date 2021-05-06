@@ -160,7 +160,7 @@ export class DocumentBuilder {
 
   /**
    * Set denied identities on the document. See {@link Document.permissions}
-   * @param identities
+   * @param securityIdentityBuilder
    * @returns
    */
   public withDeniedPermissions(
@@ -190,7 +190,11 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const out = {...this.doc, ...this.marshalMetadata(), ...this.marshalPermissions()};
+    const out = {
+      ...this.doc,
+      ...this.marshalMetadata(),
+      ...this.marshalPermissions(),
+    };
     delete out.metadata;
     return out;
   }
