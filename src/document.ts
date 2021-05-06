@@ -36,7 +36,7 @@ export type compressionType =
   | 'ZLIB';
 
 /**
- * Describe a Coveo document
+ * A Coveo document.
  *
  */
 export interface Document {
