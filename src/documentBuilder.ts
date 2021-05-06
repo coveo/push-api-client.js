@@ -8,7 +8,7 @@ import {
 } from './document';
 
 /**
- * Utility class that allows to build a {@link Document}
+ * Utility class to build a {@link Document}.
  */
 export class DocumentBuilder {
   private doc: Document;
