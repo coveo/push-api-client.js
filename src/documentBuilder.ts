@@ -192,8 +192,8 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const out = {...this.doc, ...this.marshalMetadata()};
-    delete out.metadata;
+    const {uri, metadata, ...omitSomeProperties} = this.doc;
+    const out = {...omitSomeProperties, ...this.marshalMetadata()};
     return out;
   }
 
