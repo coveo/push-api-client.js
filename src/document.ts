@@ -3,7 +3,7 @@
  */
 export interface PermissionIdentity {
   /**
-   * The identify of the user.
+   * The name of the security identity.
    *
    * Example: `asmith@example.com`
    */
