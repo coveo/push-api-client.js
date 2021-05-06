@@ -1,20 +1,22 @@
 /**
- * A permission identity
+ * A security identity. See https://docs.coveo.com/en/1719 for more information.
  */
-export interface PermissionIdentity {
+export interface SecurityIdentity {
   /**
-   * The identify of the user.
+   * The name of the security identity.
    *
-   * Example: `asmith@example.com`
+   * Examples:
+   *  - `asmith@example.com`
+   *  - `SampleTeam2`
    */
   identity: string;
   /**
    * The type of the identity.
    * Valid values:
-   * - UNKNOWN
-   * - USER : Defines a single user.
-   * - GROUP : Defines an existing group of identities within the indexed system. Individual members of this group can be of any valid identity Type (USER, GROUP, or VIRTUAL_GROUP).
-   * - VIRTUAL_GROUP : Defines a group that doesn't exist within the indexed system. Mechanically, a VIRTUAL_GROUP is identical to a GROUP.
+   * - `UNKNOWN`
+   * - `USER` : Defines a single user.
+   * - `GROUP` : Defines an existing group of identities within the indexed system. Individual members of this group can be of any valid identity Type (USER, GROUP, or VIRTUAL_GROUP).
+   * - `VIRTUAL_GROUP` : Defines a group that doesn't exist within the indexed system. Mechanically, a `VIRTUAL_GROUP` is identical to a `GROUP`.
    */
   identityType: 'UNKNOWN' | 'USER' | 'GROUP' | 'VIRTUAL_GROUP';
   /**
@@ -36,12 +38,15 @@ export type compressionType =
   | 'ZLIB';
 
 /**
- * Describe a Coveo document
- *
+ * A Coveo document.
  */
 export interface Document {
   /**
-   * The Uniform Resource Identifier (URI) that uniquely identifies a document in a Coveo index.
+   * The Uniform Resource Identifier (URI) that uniquely identifies the document in a Coveo index.
+   *
+   * Examples:
+   * - `http://www.example.com/`
+   * - `file://folder/text.txt`
    */
   uri: string;
   /**
@@ -79,11 +84,11 @@ export interface Document {
    *
    * Whenever you're pushing a compressed binary item (such as XML/HTML, PDF, Word, or binary), you should use the CompressedBinaryData or CompressedBinaryDataFileId attribute instead, depending on the content size.
    *
-   * Accept 5 MB or less of uncompressed textual data.
+   * Accepts 5 MB or less of uncompressed textual data.
    *
-   * See https://docs.coveo.com/en/73 for more information
+   * See https://docs.coveo.com/en/73 for more information.
    *
-   * Example: `This is a simple string that will be used for searchability as well to generate excerpt and summaries for the document.`
+   * Example: `This is a simple string that will be used for searchability as well as to generate excerpt and summaries for the document.`
    */
   data?: string;
   /**
@@ -95,15 +100,15 @@ export interface Document {
    *
    * If you're pushing less than 5 MB of textual (non-binary) content, you can use the data property instead.
    *
-   * See https://docs.coveo.com/en/73 for more information
+   * See https://docs.coveo.com/en/73 for more information.
    */
   compressedBinaryData?: {
     /**
-     * The compression type that was applied to your document
+     * The compression type that was applied to your document.
      */
     compressionType: compressionType;
     /**
-     * The base64 encoded binary data
+     * The base64 encoded binary data.
      *
      * Example: `eJxzrUjMLchJBQAK4ALN`
      */
@@ -116,7 +121,7 @@ export interface Document {
    *
    * Metadata are case-insensitive (e.g., the Push API considers mykey, MyKey, myKey, MYKEY, etc. as identical).
    *
-   * See https://docs.coveo.com/en/115 for more information
+   * See https://docs.coveo.com/en/115 for more information.
    */
   metadata?: Record<string, string | string[] | number | number[]>;
   /**
@@ -136,18 +141,18 @@ export interface Document {
     /**
      * The list of allowed permissions for this permission set.
      */
-    allowedPermissions?: PermissionIdentity[];
+    allowedPermissions?: SecurityIdentity[];
     /**
      * The list of denied permissions for this permission set.
      */
-    deniedPermissions?: PermissionIdentity[];
+    deniedPermissions?: SecurityIdentity[];
   }[];
   /**
    * The file extension of the data you're pushing.
    *
    * This is useful when pushing a compressed item. The converter uses this information to identify how to correctly process the item.
    *
-   * Values must include the preceding . character
+   * Values must include the preceding . character.
    *
    * Example: `.html`
    */
