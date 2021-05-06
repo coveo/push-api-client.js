@@ -76,7 +76,7 @@ export class DocumentBuilder {
     data: string,
     compressionType: CompressionType
   ) {
-    //TODO: Validate data (length ? base64 ?)
+    this.validateCompressedBinaryData(data);
     this.doc.compressedBinaryData = {
       data,
       compressionType,
@@ -192,7 +192,11 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const out = {...this.doc, ...this.marshalMetadata()};
+    const out = {
+      ...this.doc,
+      ...this.marshalMetadata(),
+      ...this.marshalCompressedBinaryData(),
+    };
     delete out.metadata;
     return out;
   }
@@ -208,6 +212,16 @@ export class DocumentBuilder {
     return out;
   }
 
+  private marshalCompressedBinaryData() {
+    if (!this.doc.compressedBinaryData) {
+      return {};
+    }
+    return {
+      compressedBinaryData: this.doc.compressedBinaryData.data,
+      compressionType: this.doc.compressedBinaryData.compressionType,
+    };
+  }
+
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
     // For example, if there's no permanentID set, we want to generate one using the document URI.
@@ -219,5 +233,12 @@ export class DocumentBuilder {
   private validateDateAndReturnValidDate(d: Date | string | number) {
     const validatedDate = dayjs(d);
     return validatedDate.toISOString();
+  }
+
+  private validateCompressedBinaryData(data: string) {
+    const isBase64 = Buffer.from(data, 'base64').toString('base64') === data;
+    if (!isBase64) {
+      throw 'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.';
+    }
   }
 }
