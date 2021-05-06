@@ -1,11 +1,11 @@
 /**
  * A security identity. See https://docs.coveo.com/en/1719 for more information.
  */
-export interface PermissionIdentity {
+export interface SecurityIdentity {
   /**
    * The name of the security identity.
    *
-   * Examples: 
+   * Examples:
    *  - `asmith@example.com`
    *  - `SampleTeam2`
    */
@@ -141,11 +141,11 @@ export interface Document {
     /**
      * The list of allowed permissions for this permission set.
      */
-    allowedPermissions?: PermissionIdentity[];
+    allowedPermissions?: SecurityIdentity[];
     /**
      * The list of denied permissions for this permission set.
      */
-    deniedPermissions?: PermissionIdentity[];
+    deniedPermissions?: SecurityIdentity[];
   }[];
   /**
    * The file extension of the data you're pushing.
