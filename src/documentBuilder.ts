@@ -1,4 +1,5 @@
 import dayjs = require('dayjs');
+import {createHash} from 'crypto';
 import {
   CompressionType,
   Document,
@@ -210,10 +211,16 @@ export class DocumentBuilder {
 
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
-    // For example, if there's no permanentID set, we want to generate one using the document URI.
     // or validate that we don't have both `data` AND `compressedBinaryData`.
     // Could also use https://www.npmjs.com/package/@coveo/bueno to validate schema (useful for pure JS users).
+    if (!this.doc.permanentId) {
+      this.doc.permanentId = this.generatePermanentId();
+    }
     return;
+  }
+
+  private generatePermanentId() {
+    return createHash('sha256').update(this.doc.uri).digest('hex');
   }
 
   private validateDateAndReturnValidDate(d: Date | string | number) {
