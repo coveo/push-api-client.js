@@ -116,7 +116,7 @@ export interface Document {
    *
    * Metadata are case-insensitive (e.g., the Push API considers mykey, MyKey, myKey, MYKEY, etc. as identical).
    *
-   * See https://docs.coveo.com/en/115 for more information
+   * See https://docs.coveo.com/en/115 for more information.
    */
   metadata?: Record<string, string | string[] | number | number[]>;
   /**
