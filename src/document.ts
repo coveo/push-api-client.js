@@ -27,10 +27,13 @@ export interface SecurityIdentity {
   securityProvider?: string;
 }
 
+export type MetadataValue = string | string[] | number | number[];
+export type Metadata = Record<string, MetadataValue>;
+
 /**
  * The compression type that was applied to your compressed document.
  */
-export type compressionType =
+export type CompressionType =
   | 'UNCOMPRESSED'
   | 'DEFLATE'
   | 'GZIP'
@@ -53,6 +56,14 @@ export interface Document {
    * The title of the document.
    */
   title: string;
+  /**
+   * The clickable URI associated with the document.
+   */
+  clickableUri?: string;
+  /**
+   * The author of the document.
+   */
+  author?: string;
   /**
    * The date of the document, represented as an ISO string.
    *
@@ -106,7 +117,7 @@ export interface Document {
     /**
      * The compression type that was applied to your document.
      */
-    compressionType: compressionType;
+    compressionType: CompressionType;
     /**
      * The base64 encoded binary data.
      *
@@ -123,7 +134,7 @@ export interface Document {
    *
    * See https://docs.coveo.com/en/115 for more information.
    */
-  metadata?: Record<string, string | string[] | number | number[]>;
+  metadata?: Metadata;
   /**
    * The list of permission sets for this item.
    *
@@ -146,7 +157,7 @@ export interface Document {
      * The list of denied permissions for this permission set.
      */
     deniedPermissions?: SecurityIdentity[];
-  }[];
+  };
   /**
    * The file extension of the data you're pushing.
    *

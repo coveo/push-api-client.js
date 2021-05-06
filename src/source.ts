@@ -10,6 +10,7 @@ import {
 } from '@coveord/platform-client';
 export {Environment} from '@coveord/platform-client';
 import axios from 'axios';
+import {DocumentBuilder} from './documentBuilder';
 
 export class Source {
   private platformClient: PlatformClient;
@@ -46,14 +47,15 @@ export class Source {
     // TODO;
   }
 
-  addOrUpdateDocument(sourceID: string, doc: Document) {
+  addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
+    const doc = docBuilder.build();
     return axios.put(
       `https://api.cloud.coveo.com/push/v1/organizations/${
         this.organizationid
       }/sources/${sourceID}/documents?documentId=${encodeURIComponent(
         doc.uri
       )}`,
-      JSON.stringify(doc),
+      JSON.stringify(docBuilder.marshal()),
       {
         headers: {
           'Content-Type': 'application/json',
