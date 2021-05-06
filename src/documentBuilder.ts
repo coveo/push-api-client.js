@@ -4,7 +4,7 @@ import {
   Document,
   Metadata,
   MetadataValue,
-  PermissionIdentity,
+  SecurityIdentity,
 } from './document';
 
 /**
@@ -152,23 +152,23 @@ export class DocumentBuilder {
   }
 
   /**
-   * Set allowed permissions on the document. See {@link Document.permissions}
-   * @param permissions
+   * Set allowed identities on the document. See {@link Document.permissions}
+   * @param identities
    * @returns
    */
-  public withAllowedPermissions(permissions: PermissionIdentity[]) {
+  public withAllowedPermissions(identities: SecurityIdentity[]) {
     // TODO: Some sort of permission identity builder to make this easier to build
-    this.doc.permissions!.allowedPermissions = permissions;
+    this.doc.permissions!.allowedPermissions = identities;
     return this;
   }
 
   /**
-   * Set denied permissions on the document. See {@link Document.permissions}
-   * @param permissions
+   * Set denied identities on the document. See {@link Document.permissions}
+   * @param identities
    * @returns
    */
-  public withDeniedPermissions(permissions: PermissionIdentity[]) {
-    this.doc.permissions!.deniedPermissions = permissions;
+  public withDeniedPermissions(identities: SecurityIdentity[]) {
+    this.doc.permissions!.deniedPermissions = identities;
     return this;
   }
 
@@ -182,19 +182,38 @@ export class DocumentBuilder {
     return this;
   }
 
+  public build() {
+    return this.doc;
+  }
+
   /**
    * Marshal the document into a JSON format accepted by the push API.
    * @returns
    */
   public marshal() {
-    const validatedDoc = this.validateAndFillMissing();
-    return {};
+    this.validateAndFillMissing();
+    const out = {...this.doc, ...this.marshalMetadata()};
+    delete out.metadata;
+    return out;
+  }
+
+  private marshalMetadata() {
+    if (!this.doc.metadata) {
+      return {};
+    }
+    const out: Metadata = {};
+    for (const [k, v] of Object.entries(this.doc.metadata)) {
+      out[k] = v;
+    }
+    return out;
   }
 
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
     // For example, if there's no permanentID set, we want to generate one using the document URI.
-    return this.doc;
+    // or validate that we don't have both `data` AND `compressedBinaryData`.
+    // Could also use https://www.npmjs.com/package/@coveo/bueno to validate schema (useful for pure JS users).
+    return;
   }
 
   private validateDateAndReturnValidDate(d: Date | string | number) {
