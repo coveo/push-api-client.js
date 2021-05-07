@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "description": "Push API client",
   "main": "./dist/index.js",
+  "files": [
+    "./dist",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ],
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
