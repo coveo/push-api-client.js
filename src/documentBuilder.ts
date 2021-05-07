@@ -1,11 +1,7 @@
 import dayjs = require('dayjs');
-import {
-  CompressionType,
-  Document,
-  Metadata,
-  MetadataValue,
-  SecurityIdentity,
-} from './document';
+import {createHash} from 'crypto';
+import {CompressionType, Document, Metadata, MetadataValue} from './document';
+import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 
 /**
  * Utility class to build a {@link Document}.
@@ -22,7 +18,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: true},
+      permissions: {allowAnonymous: false},
     };
   }
 
@@ -153,22 +149,25 @@ export class DocumentBuilder {
 
   /**
    * Set allowed identities on the document. See {@link Document.permissions}
-   * @param identities
+   * @param securityIdentityBuilder
    * @returns
    */
-  public withAllowedPermissions(identities: SecurityIdentity[]) {
-    // TODO: Some sort of permission identity builder to make this easier to build
-    this.doc.permissions!.allowedPermissions = identities;
+  public withAllowedPermissions(
+    securityIdentityBuilder: SecurityIdentityBuilder
+  ) {
+    this.setPermission(securityIdentityBuilder, 'allowedPermissions');
     return this;
   }
 
   /**
    * Set denied identities on the document. See {@link Document.permissions}
-   * @param identities
+   * @param securityIdentityBuilder
    * @returns
    */
-  public withDeniedPermissions(identities: SecurityIdentity[]) {
-    this.doc.permissions!.deniedPermissions = identities;
+  public withDeniedPermissions(
+    securityIdentityBuilder: SecurityIdentityBuilder
+  ) {
+    this.setPermission(securityIdentityBuilder, 'deniedPermissions');
     return this;
   }
 
@@ -196,6 +195,7 @@ export class DocumentBuilder {
       ...this.doc,
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
+      ...this.marshalPermissions(),
     };
     delete out.metadata;
     return out;
@@ -222,12 +222,33 @@ export class DocumentBuilder {
     };
   }
 
+  private marshalPermissions() {
+    if (!this.doc.permissions) {
+      return '';
+    }
+    return {
+      allowAnonymous: this.doc.permissions.allowAnonymous,
+      allowedPermissions: this.doc.permissions.allowedPermissions?.map((p) =>
+        JSON.stringify(p)
+      ),
+      deniedPermissions: this.doc.permissions.deniedPermissions?.map((p) =>
+        JSON.stringify(p)
+      ),
+    };
+  }
+
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
-    // For example, if there's no permanentID set, we want to generate one using the document URI.
     // or validate that we don't have both `data` AND `compressedBinaryData`.
     // Could also use https://www.npmjs.com/package/@coveo/bueno to validate schema (useful for pure JS users).
+    if (!this.doc.permanentId) {
+      this.doc.permanentId = this.generatePermanentId();
+    }
     return;
+  }
+
+  private generatePermanentId() {
+    return createHash('sha256').update(this.doc.uri).digest('hex');
   }
 
   private validateDateAndReturnValidDate(d: Date | string | number) {
@@ -239,6 +260,18 @@ export class DocumentBuilder {
     const isBase64 = Buffer.from(data, 'base64').toString('base64') === data;
     if (!isBase64) {
       throw 'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.';
+    }
+  }
+
+  private setPermission(
+    securityIdentityBuilder: SecurityIdentityBuilder,
+    permissionSection: 'allowedPermissions' | 'deniedPermissions'
+  ) {
+    const identities = securityIdentityBuilder.build();
+    if (Array.isArray(identities)) {
+      this.doc.permissions![permissionSection] = identities;
+    } else {
+      this.doc.permissions![permissionSection] = [identities];
     }
   }
 }
