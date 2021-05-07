@@ -1,14 +1,13 @@
 require('isomorphic-fetch');
 require('abortcontroller-polyfill');
 
-import {Document} from './document';
 import {
   Environment,
   PlatformClient,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {Environment} from '@coveord/platform-client';
+export {Environment, SourceVisibility} from '@coveord/platform-client';
 import axios from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 
