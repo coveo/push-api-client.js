@@ -1,11 +1,6 @@
 import dayjs = require('dayjs');
-import {
-  CompressionType,
-  Document,
-  Metadata,
-  MetadataValue,
-  SecurityIdentity,
-} from './document';
+import {CompressionType, Document, Metadata, MetadataValue} from './document';
+import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 
 /**
  * Utility class to build a {@link Document}.
@@ -22,7 +17,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: true},
+      permissions: {allowAnonymous: false},
     };
   }
 
@@ -153,22 +148,25 @@ export class DocumentBuilder {
 
   /**
    * Set allowed identities on the document. See {@link Document.permissions}
-   * @param identities
+   * @param securityIdentityBuilder
    * @returns
    */
-  public withAllowedPermissions(identities: SecurityIdentity[]) {
-    // TODO: Some sort of permission identity builder to make this easier to build
-    this.doc.permissions!.allowedPermissions = identities;
+  public withAllowedPermissions(
+    securityIdentityBuilder: SecurityIdentityBuilder
+  ) {
+    this.setPermission(securityIdentityBuilder, 'allowedPermissions');
     return this;
   }
 
   /**
    * Set denied identities on the document. See {@link Document.permissions}
-   * @param identities
+   * @param securityIdentityBuilder
    * @returns
    */
-  public withDeniedPermissions(identities: SecurityIdentity[]) {
-    this.doc.permissions!.deniedPermissions = identities;
+  public withDeniedPermissions(
+    securityIdentityBuilder: SecurityIdentityBuilder
+  ) {
+    this.setPermission(securityIdentityBuilder, 'deniedPermissions');
     return this;
   }
 
@@ -192,7 +190,11 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const out = {...this.doc, ...this.marshalMetadata()};
+    const out = {
+      ...this.doc,
+      ...this.marshalMetadata(),
+      ...this.marshalPermissions(),
+    };
     delete out.metadata;
     return out;
   }
@@ -208,6 +210,21 @@ export class DocumentBuilder {
     return out;
   }
 
+  private marshalPermissions() {
+    if (!this.doc.permissions) {
+      return '';
+    }
+    return {
+      allowAnonymous: this.doc.permissions.allowAnonymous,
+      allowedPermissions: this.doc.permissions.allowedPermissions?.map((p) =>
+        JSON.stringify(p)
+      ),
+      deniedPermissions: this.doc.permissions.deniedPermissions?.map((p) =>
+        JSON.stringify(p)
+      ),
+    };
+  }
+
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
     // For example, if there's no permanentID set, we want to generate one using the document URI.
@@ -219,5 +236,14 @@ export class DocumentBuilder {
   private validateDateAndReturnValidDate(d: Date | string | number) {
     const validatedDate = dayjs(d);
     return validatedDate.toISOString();
+  }
+
+  private setPermission(
+    securityIdentityBuilder: SecurityIdentityBuilder,
+    permissionSection: 'allowedPermissions' | 'deniedPermissions'
+  ) {
+    const identities = securityIdentityBuilder.build();
+      this.doc.permissions![permissionSection] = [].concat(identities);
+    }
   }
 }
