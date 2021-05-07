@@ -1,5 +1,5 @@
 {
-  "name": "shovel",
+  "name": "@coveo/shovel",
   "version": "0.0.1",
   "description": "Push API client",
   "main": "./dist/index.js",
