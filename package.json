@@ -4,10 +4,7 @@
   "description": "Push API client",
   "main": "./dist/index.js",
   "files": [
-    "./dist",
-    "LICENSE",
-    "CHANGELOG.md",
-    "README.md"
+    "./dist"
   ],
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
