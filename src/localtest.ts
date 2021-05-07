@@ -11,10 +11,15 @@ import {Source} from './source';
 async function main() {
   const source = new Source(API_KEY, ORG_ID);
   const docBuilder = new DocumentBuilder(
-    'https://perdu.com/3',
+    'https://perdu.com/2',
     'hello world title'
   )
-    .withAllowAnonymousUsers(true)
+    .withAuthor('anonymous@coveo.com')
+    .withClickableUri('https://perdu.com/click')
+    .withData('the content of the document')
+    .withMetadataValue('foo', 'bar')
+    .withDate('2000/01/01')
+    .withFileExtension('.html')
     .withAllowedPermissions(
       new UserSecurityIdentityBuilder('olamothe@coveo.com')
     )
@@ -26,7 +31,6 @@ async function main() {
     );
   const result = await source.addOrUpdateDocument(SOURCE_ID, docBuilder);
   console.log('STATUS', result.status);
-  console.log(docBuilder.marshal());
 }
 
 main();
