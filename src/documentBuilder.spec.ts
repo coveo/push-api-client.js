@@ -75,4 +75,8 @@ describe('DocumentBuilder', () => {
   it('should marshal permanentId', () => {
     expect(docBuilder.withPermanentId('id').marshal().permanentId).toBe('id');
   });
+
+  it('should validate file extension', () => {
+    expect(() => docBuilder.withFileExtension('nope')).toThrow();
+  });
 });
