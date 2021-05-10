@@ -70,7 +70,7 @@
     "prettier:fix": "prettier --write .",
     "commit": "git-cz",
     "release": "standard-version && git push && git push --tags",
-    "prepublish": "npm run release && npm run doc",
+    "prepublishOnly": "npm run release && npm run doc",
     "doc": "typedoc --out ./dist/docs ./src/index.ts"
   },
   "repository": {
