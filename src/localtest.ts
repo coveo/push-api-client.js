@@ -30,7 +30,21 @@ async function main() {
       ])
     );
   const result = await source.addOrUpdateDocument(SOURCE_ID, docBuilder);
-  console.log('STATUS', result.status);
+  console.log('STATUS CREATE', result.status);
+
+  const resultDelete = await source.deleteDocument(
+    SOURCE_ID,
+    'https://does.not.exists.com'
+  );
+  console.log('STATUS DELETE', resultDelete.status);
+
+  const yesterday = new Date();
+  yesterday.setDate(new Date().getDate() - 1);
+  const resultDeleteOlderThan = await source.deleteDocumentsOlderThan(
+    SOURCE_ID,
+    yesterday
+  );
+  console.log('STATUS DELETE OLDER THAN', resultDeleteOlderThan.status);
 }
 
 main();
