@@ -140,8 +140,7 @@ export class DocumentBuilder {
       'documentId',
       'orderingId',
     ];
-    for (const reservedKey of reservedKeyNames) {
-      if (key.toLowerCase() === reservedKey.toLowerCase()) {
+if (reservedKeyNames.some(reservedKey => reservedKey.toLowerCase() === key.toLowerCase())  {
         throw `Cannot use ${key} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
       }
     }
