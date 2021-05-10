@@ -50,7 +50,7 @@ export class Source {
 
   public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
     const doc = docBuilder.build();
-    const addURL = new URL(`${this.getBaseAPIURL(sourceID)}`);
+    const addURL = new URL(this.getBaseAPIURL(sourceID));
     addURL.searchParams.append('documentId', doc.uri);
     return axios.put(addURL.toString(), docBuilder.marshal(), this.axiosConfig);
   }
@@ -60,7 +60,7 @@ export class Source {
     documentId: string,
     deleteChildren = false
   ) {
-    const deleteURL = new URL(`${this.getBaseAPIURL(sourceID)}`);
+    const deleteURL = new URL(this.getBaseAPIURL(sourceID));
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
     return axios.delete(deleteURL.toString(), this.axiosConfig);
