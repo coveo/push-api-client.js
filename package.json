@@ -62,6 +62,7 @@
     "test": "jest",
     "test:dev": "jest --watch",
     "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/localtest.ts\"",
+    "lint": "prettier --config ./.prettierrc.js --check ./src && eslint ./src",
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
     "prettier:check": "prettier .",
