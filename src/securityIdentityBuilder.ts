@@ -59,7 +59,7 @@ export class UserSecurityIdentityBuilder implements SecurityIdentityBuilder {
    */
   constructor(
     private user: string | string[],
-    private securityProvider: string = 'EMAIL_SECURITY_PROVIDER'
+    private securityProvider: string = 'Email Security Provider'
   ) {}
 
   /**
