@@ -27,7 +27,7 @@ export class Source {
   private platformClient: PlatformClient;
   /**
    *
-   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See https://docs.coveo.com/en/1718
+   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param organizationid The Coveo Organization identifier.
    */
   constructor(private apikey: string, private organizationid: string) {
@@ -41,7 +41,7 @@ export class Source {
   /**
    * Create a new push source
    * @param name The name of the source to create.
-   * @param sourceVisibility The security option that should be applied to the content of the source. See https://docs.coveo.com/en/1779
+   * @param sourceVisibility The security option that should be applied to the content of the source. See [Content Security](https://docs.coveo.com/en/1779).
    * @returns
    */
   public create(name: string, sourceVisibility: SourceVisibility) {
@@ -54,7 +54,7 @@ export class Source {
   }
 
   /**
-   * Create or update a security identity. See https://docs.coveo.com/en/167 and https://docs.coveo.com/en/139
+   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
    * @param securityProviderId
    * @param securityIdentity
    * @returns
@@ -70,7 +70,7 @@ export class Source {
   }
 
   /**
-   * Create or update a security identity alias. See https://docs.coveo.com/en/142 and https://docs.coveo.com/en/46
+   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
    * @param securityProviderId
    * @param securityIdentityAlias
    * @returns
@@ -86,7 +86,7 @@ export class Source {
   }
 
   /**
-   * Delete a security identity. See https://docs.coveo.com/en/84
+   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
    * @param securityProviderId
    * @param securityIdentityToDelete
    * @returns
@@ -102,7 +102,7 @@ export class Source {
   }
 
   /**
-   * Delete old security identities. See https://docs.coveo.com/en/33/
+   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
    * @param securityProviderId
    * @param batchDelete
    * @returns
@@ -118,7 +118,7 @@ export class Source {
   }
 
   /**
-   * Manage batches of security identities. See https://docs.coveo.com/en/55
+   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
    */
   public manageSecurityIdentities(
     securityProviderId: string,
@@ -131,7 +131,7 @@ export class Source {
   }
 
   /**
-   * Adds or updates an individual item in a push source. See https://docs.coveo.com/en/133
+   * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
    * @param sourceID
    * @param docBuilder
    * @returns
@@ -144,7 +144,7 @@ export class Source {
   }
 
   /**
-   * Deletes a specific item from a Push source. Optionally, the child items of that item can also be deleted. See https://docs.coveo.com/en/171
+   * Deletes a specific item from a Push source. Optionally, the child items of that item can also be deleted. See [Deleting an Item in a Push Source](https://docs.coveo.com/en/171).
    * @param sourceID
    * @param documentId
    * @param deleteChildren
@@ -162,7 +162,7 @@ export class Source {
   }
 
   /**
-   * Deletes all items whose last update was made by a Push API operation whose orderingId is strictly lower than a specified value. See https://docs.coveo.com/en/131
+   * Deletes all items whose last update was made by a Push API operation whose orderingId is strictly lower than a specified value. See [Deleting Old Items in a Push Source](https://docs.coveo.com/en/131).
    * @param sourceID
    * @param olderThan
    * @returns
