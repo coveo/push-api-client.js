@@ -40,7 +40,7 @@ describe('Source', () => {
 
     expect(mockAxios.put).toHaveBeenCalledWith(
       'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
-      expect.stringContaining('the_title'),
+      expect.objectContaining({title: 'the_title'}),
       {
         headers: {
           Accept: 'application/json',

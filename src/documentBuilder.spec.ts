@@ -1,4 +1,5 @@
 import {DocumentBuilder} from './documentBuilder';
+import {UserSecurityIdentityBuilder} from './securityIdentityBuilder';
 
 describe('DocumentBuilder', () => {
   let docBuilder: DocumentBuilder;
@@ -74,5 +75,92 @@ describe('DocumentBuilder', () => {
 
   it('should marshal permanentId', () => {
     expect(docBuilder.withPermanentId('id').marshal().permanentId).toBe('id');
+  });
+
+  it('throws when adding a reserved key name metadata', () => {
+    const theseShouldThrow = [
+      'compressedBinaryData',
+      'compressedBinaryDataFileId',
+      'parentId',
+      'fileExtension',
+      'data',
+      'permissions',
+      'documentId',
+      'orderingId',
+    ];
+
+    for (const shouldThrow of theseShouldThrow) {
+      expect(() => docBuilder.withMetadataValue(shouldThrow, 'foo')).toThrow();
+    }
+  });
+
+  it('should validate file extension', () => {
+    expect(() => docBuilder.withFileExtension('nope')).toThrow();
+  });
+
+  it('should marshal allowedPermissions', () => {
+    expect(
+      docBuilder
+        .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+        .marshal().permissions![0]
+    ).toMatchObject({
+      allowedPermissions: expect.arrayContaining([
+        expect.objectContaining({identity: 'bob@foo.com'}),
+      ]),
+    });
+  });
+
+  it('should marshal multiple allowedPermissions', () => {
+    expect(
+      docBuilder
+        .withAllowedPermissions(
+          new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
+        )
+        .marshal().permissions![0]
+    ).toMatchObject({
+      allowedPermissions: expect.arrayContaining([
+        expect.objectContaining({identity: 'bob@foo.com'}),
+        expect.objectContaining({identity: 'sue@foo.com'}),
+      ]),
+    });
+  });
+
+  it('should marshal deniedPermissions', () => {
+    expect(
+      docBuilder
+        .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+        .marshal().permissions![0]
+    ).toMatchObject({
+      deniedPermissions: expect.arrayContaining([
+        expect.objectContaining({identity: 'bob@foo.com'}),
+      ]),
+    });
+  });
+
+  it('should marshal multiple deniedPermissions', () => {
+    expect(
+      docBuilder
+        .withDeniedPermissions(
+          new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
+        )
+        .marshal().permissions![0]
+    ).toMatchObject({
+      deniedPermissions: expect.arrayContaining([
+        expect.objectContaining({identity: 'bob@foo.com'}),
+        expect.objectContaining({identity: 'sue@foo.com'}),
+      ]),
+    });
+  });
+
+  it('should marshal allowedPermissions to an empty array when undefined', () => {
+    expect(docBuilder.marshal().permissions![0].allowedPermissions.length).toBe(
+      0
+    );
+  });
+
+  it('should marshal deniedPermissions to an empty array when undefined', () => {
+    expect(docBuilder.marshal().permissions![0].deniedPermissions.length).toBe(
+      0
+    );
   });
 });
