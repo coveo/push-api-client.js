@@ -86,7 +86,9 @@ export class DocumentBuilder {
    * @returns
    */
   public withFileExtension(extension: string) {
-    //TODO: Validate valid file extension
+    if (extension[0] !== '.') {
+      throw `Extension ${extension} should start with a leading .`;
+    }
     this.doc.fileExtension = extension;
     return this;
   }
