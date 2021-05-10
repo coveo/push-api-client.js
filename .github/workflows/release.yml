@@ -16,13 +16,7 @@ jobs:
       - name: Install
         run: npm ci
       - name: Release
-        run: npm run release
-      - name: Push
-        run: |
-          git push
-          git push --tags
-      - name: Build doc
-        run: npx typedoc --out ./dist/docs ./src/index.ts
+        run: npm run publish
       - name: Deploy doc
         uses: peaceiris/actions-gh-pages@v3
         with:

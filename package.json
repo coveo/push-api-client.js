@@ -32,6 +32,7 @@
     "standard-version": "^9.3.0",
     "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
+    "typedoc": "^0.20.36",
     "typescript": "^4.2.4"
   },
   "husky": {
@@ -68,7 +69,9 @@
     "prettier:check": "prettier .",
     "prettier:fix": "prettier --write .",
     "commit": "git-cz",
-    "release": "standard-version"
+    "release": "standard-version && git push && git push --tags",
+    "prepublish": "npm run release && npm run doc",
+    "doc": "typedoc --out ./dist/docs ./src/index.ts"
   },
   "repository": {
     "type": "git",
