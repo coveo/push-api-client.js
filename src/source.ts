@@ -54,7 +54,7 @@ export class Source {
       }/sources/${sourceID}/documents?documentId=${encodeURIComponent(
         doc.uri
       )}`,
-      JSON.stringify(docBuilder.marshal()),
+      docBuilder.marshal(),
       {
         headers: {
           'Content-Type': 'application/json',

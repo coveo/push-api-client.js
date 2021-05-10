@@ -18,7 +18,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: false},
+      permissions: {allowAnonymous: true}, // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -86,7 +86,9 @@ export class DocumentBuilder {
    * @returns
    */
   public withFileExtension(extension: string) {
-    //TODO: Validate valid file extension
+    if (extension[0] !== '.') {
+      throw `Extension ${extension} should start with a leading .`;
+    }
     this.doc.fileExtension = extension;
     return this;
   }
@@ -189,7 +191,7 @@ if (reservedKeyNames.some(reservedKey => reservedKey.toLowerCase() === key.toLow
    * @param allowAnonymous
    * @returns
    */
-  public withAnonymousUsers(allowAnonymous: boolean) {
+  public withAllowAnonymousUsers(allowAnonymous: boolean) {
     this.doc.permissions!.allowAnonymous = allowAnonymous;
     return this;
   }
@@ -204,7 +206,7 @@ if (reservedKeyNames.some(reservedKey => reservedKey.toLowerCase() === key.toLow
    */
   public marshal() {
     this.validateAndFillMissing();
-    const {uri, metadata, ...omitSomeProperties} = this.doc;
+    const {uri, metadata, permissions, ...omitSomeProperties} = this.doc;
     const out = {
       ...omitSomeProperties,
       ...this.marshalMetadata(),
@@ -237,16 +239,16 @@ if (reservedKeyNames.some(reservedKey => reservedKey.toLowerCase() === key.toLow
 
   private marshalPermissions() {
     if (!this.doc.permissions) {
-      return '';
+      return {};
     }
     return {
-      allowAnonymous: this.doc.permissions.allowAnonymous,
-      allowedPermissions: this.doc.permissions.allowedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
-      deniedPermissions: this.doc.permissions.deniedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
+      permissions: [
+        {
+          allowAnonymous: this.doc.permissions.allowAnonymous,
+          allowedPermissions: this.doc.permissions.allowedPermissions || [],
+          deniedPermissions: this.doc.permissions.deniedPermissions || [],
+        },
+      ],
     };
   }
 
