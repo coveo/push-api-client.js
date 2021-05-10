@@ -77,6 +77,23 @@ describe('DocumentBuilder', () => {
     expect(docBuilder.withPermanentId('id').marshal().permanentId).toBe('id');
   });
 
+  it('throws when adding a reserved key name metadata', () => {
+    const theseShouldThrow = [
+      'compressedBinaryData',
+      'compressedBinaryDataFileId',
+      'parentId',
+      'fileExtension',
+      'data',
+      'permissions',
+      'documentId',
+      'orderingId',
+    ];
+
+    for (const shouldThrow of theseShouldThrow) {
+      expect(() => docBuilder.withMetadataValue(shouldThrow, 'foo')).toThrow();
+    }
+  });
+
   it('should validate file extension', () => {
     expect(() => docBuilder.withFileExtension('nope')).toThrow();
   });
