@@ -216,6 +216,7 @@ export class DocumentBuilder {
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
       ...this.marshalPermissions(),
+      documentId: uri,
     };
     return out;
   }
