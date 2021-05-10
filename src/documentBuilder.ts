@@ -1,4 +1,5 @@
 import dayjs = require('dayjs');
+import {createHash} from 'crypto';
 import {CompressionType, Document, Metadata, MetadataValue} from './document';
 import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 
@@ -17,7 +18,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: false},
+      permissions: {allowAnonymous: true}, // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -71,7 +72,7 @@ export class DocumentBuilder {
     data: string,
     compressionType: CompressionType
   ) {
-    //TODO: Validate data (length ? base64 ?)
+    this.validateCompressedBinaryData(data);
     this.doc.compressedBinaryData = {
       data,
       compressionType,
@@ -85,7 +86,9 @@ export class DocumentBuilder {
    * @returns
    */
   public withFileExtension(extension: string) {
-    //TODO: Validate valid file extension
+    if (extension[0] !== '.') {
+      throw `Extension ${extension} should start with a leading .`;
+    }
     this.doc.fileExtension = extension;
     return this;
   }
@@ -129,7 +132,24 @@ export class DocumentBuilder {
    * @returns
    */
   public withMetadataValue(key: string, value: MetadataValue) {
-    // TODO: validate reserved names
+    const reservedKeyNames = [
+      'compressedBinaryData',
+      'compressedBinaryDataFileId',
+      'parentId',
+      'fileExtension',
+      'data',
+      'permissions',
+      'documentId',
+      'orderingId',
+    ];
+    if (
+      reservedKeyNames.some(
+        (reservedKey) => reservedKey.toLowerCase() === key.toLowerCase()
+      )
+    ) {
+      throw `Cannot use ${key} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
+    }
+
     this.doc.metadata![key] = value;
     return this;
   }
@@ -175,7 +195,7 @@ export class DocumentBuilder {
    * @param allowAnonymous
    * @returns
    */
-  public withAnonymousUsers(allowAnonymous: boolean) {
+  public withAllowAnonymousUsers(allowAnonymous: boolean) {
     this.doc.permissions!.allowAnonymous = allowAnonymous;
     return this;
   }
@@ -190,12 +210,13 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
+    const {uri, metadata, permissions, ...omitSomeProperties} = this.doc;
     const out = {
-      ...this.doc,
+      ...omitSomeProperties,
       ...this.marshalMetadata(),
+      ...this.marshalCompressedBinaryData(),
       ...this.marshalPermissions(),
     };
-    delete out.metadata;
     return out;
   }
 
@@ -210,32 +231,55 @@ export class DocumentBuilder {
     return out;
   }
 
-  private marshalPermissions() {
-    if (!this.doc.permissions) {
-      return '';
+  private marshalCompressedBinaryData() {
+    if (!this.doc.compressedBinaryData) {
+      return {};
     }
     return {
-      allowAnonymous: this.doc.permissions.allowAnonymous,
-      allowedPermissions: this.doc.permissions.allowedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
-      deniedPermissions: this.doc.permissions.deniedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
+      compressedBinaryData: this.doc.compressedBinaryData.data,
+      compressionType: this.doc.compressedBinaryData.compressionType,
+    };
+  }
+
+  private marshalPermissions() {
+    if (!this.doc.permissions) {
+      return {};
+    }
+    return {
+      permissions: [
+        {
+          allowAnonymous: this.doc.permissions.allowAnonymous,
+          allowedPermissions: this.doc.permissions.allowedPermissions || [],
+          deniedPermissions: this.doc.permissions.deniedPermissions || [],
+        },
+      ],
     };
   }
 
   private validateAndFillMissing() {
     // TODO: validation that cannot be performed on a single property, but requires looking at multiple property at the same time.
-    // For example, if there's no permanentID set, we want to generate one using the document URI.
     // or validate that we don't have both `data` AND `compressedBinaryData`.
     // Could also use https://www.npmjs.com/package/@coveo/bueno to validate schema (useful for pure JS users).
+    if (!this.doc.permanentId) {
+      this.doc.permanentId = this.generatePermanentId();
+    }
     return;
+  }
+
+  private generatePermanentId() {
+    return createHash('sha256').update(this.doc.uri).digest('hex');
   }
 
   private validateDateAndReturnValidDate(d: Date | string | number) {
     const validatedDate = dayjs(d);
     return validatedDate.toISOString();
+  }
+
+  private validateCompressedBinaryData(data: string) {
+    const isBase64 = Buffer.from(data, 'base64').toString('base64') === data;
+    if (!isBase64) {
+      throw 'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.';
+    }
   }
 
   private setPermission(

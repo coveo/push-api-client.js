@@ -7,8 +7,8 @@ import {
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {Environment} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig} from 'axios';
+export {Environment, SourceVisibility} from '@coveord/platform-client';
+import axios from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
 
@@ -53,7 +53,7 @@ export class Source {
       `${this.getBaseAPIURL(sourceID)}${this.queryStringParams({
         documentId: doc.uri,
       })}`,
-      JSON.stringify(docBuilder.marshal()),
+      docBuilder.marshal(),
       this.axiosConfig
     );
   }

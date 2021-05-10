@@ -17,17 +17,19 @@
       "rules": {
         "@typescript-eslint/no-unused-vars": [
           "warn",
-          { "ignoreRestSiblings": true, "argsIgnorePattern": "^_" }
+          {"ignoreRestSiblings": true, "argsIgnorePattern": "^_"}
         ],
         "@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/ban-types": "off"
+        "@typescript-eslint/ban-types": "off",
+        "node/no-unpublished-import": "off"
       }
     },
     {
       "files": ["**/*.js", "**/*.jsx"],
       "extends": ["eslint:recommended"],
       "rules": {
-        "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+        "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+        "node/no-unpublished-import": "off"
       },
       "env": {
         "node": true

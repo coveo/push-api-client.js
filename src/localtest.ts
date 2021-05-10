@@ -17,6 +17,8 @@ async function main() {
     .withAuthor('anonymous@coveo.com')
     .withClickableUri('https://perdu.com/click')
     .withData('the content of the document')
+    .withMetadataValue('foo', 'bar')
+    .withDate('2000/01/01')
     .withFileExtension('.html')
     .withAllowedPermissions(
       new UserSecurityIdentityBuilder('olamothe@coveo.com')
