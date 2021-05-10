@@ -21,7 +21,7 @@ import {URL} from 'url';
 /**
  * Manage a push source.
  *
- * Allows to create a new push source, manage security identities and documents in a Coveo organization.
+ * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class Source {
   private platformClient: PlatformClient;
@@ -41,7 +41,7 @@ export class Source {
   /**
    * Create a new push source
    * @param name The name of the source to create.
-   * @param sourceVisibility The security that should be applied to the content of the source. See https://docs.coveo.com/en/1779
+   * @param sourceVisibility The security option that should be applied to the content of the source. See https://docs.coveo.com/en/1779
    * @returns
    */
   public create(name: string, sourceVisibility: SourceVisibility) {
@@ -144,7 +144,7 @@ export class Source {
   }
 
   /**
-   * Deletes a specific item from a Push source. Optionally, the items of that item can also be deleted. See https://docs.coveo.com/en/171
+   * Deletes a specific item from a Push source. Optionally, the child items of that item can also be deleted. See https://docs.coveo.com/en/171
    * @param sourceID
    * @param documentId
    * @param deleteChildren
