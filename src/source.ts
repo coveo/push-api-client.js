@@ -8,7 +8,7 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {Environment, SourceVisibility} from '@coveord/platform-client';
-import axios from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
 
