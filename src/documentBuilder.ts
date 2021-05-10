@@ -18,7 +18,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: false},
+      permissions: {allowAnonymous: true}, // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -178,7 +178,7 @@ export class DocumentBuilder {
    * @param allowAnonymous
    * @returns
    */
-  public withAnonymousUsers(allowAnonymous: boolean) {
+  public withAllowAnonymousUsers(allowAnonymous: boolean) {
     this.doc.permissions!.allowAnonymous = allowAnonymous;
     return this;
   }
@@ -193,7 +193,7 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const {uri, metadata, ...omitSomeProperties} = this.doc;
+    const {uri, metadata, permissions, ...omitSomeProperties} = this.doc;
     const out = {
       ...omitSomeProperties,
       ...this.marshalMetadata(),
@@ -226,16 +226,16 @@ export class DocumentBuilder {
 
   private marshalPermissions() {
     if (!this.doc.permissions) {
-      return '';
+      return {};
     }
     return {
-      allowAnonymous: this.doc.permissions.allowAnonymous,
-      allowedPermissions: this.doc.permissions.allowedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
-      deniedPermissions: this.doc.permissions.deniedPermissions?.map((p) =>
-        JSON.stringify(p)
-      ),
+      permissions: [
+        {
+          allowAnonymous: this.doc.permissions.allowAnonymous,
+          allowedPermissions: this.doc.permissions.allowedPermissions || [],
+          deniedPermissions: this.doc.permissions.deniedPermissions || [],
+        },
+      ],
     };
   }
 
