@@ -11,6 +11,7 @@ export {Environment, SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
+import {URL} from 'url';
 
 export class Source {
   private platformClient: PlatformClient;
@@ -49,13 +50,9 @@ export class Source {
 
   public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
     const doc = docBuilder.build();
-    return axios.put(
-      `${this.getBaseAPIURL(sourceID)}${this.queryStringParams({
-        documentId: doc.uri,
-      })}`,
-      docBuilder.marshal(),
-      this.axiosConfig
-    );
+    const addURL = new URL(`${this.getBaseAPIURL(sourceID)}`);
+    addURL.searchParams.append('documentId', doc.uri);
+    return axios.put(addURL.toString(), docBuilder.marshal(), this.axiosConfig);
   }
 
   public deleteDocument(
@@ -63,13 +60,10 @@ export class Source {
     documentId: string,
     deleteChildren = false
   ) {
-    return axios.delete(
-      `${this.getBaseAPIURL(sourceID)}${this.queryStringParams({
-        documentId,
-        deleteChildren,
-      })}`,
-      this.axiosConfig
-    );
+    const deleteURL = new URL(`${this.getBaseAPIURL(sourceID)}`);
+    deleteURL.searchParams.append('documentId', documentId);
+    deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
+    return axios.delete(deleteURL.toString(), this.axiosConfig);
   }
 
   public deleteDocumentsOlderThan(
@@ -77,18 +71,9 @@ export class Source {
     olderThan: Date | string | number
   ) {
     const date = dayjs(olderThan);
-    return axios.delete(
-      `${this.getBaseAPIURL(sourceID)}/olderthan${this.queryStringParams({
-        orderingId: date.unix(),
-      })}`,
-      this.axiosConfig
-    );
-  }
-
-  private queryStringParams(params: Record<string, string | boolean | number>) {
-    return `?${Object.entries(params).map(
-      ([k, v]) => `${k}=${encodeURIComponent(v)}`
-    )}`;
+    const deleteURL = new URL(`${this.getBaseAPIURL(sourceID)}/olderthan`);
+    deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
+    return axios.delete(deleteURL.toString(), this.axiosConfig);
   }
 
   private getBaseAPIURL(sourceID: string) {
