@@ -18,6 +18,8 @@ import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
 
+export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
+
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
   delete: {documentId: string; deleteChildren: boolean}[];
@@ -207,6 +209,18 @@ export class Source {
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+  }
+
+  /**
+   * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
+   * @param sourceID
+   * @param status
+   * @returns
+   */
+  public setSourceStatus(sourceID: string, status: SourceStatus) {
+    const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
+    urlStatus.searchParams.append('statusType', status);
+    return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
   private get baseAPIURL() {
