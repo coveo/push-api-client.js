@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/coveo/shovel.js/compare/v0.0.4...v0.0.5) (2021-05-11)
+
+
+### Features
+
+* **batch:** add support for batch document update ([#17](https://github.com/coveo/shovel.js/issues/17)) ([cc1dd91](https://github.com/coveo/shovel.js/commit/cc1dd9122cb22c6864a14dc17aa4f74cc332539d))
+* **source:** allow document deletion ([#6](https://github.com/coveo/shovel.js/issues/6)) ([9013b1c](https://github.com/coveo/shovel.js/commit/9013b1ce7fedb6ec9cfbdb68acf0117021450f6f))
+* **source:** complete missing methods and documentation for source class ([#16](https://github.com/coveo/shovel.js/issues/16)) ([e7406c5](https://github.com/coveo/shovel.js/commit/e7406c5ba7a11cd3ac04ede9e2621d94a2d3cc1e))
+* **validation:** validate file extension ([#13](https://github.com/coveo/shovel.js/issues/13)) ([c6014af](https://github.com/coveo/shovel.js/commit/c6014af0aa6527e53bad2a119f699691831b85b6))
+* **validation:** validate reserved key names ([#12](https://github.com/coveo/shovel.js/issues/12)) ([ac678ad](https://github.com/coveo/shovel.js/commit/ac678adc541a6c895f6f37e584b96668f7f9d250))
+
+
+### Bug Fixes
+
+* **security:** fix security/permissions marshaling ([#11](https://github.com/coveo/shovel.js/issues/11)) ([6512d57](https://github.com/coveo/shovel.js/commit/6512d570d7791454bc5761b0336bba283dc17794))
+
 ### [0.0.4](https://github.com/coveo/shovel.js/compare/v0.0.1...v0.0.4) (2021-05-07)
 
 ### [0.0.3](https://github.com/coveo/shovel.js/compare/v0.0.1...v0.0.3) (2021-05-07)
