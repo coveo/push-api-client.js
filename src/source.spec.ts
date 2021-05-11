@@ -91,6 +91,15 @@ describe('Source', () => {
     );
   });
 
+  it('should call axios on status update', () => {
+    source.setSourceStatus('the_id', 'INCREMENTAL');
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/status?statusType=INCREMENTAL',
+      {},
+      expectedDocumentsHeaders
+    );
+  });
+
   describe('when doing batch update', () => {
     let batch: BatchUpdateDocuments;
     beforeEach(() => {
