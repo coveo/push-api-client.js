@@ -11,9 +11,8 @@ describe('DocumentBuilder', () => {
     expect(docBuilder.marshal().title).toBe('title');
   });
 
-  it('should not marshal uri', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((docBuilder.marshal() as any).uri).toBeUndefined();
+  it('should marshal uri to documentId', () => {
+    expect(docBuilder.marshal().documentId).toBe('uri');
   });
 
   it('should marshal data', () => {

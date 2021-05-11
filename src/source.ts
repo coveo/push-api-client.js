@@ -18,6 +18,17 @@ import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
 
+export interface BatchUpdateDocuments {
+  addOrUpdate: DocumentBuilder[];
+  delete: {documentId: string; deleteChildren: boolean}[];
+}
+
+interface FileContainerResponse {
+  uploadUri: string;
+  fileId: string;
+  requiredHeaders: Record<string, string>;
+}
+
 /**
  * Manage a push source.
  *
@@ -138,9 +149,28 @@ export class Source {
    */
   public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
     const doc = docBuilder.build();
-    const addURL = new URL(this.getBaseAPIURL(sourceID));
+    const addURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
     addURL.searchParams.append('documentId', doc.uri);
-    return axios.put(addURL.toString(), docBuilder.marshal(), this.axiosConfig);
+    return axios.put(
+      addURL.toString(),
+      docBuilder.marshal(),
+      this.documentsAxiosConfig
+    );
+  }
+
+  /**
+   * Manage batches of items in a push source. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * @param sourceID
+   * @param batch
+   * @returns
+   */
+  public async batchUpdateDocuments(
+    sourceID: string,
+    batch: BatchUpdateDocuments
+  ) {
+    const fileContainer = await this.createFileContainer();
+    await this.uploadContentToFileContainer(fileContainer, batch);
+    return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
   /**
@@ -155,10 +185,10 @@ export class Source {
     documentId: string,
     deleteChildren = false
   ) {
-    const deleteURL = new URL(this.getBaseAPIURL(sourceID));
+    const deleteURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
-    return axios.delete(deleteURL.toString(), this.axiosConfig);
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
   }
 
   /**
@@ -172,26 +202,84 @@ export class Source {
     olderThan: Date | string | number
   ) {
     const date = dayjs(olderThan);
-    const deleteURL = new URL(`${this.getBaseAPIURL(sourceID)}/olderthan`);
+    const deleteURL = new URL(
+      `${this.getBaseAPIURLForDocuments(sourceID)}/olderthan`
+    );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
-    return axios.delete(deleteURL.toString(), this.axiosConfig);
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
   }
 
-  private getBaseAPIURL(sourceID: string) {
-    return `https://api.cloud.coveo.com/push/v1/organizations/${this.organizationid}/sources/${sourceID}/documents`;
+  private get baseAPIURL() {
+    return `https://api.cloud.coveo.com/push/v1/organizations/${this.organizationid}`;
   }
 
-  private get axiosConfig(): AxiosRequestConfig {
+  private getBaseAPIURLForDocuments(sourceID: string) {
+    return `${this.baseAPIURL}/sources/${sourceID}/documents`;
+  }
+
+  private get documentsAxiosConfig(): AxiosRequestConfig {
     return {
-      headers: this.requestHeaders,
+      headers: this.documentsRequestHeaders,
     };
   }
 
-  private get requestHeaders() {
+  private getFileContainerAxiosConfig(
+    fileContainer: FileContainerResponse
+  ): AxiosRequestConfig {
     return {
+      headers: fileContainer.requiredHeaders,
+    };
+  }
+
+  private get documentsRequestHeaders() {
+    return {
+      ...this.authorizationHeader,
       'Content-Type': 'application/json',
       Accept: 'application/json',
+    };
+  }
+
+  private get authorizationHeader() {
+    return {
       Authorization: `Bearer ${this.apikey}`,
     };
+  }
+
+  private async createFileContainer() {
+    const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
+    const res = await axios.post(
+      fileContainerURL.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
+    return res.data as FileContainerResponse;
+  }
+
+  private async uploadContentToFileContainer(
+    fileContainer: FileContainerResponse,
+    batch: BatchUpdateDocuments
+  ) {
+    const uploadURL = new URL(fileContainer.uploadUri);
+    return await axios.put(
+      uploadURL.toString(),
+      {
+        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
+          docBuilder.marshal()
+        ),
+        delete: batch.delete,
+      },
+      this.getFileContainerAxiosConfig(fileContainer)
+    );
+  }
+
+  private pushFileContainerContent(
+    sourceID: string,
+    fileContainer: FileContainerResponse
+  ) {
+    const pushURL = new URL(
+      `${this.getBaseAPIURLForDocuments(sourceID)}/batch`
+    );
+    pushURL.searchParams.append('fileId', fileContainer.fileId);
+    return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
   }
 }

@@ -6,12 +6,12 @@ const API_KEY = process.env.API_KEY as string;
 const ORG_ID = process.env.ORG_ID as string;
 const SOURCE_ID = process.env.SOURCE_ID as string;
 
-import {Source} from './source';
+import {BatchUpdateDocuments, Source} from './source';
 
 async function main() {
   const source = new Source(API_KEY, ORG_ID);
   const docBuilder = new DocumentBuilder(
-    'https://perdu.com/2',
+    'https://perdu.com',
     'hello world title'
   )
     .withAuthor('anonymous@coveo.com')
@@ -45,6 +45,28 @@ async function main() {
     yesterday
   );
   console.log('STATUS DELETE OLDER THAN', resultDeleteOlderThan.status);
+
+  const batch: BatchUpdateDocuments = {
+    addOrUpdate: [],
+    delete: [],
+  };
+  for (let i = 0; i < 10; i++) {
+    const docID = `https://perdu.com/${i}`;
+    if (i < 8) {
+      batch.addOrUpdate.push(
+        new DocumentBuilder(docID, `Doc number ${i}`)
+          .withAllowAnonymousUsers(false)
+          .withAllowedPermissions(
+            new UserSecurityIdentityBuilder('olamothe@coveo.com')
+          )
+      );
+    } else {
+      batch.delete.push({documentId: docID, deleteChildren: true});
+    }
+  }
+
+  const batchResult = await source.batchUpdateDocuments(SOURCE_ID, batch);
+  console.log('STATUS BATCH', batchResult.status);
 }
 
 main();
