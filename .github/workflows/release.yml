@@ -15,8 +15,12 @@ jobs:
           node-version: '14'
       - name: Install
         run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
       - name: Release
-        run: npm run publish
+        run: npm publish
       - name: Deploy doc
         uses: peaceiris/actions-gh-pages@v3
         with:
