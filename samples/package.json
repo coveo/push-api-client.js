@@ -1,0 +1,14 @@
+{
+  "name": "@coveo/push-api-client-samples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@coveo/push-api-client": "0.0.6"
+  }
+}
