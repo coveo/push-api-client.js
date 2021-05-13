@@ -40,4 +40,4 @@ Use `npm run commit` to get a properly formatted commit message which will help 
 
 ## Release
 
-- Run Github action named `release`, which will bump version, tag and publish to npm.
+Run Github action named `release`, which will bump version, tag and publish to npm.
