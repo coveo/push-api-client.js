@@ -1,5 +1,5 @@
 {
-  "name": "@coveo/shovel",
+  "name": "@coveo/push-api-client",
   "version": "0.0.5",
   "description": "Push API client",
   "main": "./dist/index.js",
@@ -74,12 +74,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coveo/shovel.js.git"
+    "url": "git+https://github.com/coveo/push-api-client.js.git"
   },
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/coveo/shovel.js/issues"
+    "url": "https://github.com/coveo/push-api-client.js/issues"
   },
-  "homepage": "https://github.com/coveo/shovel.js#readme"
+  "homepage": "https://github.com/coveo/push-api-client.js#readme"
 }

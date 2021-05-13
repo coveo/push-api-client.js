@@ -2,42 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.0.5](https://github.com/coveo/shovel.js/compare/v0.0.4...v0.0.5) (2021-05-11)
+### [0.0.5](https://github.com/coveo/push-api-client.js/compare/v0.0.4...v0.0.5) (2021-05-11)
 
 
 ### Features
 
-* **batch:** add support for batch document update ([#17](https://github.com/coveo/shovel.js/issues/17)) ([cc1dd91](https://github.com/coveo/shovel.js/commit/cc1dd9122cb22c6864a14dc17aa4f74cc332539d))
-* **source:** allow document deletion ([#6](https://github.com/coveo/shovel.js/issues/6)) ([9013b1c](https://github.com/coveo/shovel.js/commit/9013b1ce7fedb6ec9cfbdb68acf0117021450f6f))
-* **source:** complete missing methods and documentation for source class ([#16](https://github.com/coveo/shovel.js/issues/16)) ([e7406c5](https://github.com/coveo/shovel.js/commit/e7406c5ba7a11cd3ac04ede9e2621d94a2d3cc1e))
-* **validation:** validate file extension ([#13](https://github.com/coveo/shovel.js/issues/13)) ([c6014af](https://github.com/coveo/shovel.js/commit/c6014af0aa6527e53bad2a119f699691831b85b6))
-* **validation:** validate reserved key names ([#12](https://github.com/coveo/shovel.js/issues/12)) ([ac678ad](https://github.com/coveo/shovel.js/commit/ac678adc541a6c895f6f37e584b96668f7f9d250))
+* **batch:** add support for batch document update ([#17](https://github.com/coveo/push-api-client.js/issues/17)) ([cc1dd91](https://github.com/coveo/push-api-client.js/commit/cc1dd9122cb22c6864a14dc17aa4f74cc332539d))
+* **source:** allow document deletion ([#6](https://github.com/coveo/push-api-client.js/issues/6)) ([9013b1c](https://github.com/coveo/push-api-client.js/commit/9013b1ce7fedb6ec9cfbdb68acf0117021450f6f))
+* **source:** complete missing methods and documentation for source class ([#16](https://github.com/coveo/push-api-client.js/issues/16)) ([e7406c5](https://github.com/coveo/push-api-client.js/commit/e7406c5ba7a11cd3ac04ede9e2621d94a2d3cc1e))
+* **validation:** validate file extension ([#13](https://github.com/coveo/push-api-client.js/issues/13)) ([c6014af](https://github.com/coveo/push-api-client.js/commit/c6014af0aa6527e53bad2a119f699691831b85b6))
+* **validation:** validate reserved key names ([#12](https://github.com/coveo/push-api-client.js/issues/12)) ([ac678ad](https://github.com/coveo/push-api-client.js/commit/ac678adc541a6c895f6f37e584b96668f7f9d250))
 
 
 ### Bug Fixes
 
-* **security:** fix security/permissions marshaling ([#11](https://github.com/coveo/shovel.js/issues/11)) ([6512d57](https://github.com/coveo/shovel.js/commit/6512d570d7791454bc5761b0336bba283dc17794))
+* **security:** fix security/permissions marshaling ([#11](https://github.com/coveo/push-api-client.js/issues/11)) ([6512d57](https://github.com/coveo/push-api-client.js/commit/6512d570d7791454bc5761b0336bba283dc17794))
 
-### [0.0.4](https://github.com/coveo/shovel.js/compare/v0.0.1...v0.0.4) (2021-05-07)
+### [0.0.4](https://github.com/coveo/push-api-client.js/compare/v0.0.1...v0.0.4) (2021-05-07)
 
-### [0.0.3](https://github.com/coveo/shovel.js/compare/v0.0.1...v0.0.3) (2021-05-07)
+### [0.0.3](https://github.com/coveo/push-api-client.js/compare/v0.0.1...v0.0.3) (2021-05-07)
 
-### [0.0.2](https://github.com/coveo/shovel.js/compare/v0.0.1...v0.0.2) (2021-05-07)
+### [0.0.2](https://github.com/coveo/push-api-client.js/compare/v0.0.1...v0.0.2) (2021-05-07)
 
 ### 0.0.1 (2021-05-07)
 
 
 ### Features
 
-* **compressedbinarydata:** validation on compressedBinary data ([c1a6991](https://github.com/coveo/shovel.js/commit/c1a6991e73e731e9f3e69d4809a551a3c5e12c79))
-* **permanentid:** generate permanent id when missing ([#7](https://github.com/coveo/shovel.js/issues/7)) ([3d3426a](https://github.com/coveo/shovel.js/commit/3d3426a949f527824cbd662da38b799aa4440071))
-* add base source class with addOrUpdateDocument capability ([0c00e3f](https://github.com/coveo/shovel.js/commit/0c00e3f788c6f492fedc84bfe8408a8ca32cbb0f))
-* add documentBuilder class ([#4](https://github.com/coveo/shovel.js/issues/4)) ([fc077e4](https://github.com/coveo/shovel.js/commit/fc077e462578c1569ae05404e306292f2a758dbc))
-* add identity security builder class ([#5](https://github.com/coveo/shovel.js/issues/5)) ([f7a2002](https://github.com/coveo/shovel.js/commit/f7a20022b25e906e8c3e7a5232bfabfc18807ca8))
-* add push api document interface ([7ed15f8](https://github.com/coveo/shovel.js/commit/7ed15f88b38961c9022540386e1736f507b01288))
-* **push api document interface:** add push api document interface ([cb17cf1](https://github.com/coveo/shovel.js/commit/cb17cf16abdf87571f96f77a70225dab123f2c0e))
+* **compressedbinarydata:** validation on compressedBinary data ([c1a6991](https://github.com/coveo/push-api-client.js/commit/c1a6991e73e731e9f3e69d4809a551a3c5e12c79))
+* **permanentid:** generate permanent id when missing ([#7](https://github.com/coveo/push-api-client.js/issues/7)) ([3d3426a](https://github.com/coveo/push-api-client.js/commit/3d3426a949f527824cbd662da38b799aa4440071))
+* add base source class with addOrUpdateDocument capability ([0c00e3f](https://github.com/coveo/push-api-client.js/commit/0c00e3f788c6f492fedc84bfe8408a8ca32cbb0f))
+* add documentBuilder class ([#4](https://github.com/coveo/push-api-client.js/issues/4)) ([fc077e4](https://github.com/coveo/push-api-client.js/commit/fc077e462578c1569ae05404e306292f2a758dbc))
+* add identity security builder class ([#5](https://github.com/coveo/push-api-client.js/issues/5)) ([f7a2002](https://github.com/coveo/push-api-client.js/commit/f7a20022b25e906e8c3e7a5232bfabfc18807ca8))
+* add push api document interface ([7ed15f8](https://github.com/coveo/push-api-client.js/commit/7ed15f88b38961c9022540386e1736f507b01288))
+* **push api document interface:** add push api document interface ([cb17cf1](https://github.com/coveo/push-api-client.js/commit/cb17cf16abdf87571f96f77a70225dab123f2c0e))
 
 
 ### Bug Fixes
 
-* fix typo in .env.sample ([3686a15](https://github.com/coveo/shovel.js/commit/3686a15fb3eec4ee73dd5cb5b27a5b318ceb49d0))
+* fix typo in .env.sample ([3686a15](https://github.com/coveo/push-api-client.js/commit/3686a15fb3eec4ee73dd5cb5b27a5b318ceb49d0))
