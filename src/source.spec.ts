@@ -58,7 +58,7 @@ describe('Source', () => {
   });
 
   describe('calls axios when doing delete olderthan', () => {
-    const expectCorrectOrderingId = (id: any) => {
+    const expectCorrectOrderingId = (id: number | string) => {
       expect(mockAxios.delete).toHaveBeenCalledWith(
         `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`,
         expectedDocumentsHeaders
@@ -76,6 +76,7 @@ describe('Source', () => {
       expectCorrectOrderingId(new Date('2001/01/01').valueOf());
     });
 
+    
     it('with a timestamp', () => {
       const nowInTimestamp = new Date().valueOf();
       source.deleteDocumentsOlderThan('the_id', nowInTimestamp);
