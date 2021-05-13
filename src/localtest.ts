@@ -10,6 +10,7 @@ import {BatchUpdateDocuments, Source} from './source';
 
 async function main() {
   const source = new Source(API_KEY, ORG_ID);
+  await source.setSourceStatus(SOURCE_ID, 'REFRESH');
   const docBuilder = new DocumentBuilder(
     'https://perdu.com',
     'hello world title'
@@ -67,6 +68,7 @@ async function main() {
 
   const batchResult = await source.batchUpdateDocuments(SOURCE_ID, batch);
   console.log('STATUS BATCH', batchResult.status);
+  await source.setSourceStatus(SOURCE_ID, 'IDLE');
 }
 
 main();

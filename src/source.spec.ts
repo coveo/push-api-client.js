@@ -57,6 +57,23 @@ describe('Source', () => {
     );
   });
 
+  it('should call axios on delete', () => {
+    source.deleteDocument('the_id', 'the_uri', true);
+    expect(mockAxios.delete).toHaveBeenCalledWith(
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
+      expectedDocumentsHeaders
+    );
+  });
+
+  it('should call axios on status update', () => {
+    source.setSourceStatus('the_id', 'INCREMENTAL');
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/status?statusType=INCREMENTAL',
+      {},
+      expectedDocumentsHeaders
+    );
+  });
+
   describe('calls axios when doing delete olderthan', () => {
     const expectCorrectOrderingId = (id: number | string) => {
       expect(mockAxios.delete).toHaveBeenCalledWith(
