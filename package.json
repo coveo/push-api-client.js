@@ -1,6 +1,6 @@
 {
   "name": "@coveo/push-api-client",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Push API client",
   "main": "./dist/index.js",
   "files": [
@@ -69,7 +69,6 @@
     "prettier:fix": "prettier --write .",
     "commit": "git-cz",
     "release": "standard-version && git push && git push --tags",
-    "prepublishOnly": "npm run release && npm run doc",
     "doc": "typedoc --out ./dist/docs ./src/index.ts"
   },
   "repository": {
