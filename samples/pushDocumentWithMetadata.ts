@@ -11,6 +11,8 @@ async function main() {
     .withClickableUri('https://my.document.click.com')
     .withData('these words will be searchable')
     .withFileExtension('.html')
+    // A field should be created in the organization and mapped to the source for these to be available on documents
+    // See https://docs.coveo.com/en/1833
     .withMetadata({
       tags: ['the_first_tag', 'the_second_tag'],
       version: 1,
