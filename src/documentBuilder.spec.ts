@@ -1,5 +1,9 @@
 import {DocumentBuilder} from './documentBuilder';
-import {UserSecurityIdentityBuilder} from './securityIdentityBuilder';
+import {
+  GroupSecurityIdentityBuilder,
+  UserSecurityIdentityBuilder,
+  VirtualGroupSecurityIdentityBuilder,
+} from './securityIdentityBuilder';
 
 describe('DocumentBuilder', () => {
   let docBuilder: DocumentBuilder;
@@ -109,6 +113,26 @@ describe('DocumentBuilder', () => {
     });
   });
 
+  it('should marshal allowedPermissions in multiple #withAllowedPermissions', () => {
+    expect(
+      docBuilder
+        .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+        .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'))
+        .marshal().permissions![0]
+    ).toMatchObject({
+      allowedPermissions: expect.arrayContaining([
+        expect.objectContaining({
+          identity: 'bob@foo.com',
+          identityType: 'USER',
+        }),
+        expect.objectContaining({
+          identity: 'my_group',
+          identityType: 'GROUP',
+        }),
+      ]),
+    });
+  });
+
   it('should marshal multiple allowedPermissions', () => {
     expect(
       docBuilder
@@ -132,6 +156,26 @@ describe('DocumentBuilder', () => {
     ).toMatchObject({
       deniedPermissions: expect.arrayContaining([
         expect.objectContaining({identity: 'bob@foo.com'}),
+      ]),
+    });
+  });
+
+  it('should marshal deniedPermissions in multiple #withDeniedPermissions', () => {
+    expect(
+      docBuilder
+        .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+        .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'))
+        .marshal().permissions![0]
+    ).toMatchObject({
+      deniedPermissions: expect.arrayContaining([
+        expect.objectContaining({
+          identity: 'bob@foo.com',
+          identityType: 'USER',
+        }),
+        expect.objectContaining({
+          identity: 'my_group',
+          identityType: 'GROUP',
+        }),
       ]),
     });
   });
