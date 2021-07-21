@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/coveo/push-api-client.js/compare/v1.1.1...v1.1.2) (2021-07-21)
+
+
+### Bug Fixes
+
+* **definitions:** augment metadata value type definition to support boolean ([c072cd8](https://github.com/coveo/push-api-client.js/commit/c072cd8f7e8f64335daaf61e2d14c07725a2521a))
+
 ### [1.1.1](https://github.com/coveo/push-api-client.js/compare/v0.0.7...v1.1.1) (2021-07-21)
 
 ### [0.0.7](https://github.com/coveo/push-api-client.js/compare/v1.0.0...v0.0.7) (2021-07-21)
