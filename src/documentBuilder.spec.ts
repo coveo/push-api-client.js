@@ -2,7 +2,6 @@ import {DocumentBuilder} from './documentBuilder';
 import {
   GroupSecurityIdentityBuilder,
   UserSecurityIdentityBuilder,
-  VirtualGroupSecurityIdentityBuilder,
 } from './securityIdentityBuilder';
 
 describe('DocumentBuilder', () => {
