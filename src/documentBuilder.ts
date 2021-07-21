@@ -288,10 +288,15 @@ export class DocumentBuilder {
     permissionSection: 'allowedPermissions' | 'deniedPermissions'
   ) {
     const identities = securityIdentityBuilder.build();
+    if (!this.doc.permissions![permissionSection]) {
+      this.doc.permissions![permissionSection] = [];
+    }
     if (Array.isArray(identities)) {
-      this.doc.permissions![permissionSection] = identities;
+      this.doc.permissions![permissionSection] = this.doc.permissions![
+        permissionSection
+      ]?.concat(identities);
     } else {
-      this.doc.permissions![permissionSection] = [identities];
+      this.doc.permissions![permissionSection]?.push(identities);
     }
   }
 }
