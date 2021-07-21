@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/coveo/push-api-client.js/compare/v1.0.0...v0.0.7) (2021-07-21)
+
+
+### Features
+
+* support calling permissions function multiple time ([#21](https://github.com/coveo/push-api-client.js/issues/21)) ([ec2bd07](https://github.com/coveo/push-api-client.js/commit/ec2bd072556033a5867558da1f1dd8bce4ecf943))
+
 ## [1.0.0](https://github.com/coveo/push-api-client.js/compare/v0.0.6...v1.0.0) (2021-05-14)
 
 ### [0.0.6](https://github.com/coveo/push-api-client.js/compare/v0.0.5...v0.0.6) (2021-05-13)
