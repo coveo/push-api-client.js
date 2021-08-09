@@ -7,7 +7,7 @@
       "matchPackagePatterns": ["*"],
       "groupName": "all dependencies",
       "groupSlug": "all"
-    },
+    }
   ],
   "rangeStrategy": "auto",
   "lockFileMaintenance": {
