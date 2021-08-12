@@ -127,7 +127,8 @@ export class GroupSecurityIdentityBuilder implements SecurityIdentityBuilder {
  * See {@link SecurityIdentity}.
  */
 export class VirtualGroupSecurityIdentityBuilder
-  implements SecurityIdentityBuilder {
+  implements SecurityIdentityBuilder
+{
   /**
    * Pass either a single `virtualGroup`, or an array of `virtualGroup` to create multiple identities.
    * @param group

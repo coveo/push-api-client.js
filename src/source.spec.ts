@@ -12,11 +12,11 @@ const mockedPlatformClient = mocked(PlatformClient);
 const mockCreate = jest.fn();
 mockedPlatformClient.mockImplementation(
   () =>
-    (({
+    ({
       source: {
         create: mockCreate,
       },
-    } as unknown) as PlatformClient)
+    } as unknown as PlatformClient)
 );
 
 describe('Source', () => {

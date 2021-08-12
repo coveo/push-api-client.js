@@ -57,10 +57,12 @@ describe('DocumentBuilder', () => {
 
   it('should not marshal metadata key', () => {
     expect(
-      (docBuilder
-        .withMetadata({foo: 'bar', buzz: ['bazz', 'bozz']})
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .marshal() as any).metadata
+      (
+        docBuilder
+          .withMetadata({foo: 'bar', buzz: ['bazz', 'bozz']})
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .marshal() as any
+      ).metadata
     ).toBeUndefined();
   });
 
