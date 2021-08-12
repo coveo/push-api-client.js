@@ -292,9 +292,8 @@ export class DocumentBuilder {
       this.doc.permissions![permissionSection] = [];
     }
     if (Array.isArray(identities)) {
-      this.doc.permissions![permissionSection] = this.doc.permissions![
-        permissionSection
-      ]?.concat(identities);
+      this.doc.permissions![permissionSection] =
+        this.doc.permissions![permissionSection]?.concat(identities);
     } else {
       this.doc.permissions![permissionSection]?.push(identities);
     }
