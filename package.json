@@ -16,7 +16,7 @@
     "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@types/jest": "26.0.23",
+    "@types/jest": "27.0.0",
     "@types/node": "16.4.13",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "10.0.0",
