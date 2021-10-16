@@ -1,5 +1,6 @@
 {
   "name": "@coveo/push-api-client-samples",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,8 +8,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
-    "@coveo/push-api-client": "1.1.2"
+    "@coveo/push-api-client": "latest"
+  },
+  "devDependencies": {
+    "typescript": "4.4.4"
   }
 }

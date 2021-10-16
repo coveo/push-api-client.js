@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# No package-lock for sample
+samples/package-lock.json

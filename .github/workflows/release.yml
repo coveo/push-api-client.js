@@ -1,9 +1,12 @@
 name: Create release
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  run-script:
+  CD:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -12,20 +15,23 @@ jobs:
       - run: git fetch --all --tags
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Install
         run: npm ci
-      - name: Setup credentials
+      - name: Setup Git
         run: |
           git config --global user.email action@github.com
           git config --global user.name GitHub Action
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - name: Build
         run: npm run build
       - name: Test
         run: npm run test
       - name: Release
-        run: npm publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          npm publish
       - name: Deploy doc
         uses: peaceiris/actions-gh-pages@v3
         with:

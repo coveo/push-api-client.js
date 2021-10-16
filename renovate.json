@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "extends": [":semanticPrefixFixDepsChoreOthers"],
-  "schedule": ["before 2am"],
+  "schedule": ["schedule:earlyMondays"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
@@ -11,7 +11,8 @@
   ],
   "rangeStrategy": "auto",
   "lockFileMaintenance": {
-    "enabled": false
+    "enabled": true
   },
+  "automerge": true,
   "commitMessageSuffix": "J:CDX-227"
 }

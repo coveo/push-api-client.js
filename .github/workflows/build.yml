@@ -6,13 +6,13 @@ on:
   pull_request:
 
 jobs:
-  run-script:
+  CI:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Setup
         run: npm ci
       - name: Check linting
@@ -20,4 +20,4 @@ jobs:
       - name: Tests
         run: npm run test
       - name: Build
-        run: tsc
+        run: npm run build
