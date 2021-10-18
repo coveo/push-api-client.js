@@ -1,7 +1,6 @@
 {
   "enabled": true,
-  "extends": [":semanticPrefixFixDepsChoreOthers"],
-  "schedule": ["schedule:earlyMondays"],
+  "extends": [":semanticPrefixFixDepsChoreOthers", "schedule:earlyMondays"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
