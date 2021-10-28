@@ -20,7 +20,7 @@
     "@types/node": "16.11.1",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "10.0.0",
-    "eslint": "7.32.0",
+    "eslint": "8.1.0",
     "eslint-config-prettier": "8.3.0",
     "gts": "3.1.0",
     "husky": "7.0.2",
