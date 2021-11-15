@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.13](https://github.com/coveo/push-api-client.js/compare/v1.1.12...v1.1.13) (2021-11-15)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#53](https://github.com/coveo/push-api-client.js/issues/53)) ([1d17390](https://github.com/coveo/push-api-client.js/commit/1d17390548eb4b2faa7e157f02adefde0e4ef220))
+
 ### [1.1.12](https://github.com/coveo/push-api-client.js/compare/v1.1.11...v1.1.12) (2021-11-15)
 
 ### [1.1.11](https://github.com/coveo/push-api-client.js/compare/v1.1.10...v1.1.11) (2021-11-08)
