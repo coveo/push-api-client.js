@@ -9,7 +9,7 @@
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
-    "@coveord/platform-client": "^26.0.0",
+    "@coveord/platform-client": "^27.0.0",
     "abortcontroller-polyfill": "^1.7.1",
     "axios": "^0.24.0",
     "dayjs": "^1.10.4",
