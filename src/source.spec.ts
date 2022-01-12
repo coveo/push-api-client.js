@@ -6,10 +6,13 @@ import {BatchUpdateDocuments, Source} from './source';
 import {mocked} from 'ts-jest/utils';
 import {DocumentBuilder} from './documentBuilder';
 import axios from 'axios';
+import {join} from 'path';
+import {cwd} from 'process';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedPlatformClient = mocked(PlatformClient);
 const mockCreate = jest.fn();
+const pathToStub = join(cwd(), 'src', '__stub__');
 mockedPlatformClient.mockImplementation(
   () =>
     ({
@@ -167,5 +170,72 @@ describe('Source', () => {
         expectedDocumentsHeaders
       );
     });
+  });
+
+  describe('when doing batch update from local files', () => {
+    const mockedSuccessCallback = jest.fn();
+
+    beforeEach(() => {
+      mockAxios.post.mockImplementationOnce((url: string) => {
+        if (url.match(/files/)) {
+          return Promise.resolve({
+            data: {
+              uploadUri: 'https://fake.upload.url',
+              fileId: 'file_id',
+              requiredHeaders: {foo: 'bar'},
+            },
+          });
+        }
+        return Promise.resolve();
+      });
+    });
+
+    it('should upload documents from local file', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        {callbackSuccess: mockedSuccessCallback}
+      );
+
+      expect(mockAxios.put).toHaveBeenCalledWith(
+        'https://fake.upload.url/',
+        expect.objectContaining({
+          addOrUpdate: expect.arrayContaining([
+            expect.objectContaining({
+              documentId: 'https://www.themoviedb.org/movie/268',
+            }),
+            expect.objectContaining({
+              documentId: 'https://www.themoviedb.org/movie/999',
+            }),
+          ]),
+          delete: expect.arrayContaining([]),
+        }),
+        {
+          headers: {
+            foo: 'bar',
+          },
+        }
+      );
+    });
+
+    it('should only push JSON files', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        {callbackSuccess: mockedSuccessCallback}
+      );
+
+      expect(mockedSuccessCallback).toHaveBeenCalledWith(
+        ['valid.json'],
+        expect.anything(),
+        undefined
+      );
+    });
+
+    // it.todo('should output feedback message when parsing documents'); removed
+    it.todo('should not include non JSON documents in success message'); // TODO: not sure
+    it.todo('should call the successCallback when uploading documents');
+    it.todo('should call the errorCallback on a failure from the API');
+    it.todo('should not upload an empty batch');
   });
 });
