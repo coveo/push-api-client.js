@@ -31,7 +31,7 @@ export interface BatchUpdateDocuments {
 
 /**
  *
- * @param {string[]} files Files from which the documentBuilders where generated
+ * @param {string[]} files Files from which the documentBuilders were generated
  * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
  * @param {AxiosResponse} res Axios response
  */
@@ -211,8 +211,8 @@ export class Source {
    *
    * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
    * @param {string} sourceID The unique identifier of the target Push source
-   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract document items.
-   * @param {UploadBatchCallback} callback callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
+   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
+   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
    */
   public async batchUpdateDocumentsFromFiles(
@@ -237,7 +237,6 @@ export class Source {
     };
 
     // parallelize uploads across multiple files
-
     const fileGenerator = function* () {
       for (const filePath of files.values()) {
         const docBuilders =
