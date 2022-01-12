@@ -28,26 +28,25 @@ export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
   delete: {documentId: string; deleteChildren: boolean}[];
 }
-interface UploadBatchOptions {
-  /**
-   * The success callback executed after a batch of documents is successfully uploaded
-   * @param {string[]} files Files from which the documentBuilders where generated
-   * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
-   * @param {AxiosResponse} res Axios response
-   */
-  callbackSuccess?: (
-    files: string[],
-    batch: DocumentBuilder[],
-    res: AxiosResponse
-  ) => void;
-  /**
-   * The error callback whenever an error occures after uploading a batch of DocumentBuilders
-   * @param {unknown} e The intercepted error
-   */
-  callbackError?: (e: unknown) => void;
+
+/**
+ *
+ * @param {string[]} files Files from which the documentBuilders where generated
+ * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
+ * @param {AxiosResponse} res Axios response
+ */
+export interface UploadBatchCallbackData {
+  files: string[];
+  batch: DocumentBuilder[];
+  res?: AxiosResponse;
 }
 
-export type BatchUpdateDocumentsFromFiles = UploadBatchOptions & {
+export type UploadBatchCallback = (
+  err: unknown | null,
+  data: UploadBatchCallbackData
+) => void;
+
+export interface BatchUpdateDocumentsFromFiles {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
    * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
@@ -55,7 +54,7 @@ export type BatchUpdateDocumentsFromFiles = UploadBatchOptions & {
    * The default value is set to 10.
    */
   maxConcurrent?: number;
-};
+}
 
 interface FileContainerResponse {
   uploadUri: string;
@@ -213,33 +212,26 @@ export class Source {
    * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
    * @param {string} sourceID The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract document items.
-   * @param {BatchUpdateDocumentsFromFiles} {
-   *       maxConcurrent = 10,
-   *       errorMessageOnAdd,
-   *       successMessageOnAdd,
-   *     }
+   * @param {UploadBatchCallback} callback callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
+   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
    */
   public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
-    {
-      maxConcurrent = 10,
-      callbackError: errorMessageOnAdd,
-      callbackSuccess: successMessageOnAdd,
-    }: BatchUpdateDocumentsFromFiles = {}
+    callback: UploadBatchCallback,
+    {maxConcurrent = 10}: BatchUpdateDocumentsFromFiles = {}
   ) {
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
       sourceID,
       fileNames,
-      {callbackError: errorMessageOnAdd, callbackSuccess: successMessageOnAdd}
+      callback
     );
 
     // parallelize uploads within the same file
     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
       for (const upload of chunksToUpload(docBuilders)) {
-        console.log('-------' + upload);
         yield upload();
       }
     };
@@ -383,7 +375,7 @@ export class Source {
   private splitByChunkAndUpload(
     sourceID: string,
     fileNames: string[],
-    options: UploadBatchOptions = {},
+    callback: UploadBatchCallback,
     accumulator = this.accumulator
   ) {
     const chunksToUpload = (documentBuilders: DocumentBuilder[]) => {
@@ -398,7 +390,7 @@ export class Source {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
             batchesToUpload.push(() =>
-              this.uploadBatch(sourceID, chunks, fileNames, options)
+              this.uploadBatch(sourceID, chunks, fileNames, callback)
             );
           }
           accumulator.chunks = [docBuilder];
@@ -411,7 +403,7 @@ export class Source {
       return batchesToUpload;
     };
     const close = async () => {
-      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, options);
+      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, callback);
     };
     return {chunksToUpload, close};
   }
@@ -420,23 +412,23 @@ export class Source {
     sourceID: string,
     batch: DocumentBuilder[],
     fileNames: string[],
-    options: UploadBatchOptions
+    callback: UploadBatchCallback
   ) {
     try {
       const res = await this.batchUpdateDocuments(sourceID, {
         addOrUpdate: batch,
         delete: [],
       });
-      if (options.callbackSuccess) {
-        options.callbackSuccess(fileNames, batch, res);
-      }
+      callback(null, {
+        files: fileNames,
+        batch,
+        res,
+      });
     } catch (e: unknown) {
-      if (options.callbackError) {
-        options.callbackError(e);
-      } else {
-        // TODO: check if should throw an error
-        // throw new Error('dsadsa' + e);
-      }
+      callback(e, {
+        files: fileNames,
+        batch,
+      });
     }
   }
 

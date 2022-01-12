@@ -173,7 +173,7 @@ describe('Source', () => {
   });
 
   describe('when doing batch update from local files', () => {
-    const mockedSuccessCallback = jest.fn();
+    const mockedCallback = jest.fn();
 
     beforeEach(() => {
       mockAxios.post.mockImplementationOnce((url: string) => {
@@ -194,7 +194,7 @@ describe('Source', () => {
       await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        {callbackSuccess: mockedSuccessCallback}
+        mockedCallback
       );
 
       expect(mockAxios.put).toHaveBeenCalledWith(
@@ -218,24 +218,47 @@ describe('Source', () => {
       );
     });
 
+    it('should call the callback without error when uploading documents', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+      expect(mockedCallback).toHaveBeenCalledWith(null, expect.anything());
+    });
+
     it('should only push JSON files', async () => {
       await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        {callbackSuccess: mockedSuccessCallback}
+        mockedCallback
       );
 
-      expect(mockedSuccessCallback).toHaveBeenCalledWith(
-        ['valid.json'],
-        expect.anything(),
-        undefined
+      expect(mockedCallback).toHaveBeenCalledWith(
+        null,
+        expect.objectContaining({files: ['valid.json']})
+      );
+    });
+
+    it('should call the errorCallback on a failure from the API', async () => {
+      mockAxios.post.mockReset();
+      mockAxios.post.mockRejectedValue({message: 'Error Message'});
+
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+      expect(mockedCallback).toHaveBeenCalledWith(
+        {
+          message: 'Error Message',
+        },
+        expect.anything()
       );
     });
 
     // it.todo('should output feedback message when parsing documents'); removed
     it.todo('should not include non JSON documents in success message'); // TODO: not sure
-    it.todo('should call the successCallback when uploading documents');
-    it.todo('should call the errorCallback on a failure from the API');
     it.todo('should not upload an empty batch');
   });
 });
