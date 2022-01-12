@@ -256,9 +256,5 @@ describe('Source', () => {
         expect.anything()
       );
     });
-
-    // it.todo('should output feedback message when parsing documents'); removed
-    it.todo('should not include non JSON documents in success message'); // TODO: not sure
-    it.todo('should not upload an empty batch');
   });
 });
