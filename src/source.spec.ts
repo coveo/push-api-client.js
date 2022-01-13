@@ -3,14 +3,13 @@ jest.mock('@coveord/platform-client');
 jest.mock('axios');
 import PlatformClient, {SourceVisibility} from '@coveord/platform-client';
 import {BatchUpdateDocuments, Source} from './source';
-import {mocked} from 'ts-jest/utils';
 import {DocumentBuilder} from './documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
-const mockedPlatformClient = mocked(PlatformClient);
+const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockCreate = jest.fn();
 const pathToStub = join(cwd(), 'src', '__stub__');
 mockedPlatformClient.mockImplementation(
