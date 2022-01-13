@@ -23,7 +23,7 @@ describe('parseFile', () => {
     },
     {
       title: 'should fail on missing documentID',
-      fileName: 'noId.json',
+      fileName: 'noID.json',
       error: 'documentid: value is required.',
     },
     {
