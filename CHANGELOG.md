@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/coveo/push-api-client.js/compare/v1.1.30...v1.2.0) (2022-01-14)
+
+
+### Features
+
+* upload documents from local JSON files ([#72](https://github.com/coveo/push-api-client.js/issues/72)) ([a2fa36b](https://github.com/coveo/push-api-client.js/commit/a2fa36b8dffb04dfd98e60644d0b506562ed6d06))
+
 ### [1.1.30](https://github.com/coveo/push-api-client.js/compare/v1.1.29...v1.1.30) (2022-01-10)
 
 ### [1.1.29](https://github.com/coveo/push-api-client.js/compare/v1.1.28...v1.1.29) (2022-01-10)
