@@ -9,6 +9,7 @@
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
+    "@coveo/bueno": "^0.34.1",
     "@coveord/platform-client": "^28.0.0",
     "abortcontroller-polyfill": "^1.7.1",
     "axios": "^0.24.0",

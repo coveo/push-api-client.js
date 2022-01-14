@@ -13,16 +13,47 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {Environment, SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
+import {consumeGenerator} from './help/generator';
+import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
+import {basename} from 'path';
+import {getAllJsonFilesFromEntries} from './help/file';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
   delete: {documentId: string; deleteChildren: boolean}[];
+}
+
+/**
+ *
+ * @param {string[]} files Files from which the documentBuilders were generated
+ * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
+ * @param {AxiosResponse} res Axios response
+ */
+export interface UploadBatchCallbackData {
+  files: string[];
+  batch: DocumentBuilder[];
+  res?: AxiosResponse;
+}
+
+export type UploadBatchCallback = (
+  err: unknown | null,
+  data: UploadBatchCallbackData
+) => void;
+
+export interface BatchUpdateDocumentsFromFiles {
+  /**
+   * The maximum number of requests to send concurrently to the Coveo platform.
+   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
+   *
+   * The default value is set to 10.
+   */
+  maxConcurrent?: number;
 }
 
 interface FileContainerResponse {
@@ -38,6 +69,7 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
+  private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -176,6 +208,48 @@ export class Source {
   }
 
   /**
+   *
+   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * @param {string} sourceID The unique identifier of the target Push source
+   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
+   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
+   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
+   */
+  public async batchUpdateDocumentsFromFiles(
+    sourceID: string,
+    filesOrDirectories: string[],
+    callback: UploadBatchCallback,
+    {maxConcurrent = 10}: BatchUpdateDocumentsFromFiles = {}
+  ) {
+    const files = getAllJsonFilesFromEntries(filesOrDirectories);
+    const fileNames = files.map((path) => basename(path));
+    const {chunksToUpload, close} = this.splitByChunkAndUpload(
+      sourceID,
+      fileNames,
+      callback
+    );
+
+    // parallelize uploads within the same file
+    const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
+      for (const upload of chunksToUpload(docBuilders)) {
+        yield upload();
+      }
+    };
+
+    // parallelize uploads across multiple files
+    const fileGenerator = function* () {
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        yield* docBuilderGenerator(docBuilders);
+      }
+    };
+
+    await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
+    await close();
+  }
+
+  /**
    * Deletes a specific item from a Push source. Optionally, the child items of that item can also be deleted. See [Deleting an Item in a Push Source](https://docs.coveo.com/en/171).
    * @param sourceID
    * @param documentId
@@ -295,5 +369,72 @@ export class Source {
     );
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
+  }
+
+  private splitByChunkAndUpload(
+    sourceID: string,
+    fileNames: string[],
+    callback: UploadBatchCallback,
+    accumulator = this.accumulator
+  ) {
+    const chunksToUpload = (documentBuilders: DocumentBuilder[]) => {
+      const batchesToUpload: Array<() => Promise<void>> = [];
+
+      for (const docBuilder of documentBuilders) {
+        const sizeOfDoc = Buffer.byteLength(
+          JSON.stringify(docBuilder.marshal())
+        );
+
+        if (accumulator.size + sizeOfDoc >= Source.maxContentLength) {
+          const chunks = accumulator.chunks;
+          if (chunks.length > 0) {
+            batchesToUpload.push(() =>
+              this.uploadBatch(sourceID, chunks, fileNames, callback)
+            );
+          }
+          accumulator.chunks = [docBuilder];
+          accumulator.size = sizeOfDoc;
+        } else {
+          accumulator.size += sizeOfDoc;
+          accumulator.chunks.push(docBuilder);
+        }
+      }
+      return batchesToUpload;
+    };
+    const close = async () => {
+      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, callback);
+    };
+    return {chunksToUpload, close};
+  }
+
+  private async uploadBatch(
+    sourceID: string,
+    batch: DocumentBuilder[],
+    fileNames: string[],
+    callback: UploadBatchCallback
+  ) {
+    try {
+      const res = await this.batchUpdateDocuments(sourceID, {
+        addOrUpdate: batch,
+        delete: [],
+      });
+      callback(null, {
+        files: fileNames,
+        batch,
+        res,
+      });
+    } catch (e: unknown) {
+      callback(e, {
+        files: fileNames,
+        batch,
+      });
+    }
+  }
+
+  private get accumulator(): {size: number; chunks: DocumentBuilder[]} {
+    return {
+      size: 0,
+      chunks: [],
+    };
   }
 }

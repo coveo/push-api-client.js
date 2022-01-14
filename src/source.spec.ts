@@ -3,13 +3,15 @@ jest.mock('@coveord/platform-client');
 jest.mock('axios');
 import PlatformClient, {SourceVisibility} from '@coveord/platform-client';
 import {BatchUpdateDocuments, Source} from './source';
-import {mocked} from 'ts-jest/utils';
 import {DocumentBuilder} from './documentBuilder';
 import axios from 'axios';
+import {join} from 'path';
+import {cwd} from 'process';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
-const mockedPlatformClient = mocked(PlatformClient);
+const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockCreate = jest.fn();
+const pathToStub = join(cwd(), 'src', '__stub__');
 mockedPlatformClient.mockImplementation(
   () =>
     ({
@@ -165,6 +167,92 @@ describe('Source', () => {
         'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/batch?fileId=file_id',
         {},
         expectedDocumentsHeaders
+      );
+    });
+  });
+
+  describe('when doing batch update from local files', () => {
+    const mockedCallback = jest.fn();
+
+    beforeEach(() => {
+      mockAxios.post.mockImplementationOnce((url: string) => {
+        if (url.match(/files/)) {
+          return Promise.resolve({
+            data: {
+              uploadUri: 'https://fake.upload.url',
+              fileId: 'file_id',
+              requiredHeaders: {foo: 'bar'},
+            },
+          });
+        }
+        return Promise.resolve();
+      });
+    });
+
+    it('should upload documents from local file', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+
+      expect(mockAxios.put).toHaveBeenCalledWith(
+        'https://fake.upload.url/',
+        expect.objectContaining({
+          addOrUpdate: expect.arrayContaining([
+            expect.objectContaining({
+              documentId: 'https://www.themoviedb.org/movie/268',
+            }),
+            expect.objectContaining({
+              documentId: 'https://www.themoviedb.org/movie/999',
+            }),
+          ]),
+          delete: expect.arrayContaining([]),
+        }),
+        {
+          headers: {
+            foo: 'bar',
+          },
+        }
+      );
+    });
+
+    it('should call the callback without error when uploading documents', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+      expect(mockedCallback).toHaveBeenCalledWith(null, expect.anything());
+    });
+
+    it('should only push JSON files', async () => {
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+
+      expect(mockedCallback).toHaveBeenCalledWith(
+        null,
+        expect.objectContaining({files: ['valid.json']})
+      );
+    });
+
+    it('should call the errorCallback on a failure from the API', async () => {
+      mockAxios.post.mockReset();
+      mockAxios.post.mockRejectedValue({message: 'Error Message'});
+
+      await source.batchUpdateDocumentsFromFiles(
+        'the_id',
+        [join(pathToStub, 'mixdocuments')],
+        mockedCallback
+      );
+      expect(mockedCallback).toHaveBeenCalledWith(
+        {
+          message: 'Error Message',
+        },
+        expect.anything()
       );
     });
   });
