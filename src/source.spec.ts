@@ -217,6 +217,18 @@ describe('Source', () => {
       );
     });
 
+    it('should throw an error if the path is invalid', () => {
+      expect(() =>
+        source.batchUpdateDocumentsFromFiles(
+          'the_id',
+          ['path/to/invalid/document'],
+          mockedCallback
+        )
+      ).rejects.toThrow(
+        "no such file or directory, lstat 'path/to/invalid/document'"
+      );
+    });
+
     it('should call the callback without error when uploading documents', async () => {
       await source.batchUpdateDocumentsFromFiles(
         'the_id',
