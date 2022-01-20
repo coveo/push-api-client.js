@@ -268,7 +268,9 @@ export class DocumentBuilder {
   }
 
   private generatePermanentId() {
-    return createHash('sha256').update(this.doc.uri).digest('hex');
+    const md5: string = createHash('md5').update(this.doc.uri).digest('hex');
+    const sha1: string = createHash('sha1').update(this.doc.uri).digest('hex');
+    return md5.substring(0, 30) + sha1.substring(0, 30);
   }
 
   private validateDateAndReturnValidDate(d: Date | string | number) {
