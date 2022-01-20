@@ -57,9 +57,20 @@ const processDocument = (
     caseInsensitiveDoc,
     documentPath
   );
-  processKnownKeys(caseInsensitiveDoc, documentBuilder);
-  processSecurityIdentities(caseInsensitiveDoc, documentBuilder, documentPath);
-  processMetadata(caseInsensitiveDoc, documentBuilder, documentPath);
+  try {
+    processKnownKeys(caseInsensitiveDoc, documentBuilder);
+    processSecurityIdentities(
+      caseInsensitiveDoc,
+      documentBuilder,
+      documentPath
+    );
+    processMetadata(caseInsensitiveDoc, documentBuilder);
+  } catch (error) {
+    if (typeof error === 'string') {
+      throw new InvalidDocument(documentPath, error);
+    }
+    throw error;
+  }
   return documentBuilder;
 };
 
@@ -214,22 +225,14 @@ const processSecurityIdentities = (
 
 const processMetadata = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
-  documentBuilder: DocumentBuilder,
-  documentPath: PathLike
+  documentBuilder: DocumentBuilder
 ) => {
-  try {
-    Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
-      documentBuilder.withMetadataValue(
-        k,
-        v! as Extract<PrimitivesValues, MetadataValue>
-      );
-    });
-  } catch (error) {
-    if (typeof error === 'string') {
-      throw new InvalidDocument(documentPath, error);
-    }
-    throw error;
-  }
+  Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
+    documentBuilder.withMetadataValue(
+      k,
+      v! as Extract<PrimitivesValues, MetadataValue>
+    );
+  });
 };
 
 const ensureFileIntegrity = (documentPath: PathLike) => {
