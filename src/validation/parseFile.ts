@@ -59,7 +59,7 @@ const processDocument = (
   );
   processKnownKeys(caseInsensitiveDoc, documentBuilder);
   processSecurityIdentities(caseInsensitiveDoc, documentBuilder, documentPath);
-  processMetadata(caseInsensitiveDoc, documentBuilder);
+  processMetadata(caseInsensitiveDoc, documentBuilder, documentPath);
   return documentBuilder;
 };
 
@@ -214,14 +214,22 @@ const processSecurityIdentities = (
 
 const processMetadata = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
-  documentBuilder: DocumentBuilder
+  documentBuilder: DocumentBuilder,
+  documentPath: PathLike
 ) => {
-  Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
-    documentBuilder.withMetadataValue(
-      k,
-      v! as Extract<PrimitivesValues, MetadataValue>
-    );
-  });
+  try {
+    Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
+      documentBuilder.withMetadataValue(
+        k,
+        v! as Extract<PrimitivesValues, MetadataValue>
+      );
+    });
+  } catch (error) {
+    if (typeof error === 'string') {
+      throw new InvalidDocument(documentPath, error);
+    }
+    throw error;
+  }
 };
 
 const ensureFileIntegrity = (documentPath: PathLike) => {

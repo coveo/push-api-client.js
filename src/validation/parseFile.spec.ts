@@ -56,4 +56,14 @@ describe('parseFile', () => {
       )
     );
   });
+
+  it('should fail on reserved keyword', () => {
+    const file = join(pathToStub, 'jsondocuments', 'reservedKeyword.json');
+    expect(parse(file)).toThrow(
+      new InvalidDocument(
+        file,
+        'Cannot use parentid as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names'
+      )
+    );
+  });
 });
