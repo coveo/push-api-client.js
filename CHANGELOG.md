@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/coveo/push-api-client.js/compare/v1.2.4...v1.3.0) (2022-01-20)
+
+
+### Features
+
+* **permanentid:** replace sha256 by md5(30)+sha1(30) ([#77](https://github.com/coveo/push-api-client.js/issues/77)) ([ff0cfe0](https://github.com/coveo/push-api-client.js/commit/ff0cfe046d2f7ae55a707a14fc5b47b0610328af))
+
 ### [1.2.4](https://github.com/coveo/push-api-client.js/compare/v1.2.3...v1.2.4) (2022-01-17)
 
 ### [1.2.3](https://github.com/coveo/push-api-client.js/compare/v1.2.2...v1.2.3) (2022-01-17)
