@@ -81,6 +81,13 @@ describe('DocumentBuilder', () => {
     expect(docBuilder.withPermanentId('id').marshal().permanentId).toBe('id');
   });
 
+  it('should generate permanentid', () => {
+    docBuilder = new DocumentBuilder('https://foo.com', 'bar');
+    expect(docBuilder.marshal().permanentId).toBe(
+      'aa2e0510b66edff7f05e2b30d4f1b3a4b5481c06b69f41751c54675c5afb'
+    );
+  });
+
   it('throws when adding a reserved key name metadata', () => {
     const theseShouldThrow = [
       'compressedBinaryData',
