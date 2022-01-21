@@ -57,9 +57,20 @@ const processDocument = (
     caseInsensitiveDoc,
     documentPath
   );
-  processKnownKeys(caseInsensitiveDoc, documentBuilder);
-  processSecurityIdentities(caseInsensitiveDoc, documentBuilder, documentPath);
-  processMetadata(caseInsensitiveDoc, documentBuilder);
+  try {
+    processKnownKeys(caseInsensitiveDoc, documentBuilder);
+    processSecurityIdentities(
+      caseInsensitiveDoc,
+      documentBuilder,
+      documentPath
+    );
+    processMetadata(caseInsensitiveDoc, documentBuilder);
+  } catch (error) {
+    if (typeof error === 'string') {
+      throw new InvalidDocument(documentPath, error);
+    }
+    throw error;
+  }
   return documentBuilder;
 };
 
