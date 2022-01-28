@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/coveo/push-api-client.js/compare/v1.3.3...v1.4.0) (2022-01-28)
+
+
+### Features
+
+* add support for recursive directory read ([#81](https://github.com/coveo/push-api-client.js/issues/81)) ([0c2be9a](https://github.com/coveo/push-api-client.js/commit/0c2be9abfd103e29222ab21d55071c979b5b2357))
+
 ### [1.3.3](https://github.com/coveo/push-api-client.js/compare/v1.3.2...v1.3.3) (2022-01-24)
 
 ### [1.3.2](https://github.com/coveo/push-api-client.js/compare/v1.3.1...v1.3.2) (2022-01-24)
