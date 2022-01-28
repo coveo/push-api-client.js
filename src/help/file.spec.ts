@@ -32,4 +32,24 @@ describe('file', () => {
       join(pathToStub, 'mixdocuments', 'valid.json'),
     ]);
   });
+
+  it('should recursively read all JSON files in a directory', () => {
+    const folders = [
+      join(pathToStub, 'multiplelevelfolder'),
+      join(pathToStub, 'mixdocuments'),
+    ];
+    const files = [
+      join(pathToStub, 'jsondocuments', 'batman.json'),
+      join(pathToStub, 'jsondocuments', 'fightclub.json'),
+    ];
+    const entries = [...files, ...folders];
+    const validJsonFiles = getAllJsonFilesFromEntries(entries);
+    expect(validJsonFiles).toEqual([
+      join(pathToStub, 'jsondocuments', 'batman.json'),
+      join(pathToStub, 'jsondocuments', 'fightclub.json'),
+      join(pathToStub, 'multiplelevelfolder', 'parent.json'),
+      join(pathToStub, 'multiplelevelfolder', 'subfolder', 'child.json'),
+      join(pathToStub, 'mixdocuments', 'valid.json'),
+    ]);
+  });
 });

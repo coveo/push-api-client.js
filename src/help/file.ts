@@ -1,20 +1,31 @@
 import {lstatSync, PathLike, readdirSync} from 'fs';
-import path = require('path');
+import {join} from 'path';
 
 export const isJsonFile = (documentPath: PathLike) => {
   return documentPath.toString().endsWith('.json');
 };
 
 export const getAllJsonFilesFromEntries = (
-  filesOrDirectories: string[]
+  filesOrDirectories: string[],
+  fileNames: string[] = []
 ): string[] => {
-  return filesOrDirectories
-    .flatMap((entry) => {
-      if (lstatSync(entry).isDirectory()) {
-        return readdirSync(entry).map((f) => `${path.join(entry, f)}`);
-      } else {
-        return entry;
-      }
-    })
-    .filter(isJsonFile);
+  filesOrDirectories.flatMap((entry) => {
+    if (lstatSync(entry).isDirectory()) {
+      recursiveDirectoryRead(entry, fileNames);
+    } else {
+      fileNames.push(entry);
+    }
+  });
+
+  return fileNames.filter(isJsonFile);
+};
+
+const recursiveDirectoryRead = (folder: string, accumulator: string[] = []) => {
+  readdirSync(folder, {withFileTypes: true}).map((dirent) => {
+    if (dirent.isDirectory()) {
+      recursiveDirectoryRead(join(folder, dirent.name), accumulator);
+    } else if (dirent.isFile()) {
+      accumulator.push(join(folder, dirent.name));
+    }
+  });
 };
