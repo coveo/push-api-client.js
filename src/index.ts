@@ -1,7 +1,6 @@
 export * from './document';
 export {
   Source,
-  Environment,
   SourceVisibility,
   BatchUpdateDocuments,
   UploadBatchCallback,
@@ -10,3 +9,4 @@ export {
 } from './source';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
+export {PlatformEnvironment, Region} from './environment';

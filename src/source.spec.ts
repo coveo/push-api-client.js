@@ -1,15 +1,13 @@
 /* eslint-disable node/no-unpublished-import */
 jest.mock('@coveord/platform-client');
 jest.mock('axios');
-import PlatformClient, {
-  Region,
-  SourceVisibility,
-} from '@coveord/platform-client';
+import PlatformClient, {SourceVisibility} from '@coveord/platform-client';
 import {BatchUpdateDocuments, Source} from './source';
 import {DocumentBuilder} from './documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
+import {PlatformEnvironment, Region} from '.';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedPlatformClient = jest.mocked(PlatformClient);
@@ -73,6 +71,36 @@ describe('Source', () => {
 
     expect(mockAxios.put).toHaveBeenCalledWith(
       'https://api-au.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
+      expect.objectContaining({title: 'the_title'}),
+      expectedDocumentsHeaders
+    );
+  });
+
+  it('should call axios on add document with right environment', () => {
+    new Source('the_key', 'the_org', {
+      environment: PlatformEnvironment.Dev,
+    }).addOrUpdateDocument(
+      'the_id',
+      new DocumentBuilder('the_uri', 'the_title')
+    );
+
+    expect(mockAxios.put).toHaveBeenCalledWith(
+      'https://apidev.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
+      expect.objectContaining({title: 'the_title'}),
+      expectedDocumentsHeaders
+    );
+  });
+  it('should call axios on add document with right region and environment', () => {
+    new Source('the_key', 'the_org', {
+      environment: PlatformEnvironment.QA,
+      region: Region.EU,
+    }).addOrUpdateDocument(
+      'the_id',
+      new DocumentBuilder('the_uri', 'the_title')
+    );
+
+    expect(mockAxios.put).toHaveBeenCalledWith(
+      'https://apiqa-eu.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
       expect.objectContaining({title: 'the_title'}),
       expectedDocumentsHeaders
     );

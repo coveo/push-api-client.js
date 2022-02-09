@@ -2,9 +2,7 @@ require('isomorphic-fetch');
 require('abortcontroller-polyfill');
 
 import {
-  Environment,
   PlatformClient,
-  Region,
   SecurityIdentityAliasModel,
   SecurityIdentityBatchConfig,
   SecurityIdentityDelete,
@@ -13,7 +11,7 @@ import {
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {Environment, SourceVisibility} from '@coveord/platform-client';
+export {SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
@@ -22,6 +20,13 @@ import {consumeGenerator} from './help/generator';
 import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
 import {basename} from 'path';
 import {getAllJsonFilesFromEntries} from './help/file';
+import {
+  castEnvironmentToPlatformClient,
+  DEFAULT_ENVIRONMENT,
+  DEFAULT_REGION,
+  platformUrl,
+  PlatformUrlOptions,
+} from './environment';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -63,10 +68,6 @@ interface FileContainerResponse {
   requiredHeaders: Record<string, string>;
 }
 
-interface PlatformUrlOptions {
-  region: Region;
-}
-
 /**
  * Manage a push source.
  *
@@ -76,7 +77,8 @@ export class Source {
   private platformClient: PlatformClient;
   private options: PlatformUrlOptions;
   private static defaultOptions: PlatformUrlOptions = {
-    region: Region.US,
+    region: DEFAULT_REGION,
+    environment: DEFAULT_ENVIRONMENT,
   };
   private static maxContentLength = 5 * 1024 * 1024;
   /**
@@ -92,7 +94,7 @@ export class Source {
     this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
-      environment: Environment.prod,
+      environment: castEnvironmentToPlatformClient(this.options.environment),
       organizationId: this.organizationid,
       region: this.options.region,
     });
@@ -313,12 +315,7 @@ export class Source {
   }
 
   private get baseAPIURL() {
-    const urlRegion =
-      this.options.region === Source.defaultOptions.region
-        ? ''
-        : `-${this.options.region}`;
-
-    return `https://api${urlRegion}.cloud.coveo.com/push/v1/organizations/${this.organizationid}`;
+    return `${platformUrl(this.options)}/${this.organizationid}`;
   }
 
   private getBaseAPIURLForDocuments(sourceID: string) {
