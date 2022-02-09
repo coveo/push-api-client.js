@@ -90,6 +90,7 @@ describe('Source', () => {
       expectedDocumentsHeaders
     );
   });
+
   it('should call axios on add document with right region and environment', () => {
     new Source('the_key', 'the_org', {
       environment: PlatformEnvironment.QA,
