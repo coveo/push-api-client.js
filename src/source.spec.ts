@@ -1,7 +1,10 @@
 /* eslint-disable node/no-unpublished-import */
 jest.mock('@coveord/platform-client');
 jest.mock('axios');
-import PlatformClient, {SourceVisibility} from '@coveord/platform-client';
+import PlatformClient, {
+  Region,
+  SourceVisibility,
+} from '@coveord/platform-client';
 import {BatchUpdateDocuments, Source} from './source';
 import {DocumentBuilder} from './documentBuilder';
 import axios from 'axios';
@@ -54,6 +57,22 @@ describe('Source', () => {
 
     expect(mockAxios.put).toHaveBeenCalledWith(
       'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
+      expect.objectContaining({title: 'the_title'}),
+      expectedDocumentsHeaders
+    );
+  });
+
+  it('should call axios on add document with right region', () => {
+    const australianSource = new Source('the_key', 'the_org', {
+      region: Region.AU,
+    });
+    australianSource.addOrUpdateDocument(
+      'the_id',
+      new DocumentBuilder('the_uri', 'the_title')
+    );
+
+    expect(mockAxios.put).toHaveBeenCalledWith(
+      'https://api-au.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
       expect.objectContaining({title: 'the_title'}),
       expectedDocumentsHeaders
     );

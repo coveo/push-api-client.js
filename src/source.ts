@@ -4,6 +4,7 @@ require('abortcontroller-polyfill');
 import {
   Environment,
   PlatformClient,
+  Region,
   SecurityIdentityAliasModel,
   SecurityIdentityBatchConfig,
   SecurityIdentityDelete,
@@ -62,6 +63,10 @@ interface FileContainerResponse {
   requiredHeaders: Record<string, string>;
 }
 
+interface PlatformUrlOptions {
+  region: Region;
+}
+
 /**
  * Manage a push source.
  *
@@ -69,17 +74,27 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
+  private options: PlatformUrlOptions;
+  private static defaultOptions: PlatformUrlOptions = {
+    region: Region.US,
+  };
   private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param organizationid The Coveo Organization identifier.
    */
-  constructor(private apikey: string, private organizationid: string) {
+  constructor(
+    private apikey: string,
+    private organizationid: string,
+    options?: Partial<PlatformUrlOptions>
+  ) {
+    this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: Environment.prod,
       organizationId: this.organizationid,
+      region: this.options.region,
     });
   }
 
@@ -298,7 +313,12 @@ export class Source {
   }
 
   private get baseAPIURL() {
-    return `https://api.cloud.coveo.com/push/v1/organizations/${this.organizationid}`;
+    const urlRegion =
+      this.options.region === Source.defaultOptions.region
+        ? ''
+        : `-${this.options.region}`;
+
+    return `https://api${urlRegion}.cloud.coveo.com/push/v1/organizations/${this.organizationid}`;
   }
 
   private getBaseAPIURLForDocuments(sourceID: string) {
