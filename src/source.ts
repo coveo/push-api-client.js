@@ -2,7 +2,6 @@ require('isomorphic-fetch');
 require('abortcontroller-polyfill');
 
 import {
-  Environment,
   PlatformClient,
   SecurityIdentityAliasModel,
   SecurityIdentityBatchConfig,
@@ -12,7 +11,7 @@ import {
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {Environment, SourceVisibility} from '@coveord/platform-client';
+export {SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
 import dayjs = require('dayjs');
@@ -21,6 +20,13 @@ import {consumeGenerator} from './help/generator';
 import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
 import {basename} from 'path';
 import {getAllJsonFilesFromEntries} from './help/file';
+import {
+  castEnvironmentToPlatformClient,
+  DEFAULT_ENVIRONMENT,
+  DEFAULT_REGION,
+  platformUrl,
+  PlatformUrlOptions,
+} from './environment';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -69,17 +75,28 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
+  private options: PlatformUrlOptions;
+  private static defaultOptions: PlatformUrlOptions = {
+    region: DEFAULT_REGION,
+    environment: DEFAULT_ENVIRONMENT,
+  };
   private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param organizationid The Coveo Organization identifier.
    */
-  constructor(private apikey: string, private organizationid: string) {
+  constructor(
+    private apikey: string,
+    private organizationid: string,
+    options?: Partial<PlatformUrlOptions>
+  ) {
+    this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
-      environment: Environment.prod,
+      environment: castEnvironmentToPlatformClient(this.options.environment),
       organizationId: this.organizationid,
+      region: this.options.region,
     });
   }
 
@@ -298,7 +315,7 @@ export class Source {
   }
 
   private get baseAPIURL() {
-    return `https://api.cloud.coveo.com/push/v1/organizations/${this.organizationid}`;
+    return `${platformUrl(this.options)}/${this.organizationid}`;
   }
 
   private getBaseAPIURLForDocuments(sourceID: string) {
