@@ -29,6 +29,10 @@ import {
 } from './environment';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
+export enum SupportedSourceType {
+  PUSH = SourceType.PUSH,
+  CATALOG = SourceType.CATALOG,
+}
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
@@ -62,7 +66,7 @@ export interface BatchUpdateDocumentsFromFiles {
   maxConcurrent?: number;
 }
 
-interface FileContainerResponse {
+export interface FileContainerResponse {
   uploadUri: string;
   fileId: string;
   requiredHeaders: Record<string, string>;
@@ -75,8 +79,8 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
-  private options: PlatformUrlOptions;
-  private static defaultOptions: PlatformUrlOptions = {
+  private options: Required<PlatformUrlOptions>;
+  private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
@@ -89,7 +93,7 @@ export class Source {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: Partial<PlatformUrlOptions>
+    options: PlatformUrlOptions = Source.defaultOptions
   ) {
     this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
