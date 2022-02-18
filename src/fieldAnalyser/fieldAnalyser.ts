@@ -1,38 +1,56 @@
-import PlatformClient, {FieldTypes} from '@coveord/platform-client';
+import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
 import {BatchUpdateDocuments, DocumentBuilder} from '..';
 
-type fieldTypeDict = {[key in FieldTypes]?: number};
-type typeOccurence = [fieldType: string, occurence: number];
+type FieldTypeDict = {[key in FieldTypes]?: number};
+type TypeOccurence = [fieldType: string, occurence: number];
+
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
   private inconsitentFields: Record<string, FieldTypes[]> = {};
 
   public constructor(private platformClient: PlatformClient) {}
-  public async createMissingFieldsFromBatch(batch: BatchUpdateDocuments) {
-    const alreadyCreatedFields = await this.listAllFieldsFromOrg();
-    const missingFieldsFromOrg = this.getMissingFieldsFromOrg(
-      batch,
-      alreadyCreatedFields
-    );
-    const fieldsToCreate = this.getFieldsToCreate(missingFieldsFromOrg);
-    return this.createFields(fieldsToCreate);
+
+  public async getFieldsToCreate(batch: BatchUpdateDocuments): Promise<{
+    fields: Record<string, FieldTypes>;
+    inconsistencies: Record<string, FieldTypes[]>;
+  }> {
+    const existingFields = await this.listAllFieldsFromOrg();
+    const fieldsToCreate = this.getMissingFieldsFromOrg(batch, existingFields);
+
+    return {
+      fields: this.getFieldTypes(fieldsToCreate),
+      inconsistencies: this.inconsitentFields,
+    };
   }
 
-  private async listAllFieldsFromOrg(): Promise<string[]> {
-    // TODO: CDX-836
-    throw new Error('Method not implemented.');
-  }
-
-  private createFields(_fields: Record<string, FieldTypes>) {
+  public createFields(_fieldDict: Record<string, FieldTypes>) {
     // TODO: CDX-835
     throw new Error('Method not implemented.');
+  }
+
+  private async listAllFieldsFromOrg(
+    page = 0,
+    fields: FieldModel[] = []
+  ): Promise<string[]> {
+    const list = await this.platformClient.field.list({
+      page,
+      perPage: 1000,
+    });
+
+    fields.push(...list.items);
+
+    if (page < list.totalPages - 1) {
+      return this.listAllFieldsFromOrg(page + 1, fields);
+    }
+
+    return fields.map(({name}) => `${name}`);
   }
 
   private getMissingFieldsFromOrg(
     batch: BatchUpdateDocuments,
     alreadyCreatedFields: string[]
-  ): Record<string, fieldTypeDict> {
-    const missingFieldsFromOrg: Record<string, fieldTypeDict> = {};
+  ): Record<string, FieldTypeDict> {
+    const missingFieldsFromOrg: Record<string, FieldTypeDict> = {};
 
     batch.addOrUpdate.flatMap((doc: DocumentBuilder) => {
       const documentMetadata = Object.entries({...doc.build().metadata});
@@ -57,8 +75,8 @@ export class FieldAnalyser {
     return missingFieldsFromOrg;
   }
 
-  private getFieldsToCreate(
-    missingFieldsFromOrg: Record<string, fieldTypeDict>
+  private getFieldTypes(
+    missingFieldsFromOrg: Record<string, FieldTypeDict>
   ): Record<string, FieldTypes> {
     const fieldsToCreate: Record<string, FieldTypes> = {};
 
@@ -75,7 +93,7 @@ export class FieldAnalyser {
 
   private storePossibleTypeInconsistencies(
     fieldName: string,
-    fieldTypeDict: fieldTypeDict
+    fieldTypeDict: FieldTypeDict
   ) {
     const typePossibilities = Object.keys(fieldTypeDict) as FieldTypes[];
     if (typePossibilities.length > 1) {
@@ -83,7 +101,7 @@ export class FieldAnalyser {
     }
   }
 
-  private getMostProbableType(field: fieldTypeDict): FieldTypes {
+  private getMostProbableType(field: FieldTypeDict): FieldTypes {
     const [fieldType] = Object.entries(field).reduce((previous, current) => {
       if (current[1] > previous[1]) {
         return current;
@@ -96,8 +114,8 @@ export class FieldAnalyser {
     return fieldType as FieldTypes;
   }
 
-  private typeCompare(field1: typeOccurence, field2: typeOccurence): number {
-    const precedence = (field: typeOccurence) =>
+  private typeCompare(field1: TypeOccurence, field2: TypeOccurence): number {
+    const precedence = (field: TypeOccurence) =>
       FieldAnalyser.fieldTypePrecedence.indexOf(field[0]);
     if (precedence(field1) < precedence(field2)) {
       return 1;
