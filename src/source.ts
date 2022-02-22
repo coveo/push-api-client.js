@@ -208,7 +208,17 @@ export class Source {
    * @param docBuilder
    * @returns
    */
-  public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
+  public async addOrUpdateDocument(
+    sourceID: string,
+    docBuilder: DocumentBuilder,
+    {createMissingFields = true}: BatchUpdateDocumentsOptions = {}
+  ) {
+    if (createMissingFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add([docBuilder]);
+      await this.createMissingFields(analyser);
+    }
+
     const doc = docBuilder.build();
     const addURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
     addURL.searchParams.append('documentId', doc.uri);
@@ -232,14 +242,8 @@ export class Source {
   ) {
     if (createMissingFields) {
       const analyser = new FieldAnalyser(this.platformClient);
-      const {fields, inconsistencies} = (
-        await analyser.add(batch.addOrUpdate)
-      ).report();
-
-      if (inconsistencies.count > 0) {
-        throw new FieldTypeInconsistencyError(inconsistencies);
-      }
-      await this.platformClient.field.createFields(fields);
+      await analyser.add(batch.addOrUpdate);
+      await this.createMissingFields(analyser);
     }
 
     const fileContainer = await this.createFileContainer();
@@ -279,13 +283,7 @@ export class Source {
           parseAndGetDocumentBuilderFromJSONDocument(filePath);
         await analyser.add(docBuilders);
       }
-
-      const {fields, inconsistencies} = analyser.report();
-
-      if (inconsistencies.count > 0) {
-        throw new FieldTypeInconsistencyError(inconsistencies);
-      }
-      await this.platformClient.field.createFields(fields);
+      await this.createMissingFields(analyser);
     }
 
     // parallelize uploads within the same file
@@ -368,6 +366,17 @@ export class Source {
     return {
       headers: this.documentsRequestHeaders,
     };
+  }
+
+  private async createMissingFields(analyser: FieldAnalyser) {
+    const {fields, inconsistencies} = analyser.report();
+
+    if (inconsistencies.count > 0) {
+      throw new FieldTypeInconsistencyError(inconsistencies);
+    }
+    if (fields.length > 0) {
+      await this.platformClient.field.createFields(fields);
+    }
   }
 
   private getFileContainerAxiosConfig(
