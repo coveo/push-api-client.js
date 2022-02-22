@@ -27,6 +27,7 @@ import {
   platformUrl,
   PlatformUrlOptions,
 } from './environment';
+import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -60,6 +61,10 @@ export interface BatchUpdateDocumentsFromFiles {
    * The default value is set to 10.
    */
   maxConcurrent?: number;
+  /**
+   * TODO: maybe that is not the right naming if it does not create the fields.
+   */
+  createMissingFields?: boolean;
 }
 
 interface FileContainerResponse {
@@ -217,9 +222,22 @@ export class Source {
    */
   public async batchUpdateDocuments(
     sourceID: string,
-    batch: BatchUpdateDocuments
+    batch: BatchUpdateDocuments,
+    createMissingFields = true
   ) {
-    // TODO: CDX-840 Include FieldAnalyser in source class
+    if (createMissingFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      const {fields, inconsistencies} = (
+        await analyser.analyse(batch.addOrUpdate)
+      ).report();
+
+      if (inconsistencies.count > 0) {
+        inconsistencies.display();
+        // throw new Error('Field type inconsistency detected... TODO:');
+      } else {
+        await this.platformClient.field.createFields(fields);
+      }
+    }
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
@@ -231,15 +249,17 @@ export class Source {
    * @param {string} sourceID The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
-   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
+   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10, createMissingFields = true}={}]
    */
   public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     callback: UploadBatchCallback,
-    {maxConcurrent = 10}: BatchUpdateDocumentsFromFiles = {}
+    {
+      maxConcurrent = 10,
+      createMissingFields = true,
+    }: BatchUpdateDocumentsFromFiles = {}
   ) {
-    // TODO: CDX-840 Include FieldAnalyser in source class
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
@@ -247,6 +267,26 @@ export class Source {
       fileNames,
       callback
     );
+
+    if (createMissingFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        // Need to user an iterator because we cannot take the chance to load all the doc builders across all files into memory.
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.analyse(docBuilders);
+      }
+
+      const {fields, inconsistencies} = analyser.report();
+
+      if (inconsistencies.count > 0) {
+        // TODO: maybe throw an error
+        inconsistencies.display();
+        return;
+      } else {
+        await this.platformClient.field.createFields(fields);
+      }
+    }
 
     // parallelize uploads within the same file
     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
