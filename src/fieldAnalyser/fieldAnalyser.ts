@@ -32,12 +32,13 @@ export class FieldAnalyser {
         if (existingFields.includes(metadataKey)) {
           continue;
         }
-        const metadataType = this.getValue(metadataValue);
+        const metadataType = this.getGuessedTypeFromValue(metadataValue);
         if (this.missingFieldsFromOrg[metadataKey]) {
           // Possible metadata inconsitency
-          let fieldType = this.missingFieldsFromOrg[metadataKey][metadataType];
-          this.missingFieldsFromOrg[metadataKey][metadataType] = fieldType
-            ? ++fieldType
+          let fieldTypeCount =
+            this.missingFieldsFromOrg[metadataKey][metadataType];
+          this.missingFieldsFromOrg[metadataKey][metadataType] = fieldTypeCount
+            ? ++fieldTypeCount
             : 1;
         } else {
           this.missingFieldsFromOrg[metadataKey] = {[metadataType]: 1};
@@ -130,7 +131,7 @@ export class FieldAnalyser {
     return 0;
   }
 
-  private getValue(obj: unknown): FieldTypes {
+  private getGuessedTypeFromValue(obj: unknown): FieldTypes {
     switch (typeof obj) {
       case 'number':
         return this.getSpecificNumericType(obj);
