@@ -68,7 +68,7 @@ describe('FieldAnalyser', () => {
   describe('when fields from the batch already exist in the org', () => {
     let report: FieldAnalyserReport;
     beforeEach(async () => {
-      report = (await analyser.analyse([docWithExistingFields])).report();
+      report = (await analyser.add([docWithExistingFields])).report();
     });
 
     it('should not return fields to create', async () => {
@@ -83,7 +83,7 @@ describe('FieldAnalyser', () => {
   describe('when batch contain new fields', () => {
     it('should return fields to create', async () => {
       const docBuilders = [docWithNewFields, docWithExistingFields];
-      const {fields} = (await analyser.analyse(docBuilders)).report();
+      const {fields} = (await analyser.add(docBuilders)).report();
       expect(fields).toStrictEqual([
         {
           name: 'promo_price',
@@ -119,7 +119,7 @@ describe('FieldAnalyser', () => {
     ];
 
     beforeEach(async () => {
-      report = (await analyser.analyse(docBuilders)).report();
+      report = (await analyser.add(docBuilders)).report();
     });
 
     it('should detect 2 inconsistencies', () => {

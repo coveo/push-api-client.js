@@ -22,7 +22,7 @@ export class FieldAnalyser {
     this.missingFieldsFromOrg = {};
   }
 
-  public async analyse(batch: DocumentBuilder[]) {
+  public async add(batch: DocumentBuilder[]) {
     const existingFields = await this.ensureExistingFields();
 
     batch.flatMap((doc: DocumentBuilder) => {

@@ -28,6 +28,7 @@ import {
   PlatformUrlOptions,
 } from './environment';
 import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from './errors/fieldErrors';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -53,7 +54,15 @@ export type UploadBatchCallback = (
   data: UploadBatchCallbackData
 ) => void;
 
-export interface BatchUpdateDocumentsFromFiles {
+export interface BatchUpdateDocumentsOptions {
+  /**
+   * TODO: maybe that is not the right naming if it does not create the fields.
+   */
+  createMissingFields?: boolean;
+}
+
+export interface BatchUpdateDocumentsFromFiles
+  extends BatchUpdateDocumentsOptions {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
    * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
@@ -61,10 +70,6 @@ export interface BatchUpdateDocumentsFromFiles {
    * The default value is set to 10.
    */
   maxConcurrent?: number;
-  /**
-   * TODO: maybe that is not the right naming if it does not create the fields.
-   */
-  createMissingFields?: boolean;
 }
 
 interface FileContainerResponse {
@@ -223,21 +228,20 @@ export class Source {
   public async batchUpdateDocuments(
     sourceID: string,
     batch: BatchUpdateDocuments,
-    createMissingFields = true
+    {createMissingFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
     if (createMissingFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       const {fields, inconsistencies} = (
-        await analyser.analyse(batch.addOrUpdate)
+        await analyser.add(batch.addOrUpdate)
       ).report();
 
       if (inconsistencies.count > 0) {
-        inconsistencies.display();
-        // throw new Error('Field type inconsistency detected... TODO:');
-      } else {
-        await this.platformClient.field.createFields(fields);
+        throw new FieldTypeInconsistencyError(inconsistencies);
       }
+      await this.platformClient.field.createFields(fields);
     }
+
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
@@ -271,21 +275,17 @@ export class Source {
     if (createMissingFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       for (const filePath of files.values()) {
-        // Need to user an iterator because we cannot take the chance to load all the doc builders across all files into memory.
         const docBuilders =
           parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.analyse(docBuilders);
+        await analyser.add(docBuilders);
       }
 
       const {fields, inconsistencies} = analyser.report();
 
       if (inconsistencies.count > 0) {
-        // TODO: maybe throw an error
-        inconsistencies.display();
-        return;
-      } else {
-        await this.platformClient.field.createFields(fields);
+        throw new FieldTypeInconsistencyError(inconsistencies);
       }
+      await this.platformClient.field.createFields(fields);
     }
 
     // parallelize uploads within the same file

@@ -19,19 +19,4 @@ export class Inconsistencies {
   public get() {
     return this.inconsitencies;
   }
-
-  public display(): void {
-    // TODO: rename
-    this.inconsitencies.forEach((typeSet, field) => {
-      const inconsistentTypes = [];
-      for (const type of typeSet) {
-        inconsistentTypes.push(type);
-      }
-      console.log(
-        `Inconsistency detected with the metadata "${field}". Possible types are: ${inconsistentTypes
-          .sort()
-          .join(', ')}`
-      );
-    });
-  }
 }
