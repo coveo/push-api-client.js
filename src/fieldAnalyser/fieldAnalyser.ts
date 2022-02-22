@@ -5,7 +5,7 @@ type fieldTypeDict = {[key in FieldTypes]?: number};
 type typeOccurence = [fieldType: string, occurence: number];
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
-  private inconsitentFields: Record<string, FieldTypes[]> = {};
+  private inconsistentFields: Record<string, FieldTypes[]> = {};
 
   public constructor(private platformClient: PlatformClient) {}
   public async createMissingFieldsFromBatch(batch: BatchUpdateDocuments) {
@@ -43,7 +43,7 @@ export class FieldAnalyser {
         }
         const metadataType = this.getValue(metadataValue);
         if (missingFieldsFromOrg[metadataKey]) {
-          // Possible metadata inconsitency
+          // Possible metadata inconsistency
           let fieldType = missingFieldsFromOrg[metadataKey][metadataType];
           missingFieldsFromOrg[metadataKey][metadataType] = fieldType
             ? ++fieldType
@@ -79,7 +79,7 @@ export class FieldAnalyser {
   ) {
     const typePossibilities = Object.keys(fieldTypeDict) as FieldTypes[];
     if (typePossibilities.length > 1) {
-      this.inconsitentFields[fieldName] = typePossibilities;
+      this.inconsistentFields[fieldName] = typePossibilities;
     }
   }
 
@@ -125,7 +125,7 @@ export class FieldAnalyser {
   }
 
   private warnAboutInconsistentFields() {
-    Object.entries(this.inconsitentFields).map(([fieldName, types]) => {
+    Object.entries(this.inconsistentFields).map(([fieldName, types]) => {
       console.log(
         `Inconsistency detected with the metadata "${fieldName}". Possible types are: ${types
           .sort()
