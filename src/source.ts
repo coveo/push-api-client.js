@@ -257,17 +257,22 @@ export class Source {
    * @param {string} sourceID The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
-   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10, createMissingFields = true}={}]
+   * @param {BatchUpdateDocumentsFromFiles} options
    */
   public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     callback: UploadBatchCallback,
-    {
-      maxConcurrent = 10,
-      createMissingFields = true,
-    }: BatchUpdateDocumentsFromFiles = {}
+    options: BatchUpdateDocumentsFromFiles
   ) {
+    const defaultOptions = {
+      maxConcurrent: 10,
+      createMissingFields: true,
+    };
+    const {maxConcurrent, createMissingFields} = {
+      ...defaultOptions,
+      ...options,
+    };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
@@ -482,10 +487,14 @@ export class Source {
     callback: UploadBatchCallback
   ) {
     try {
-      const res = await this.batchUpdateDocuments(sourceID, {
-        addOrUpdate: batch,
-        delete: [],
-      });
+      const res = await this.batchUpdateDocuments(
+        sourceID,
+        {
+          addOrUpdate: batch,
+          delete: [],
+        },
+        {createMissingFields: false}
+      );
       callback(null, {
         files: fileNames,
         batch,
