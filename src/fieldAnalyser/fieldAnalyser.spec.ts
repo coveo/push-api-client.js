@@ -127,7 +127,7 @@ describe('FieldAnalyser', () => {
     });
 
     it('should detect type inconsistencies', () => {
-      const inconsistenciesSet = report.inconsistencies.get();
+      const inconsistenciesSet = report.inconsistencies;
       expect(inconsistenciesSet.get('price')).toStrictEqual(
         new Set(['DOUBLE', 'STRING'])
       );

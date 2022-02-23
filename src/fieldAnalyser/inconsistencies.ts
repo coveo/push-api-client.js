@@ -16,7 +16,18 @@ export class Inconsistencies {
     return this.inconsitencies.size;
   }
 
-  public get() {
-    return this.inconsitencies;
+  public get(key: string) {
+    return this.inconsitencies.get(key);
+  }
+
+  public forEach(
+    callbackfn: (
+      value: Set<FieldTypes>,
+      key: string,
+      map: Map<string, Set<FieldTypes>>
+    ) => void,
+    thisArg?: unknown
+  ) {
+    return this.inconsitencies.forEach(callbackfn, thisArg);
   }
 }

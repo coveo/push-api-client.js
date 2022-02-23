@@ -8,7 +8,7 @@ export class FieldTypeInconsistencyError extends PushApiClientBaseError {
     this.message = `Inconsistent types detected in the following field${
       inconsitencies.count > 1 ? 's' : ''
     }:`;
-    inconsitencies.get().forEach((typeSet, field) => {
+    inconsitencies.forEach((typeSet, field) => {
       const inconsistentTypes = [];
       for (const type of typeSet) {
         inconsistentTypes.push(type);
