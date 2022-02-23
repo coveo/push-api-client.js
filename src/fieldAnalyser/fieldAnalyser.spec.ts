@@ -78,7 +78,7 @@ describe('FieldAnalyser', () => {
 
     it('should not detect inconsistencies', async () => {
       const missingFields = await analyser.getFieldsToCreate(batch);
-      expect(missingFields.inconsistencies).toStrictEqual({});
+      expect(missingFields.inconsistencies.count).toStrictEqual(0);
     });
   });
 
@@ -117,10 +117,13 @@ describe('FieldAnalyser', () => {
     });
 
     it('should detect type inconsistencies', () => {
-      expect(missingFields.inconsistencies).toStrictEqual({
-        price: ['DOUBLE', 'STRING'],
-        available: ['DOUBLE', 'STRING'],
-      });
+      const inconsistenciesSet = missingFields.inconsistencies;
+      expect(inconsistenciesSet.get('price')).toStrictEqual(
+        new Set(['DOUBLE', 'STRING'])
+      );
+      expect(inconsistenciesSet.get('available')).toStrictEqual(
+        new Set(['DOUBLE', 'STRING'])
+      );
     });
 
     it('should still provide fields to create', () => {
