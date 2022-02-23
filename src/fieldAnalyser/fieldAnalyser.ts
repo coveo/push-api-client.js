@@ -19,7 +19,7 @@ export class FieldAnalyser {
 
     return {
       fields: this.getFieldTypes(fieldsToCreate),
-      inconsistencies: this.inconsitentFields,
+      inconsistencies: this.inconsistentFields,
     };
   }
 
