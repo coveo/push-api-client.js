@@ -219,6 +219,7 @@ export class Source {
     sourceID: string,
     batch: BatchUpdateDocuments
   ) {
+    // TODO: CDX-840 Include FieldAnalyser in source class
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
@@ -238,6 +239,7 @@ export class Source {
     callback: UploadBatchCallback,
     {maxConcurrent = 10}: BatchUpdateDocumentsFromFiles = {}
   ) {
+    // TODO: CDX-840 Include FieldAnalyser in source class
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
