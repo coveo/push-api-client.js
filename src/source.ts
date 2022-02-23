@@ -264,7 +264,7 @@ export class Source {
     sourceID: string,
     filesOrDirectories: string[],
     callback: UploadBatchCallback,
-    options: BatchUpdateDocumentsFromFiles
+    options?: BatchUpdateDocumentsFromFiles
   ) {
     const defaultOptions = {
       maxConcurrent: 10,
