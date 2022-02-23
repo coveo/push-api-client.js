@@ -96,7 +96,7 @@ describe('Source', () => {
     await source.addOrUpdateDocument(
       'the_id',
       new DocumentBuilder('the_uri', 'the_title'),
-      {createMissingFields: false}
+      {createFields: false}
     );
 
     expect(mockAxios.put).toHaveBeenCalledWith(
@@ -113,7 +113,7 @@ describe('Source', () => {
     await australianSource.addOrUpdateDocument(
       'the_id',
       new DocumentBuilder('the_uri', 'the_title'),
-      {createMissingFields: false}
+      {createFields: false}
     );
 
     expect(mockAxios.put).toHaveBeenCalledWith(
@@ -129,7 +129,7 @@ describe('Source', () => {
     }).addOrUpdateDocument(
       'the_id',
       new DocumentBuilder('the_uri', 'the_title'),
-      {createMissingFields: false}
+      {createFields: false}
     );
 
     expect(mockAxios.put).toHaveBeenCalledWith(
@@ -146,7 +146,7 @@ describe('Source', () => {
     }).addOrUpdateDocument(
       'the_id',
       new DocumentBuilder('the_uri', 'the_title'),
-      {createMissingFields: false}
+      {createFields: false}
     );
 
     expect(mockAxios.put).toHaveBeenCalledWith(
@@ -223,7 +223,7 @@ describe('Source', () => {
 
     it('should create a file container', async () => {
       await source.batchUpdateDocuments('the_id', batch, {
-        createMissingFields: false,
+        createFields: false,
       });
       expect(mockAxios.post).toHaveBeenCalledWith(
         'https://api.cloud.coveo.com/push/v1/organizations/the_org/files',
@@ -234,7 +234,7 @@ describe('Source', () => {
 
     it('should upload files to container with returned upload uri and required headers ', async () => {
       await source.batchUpdateDocuments('the_id', batch, {
-        createMissingFields: false,
+        createFields: false,
       });
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -253,7 +253,7 @@ describe('Source', () => {
 
     it('should push content to source with returned fileId', async () => {
       await source.batchUpdateDocuments('the_id', batch, {
-        createMissingFields: false,
+        createFields: false,
       });
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/batch?fileId=file_id',
@@ -279,7 +279,7 @@ describe('Source', () => {
         'the_id',
         [join(pathToStub, 'mixdocuments')],
         mockedCallback,
-        {createMissingFields: false}
+        {createFields: false}
       );
 
       expect(mockAxios.put).toHaveBeenCalledWith(
@@ -309,7 +309,7 @@ describe('Source', () => {
           'the_id',
           ['path/to/invalid/document'],
           mockedCallback,
-          {createMissingFields: false}
+          {createFields: false}
         )
       ).rejects.toThrow(
         "no such file or directory, lstat 'path/to/invalid/document'"
@@ -321,7 +321,7 @@ describe('Source', () => {
         'the_id',
         [join(pathToStub, 'mixdocuments')],
         mockedCallback,
-        {createMissingFields: false}
+        {createFields: false}
       );
       expect(mockedCallback).toHaveBeenCalledWith(null, expect.anything());
     });
@@ -331,7 +331,7 @@ describe('Source', () => {
         'the_id',
         [join(pathToStub, 'mixdocuments')],
         mockedCallback,
-        {createMissingFields: false}
+        {createFields: false}
       );
 
       expect(mockedCallback).toHaveBeenCalledWith(
@@ -348,7 +348,7 @@ describe('Source', () => {
         'the_id',
         [join(pathToStub, 'mixdocuments')],
         mockedCallback,
-        {createMissingFields: false}
+        {createFields: false}
       );
       expect(mockedCallback).toHaveBeenCalledWith(
         {

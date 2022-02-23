@@ -11,6 +11,10 @@ export type FieldAnalyserReport = {
   inconsistencies: Inconsistencies;
 };
 
+/**
+ * Analyse documents to detect type inconsistencies and missing fields in your index.
+ *
+ */
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
   private inconsistencies: Inconsistencies;
@@ -22,6 +26,13 @@ export class FieldAnalyser {
     this.missingFields = new Map();
   }
 
+  /**
+   * Adds a batch of document builders to the analyser
+   * This method can be called as many time as needed as it will take into consideration document builders previously added.
+   *
+   * @param {DocumentBuilder[]} batch
+   * @return {*}
+   */
   public async add(batch: DocumentBuilder[]) {
     const existingFields = await this.ensureExistingFields();
 
@@ -38,6 +49,11 @@ export class FieldAnalyser {
     return this;
   }
 
+  /**
+   * Returns the analyser report containing the fields to create as well as the type inconsistencies in the documents
+   *
+   * @return {*}  {FieldAnalyserReport}
+   */
   public report(): FieldAnalyserReport {
     const fieldBuilder = this.getFieldTypes();
 

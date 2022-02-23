@@ -56,9 +56,9 @@ export type UploadBatchCallback = (
 
 export interface BatchUpdateDocumentsOptions {
   /**
-   * TODO: maybe that is not the right naming if it does not create the fields.
+   * Whether to create fields required in the index based on the document batch metadata.
    */
-  createMissingFields?: boolean;
+  createFields?: boolean;
 }
 
 export interface BatchUpdateDocumentsFromFiles
@@ -206,17 +206,18 @@ export class Source {
    * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
    * @param sourceID
    * @param docBuilder
+   * @param {BatchUpdateDocumentsOptions} [{createFields = true}={}]
    * @returns
    */
   public async addOrUpdateDocument(
     sourceID: string,
     docBuilder: DocumentBuilder,
-    {createMissingFields = true}: BatchUpdateDocumentsOptions = {}
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    if (createMissingFields) {
+    if (createFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       await analyser.add([docBuilder]);
-      await this.createMissingFields(analyser);
+      await this.createFields(analyser);
     }
 
     const doc = docBuilder.build();
@@ -238,12 +239,12 @@ export class Source {
   public async batchUpdateDocuments(
     sourceID: string,
     batch: BatchUpdateDocuments,
-    {createMissingFields = true}: BatchUpdateDocumentsOptions = {}
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    if (createMissingFields) {
+    if (createFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       await analyser.add(batch.addOrUpdate);
-      await this.createMissingFields(analyser);
+      await this.createFields(analyser);
     }
 
     const fileContainer = await this.createFileContainer();
@@ -267,9 +268,9 @@ export class Source {
   ) {
     const defaultOptions = {
       maxConcurrent: 10,
-      createMissingFields: true,
+      createFields: true,
     };
-    const {maxConcurrent, createMissingFields} = {
+    const {maxConcurrent, createFields: createFields} = {
       ...defaultOptions,
       ...options,
     };
@@ -281,14 +282,14 @@ export class Source {
       callback
     );
 
-    if (createMissingFields) {
+    if (createFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       for (const filePath of files.values()) {
         const docBuilders =
           parseAndGetDocumentBuilderFromJSONDocument(filePath);
         await analyser.add(docBuilders);
       }
-      await this.createMissingFields(analyser);
+      await this.createFields(analyser);
     }
 
     // parallelize uploads within the same file
@@ -373,7 +374,7 @@ export class Source {
     };
   }
 
-  private async createMissingFields(analyser: FieldAnalyser) {
+  private async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
     if (inconsistencies.count > 0) {
@@ -493,7 +494,7 @@ export class Source {
           addOrUpdate: batch,
           delete: [],
         },
-        {createMissingFields: false}
+        {createFields: false}
       );
       callback(null, {
         files: fileNames,
