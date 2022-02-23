@@ -13,13 +13,13 @@ export type FieldAnalyserReport = {
 
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
-  private fieldInconsistencies: Inconsistencies;
-  private missingFieldsFromOrg: Map<string, FieldTypeMap>;
+  private inconsistencies: Inconsistencies;
+  private missingFields: Map<string, FieldTypeMap>;
   private existingFields: string[] | undefined;
 
   public constructor(private platformClient: PlatformClient) {
-    this.fieldInconsistencies = new Inconsistencies();
-    this.missingFieldsFromOrg = new Map();
+    this.inconsistencies = new Inconsistencies();
+    this.missingFields = new Map();
   }
 
   public async add(batch: DocumentBuilder[]) {
@@ -43,14 +43,14 @@ export class FieldAnalyser {
 
     return {
       fields: fieldBuilder.marshal(),
-      inconsistencies: this.fieldInconsistencies,
+      inconsistencies: this.inconsistencies,
     };
   }
 
   private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
     const initialTypeCount = 1;
     const metadataType = this.getGuessedTypeFromValue(metadataValue);
-    const fieldTypeMap = this.missingFieldsFromOrg.get(metadataKey);
+    const fieldTypeMap = this.missingFields.get(metadataKey);
 
     if (fieldTypeMap) {
       // Possible metadata inconsitency
@@ -61,7 +61,7 @@ export class FieldAnalyser {
       );
     } else {
       const newFieldTypeMap = new Map().set(metadataType, initialTypeCount);
-      this.missingFieldsFromOrg.set(metadataKey, newFieldTypeMap);
+      this.missingFields.set(metadataKey, newFieldTypeMap);
     }
   }
 
@@ -93,7 +93,7 @@ export class FieldAnalyser {
   private getFieldTypes(): FieldBuilder {
     const fieldBuilder = new FieldBuilder();
 
-    this.missingFieldsFromOrg.forEach((fieldTypeMap, fieldName) => {
+    this.missingFields.forEach((fieldTypeMap, fieldName) => {
       this.storePossibleTypeInconsistencies(fieldName, fieldTypeMap);
       const fieldType = this.getMostProbableType(fieldTypeMap);
       fieldBuilder.add(fieldName, fieldType);
@@ -108,7 +108,7 @@ export class FieldAnalyser {
   ) {
     if (fieldTypeMap.size > 1) {
       const fieldTypes = Array.from(fieldTypeMap.keys());
-      this.fieldInconsistencies.add(fieldName, fieldTypes);
+      this.inconsistencies.add(fieldName, fieldTypes);
     }
   }
 
