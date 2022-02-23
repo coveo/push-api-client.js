@@ -1,18 +1,21 @@
 import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
 import {BatchUpdateDocuments, DocumentBuilder} from '..';
+import {Inconsistencies} from './inconsistencies';
 
 type FieldTypeDict = {[key in FieldTypes]?: number};
 type TypeOccurence = [fieldType: string, occurence: number];
 
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
-  private inconsistentFields: Record<string, FieldTypes[]> = {};
+  private inconsistentFields: Inconsistencies;
 
-  public constructor(private platformClient: PlatformClient) {}
+  public constructor(private platformClient: PlatformClient) {
+    this.inconsistentFields = new Inconsistencies();
+  }
 
   public async getFieldsToCreate(batch: BatchUpdateDocuments): Promise<{
     fields: Record<string, FieldTypes>;
-    inconsistencies: Record<string, FieldTypes[]>;
+    inconsistencies: Inconsistencies;
   }> {
     const existingFields = await this.listAllFieldsFromOrg();
     const fieldsToCreate = this.getMissingFieldsFromOrg(batch, existingFields);
@@ -86,8 +89,6 @@ export class FieldAnalyser {
       fieldsToCreate[fieldName] = fieldType;
     });
 
-    this.warnAboutInconsistentFields();
-
     return fieldsToCreate;
   }
 
@@ -97,7 +98,7 @@ export class FieldAnalyser {
   ) {
     const typePossibilities = Object.keys(fieldTypeDict) as FieldTypes[];
     if (typePossibilities.length > 1) {
-      this.inconsistentFields[fieldName] = typePossibilities;
+      this.inconsistentFields.add(fieldName, typePossibilities);
     }
   }
 
@@ -140,17 +141,5 @@ export class FieldAnalyser {
   private getSpecificNumericType(_number: number): FieldTypes {
     // TODO: CDX-838 Support LONG, LONG32 and DATE types
     return FieldTypes.DOUBLE;
-  }
-
-  private warnAboutInconsistentFields() {
-    Object.entries(this.inconsistentFields).map(([fieldName, types]) => {
-      console.log(
-        `Inconsistency detected with the metadata "${fieldName}". Possible types are: ${types
-          .sort()
-          .join(', ')}`
-      );
-    });
-
-    // TODO: CDX-836: Request user intervention during field type inconsistency
   }
 }
