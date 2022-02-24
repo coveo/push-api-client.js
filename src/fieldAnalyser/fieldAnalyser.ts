@@ -1,5 +1,6 @@
 import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
 import {DocumentBuilder, MetadataValue} from '..';
+import {listAllFieldsFromOrg} from './utils';
 import {FieldBuilder} from './fieldBuilder';
 import {Inconsistencies} from './inconsistencies';
 
@@ -81,27 +82,9 @@ export class FieldAnalyser {
     }
   }
 
-  private async listAllFieldsFromOrg(
-    page = 0,
-    fields: FieldModel[] = []
-  ): Promise<string[]> {
-    const list = await this.platformClient.field.list({
-      page,
-      perPage: 1000,
-    });
-
-    fields.push(...list.items);
-
-    if (page < list.totalPages - 1) {
-      return this.listAllFieldsFromOrg(page + 1, fields);
-    }
-
-    return fields.map(({name}) => `${name}`);
-  }
-
   private async ensureExistingFields(): Promise<string[]> {
     if (this.existingFields === undefined) {
-      this.existingFields = await this.listAllFieldsFromOrg();
+      this.existingFields = await listAllFieldsFromOrg(this.platformClient);
     }
     return this.existingFields;
   }

@@ -18,7 +18,7 @@ export class FieldTypeInconsistencyError extends PushApiClientBaseError {
     });
 
     // TODO: CDX-844: display document with type inconsistencies
-    this.message +=
-      'Make sure to review and fix your document metadata before pushing';
+    this.message += `
+      Make sure to review and fix your document metadata before pushing`;
   }
 }
