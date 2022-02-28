@@ -1,11 +1,7 @@
 import {FieldModel, FieldTypes} from '@coveord/platform-client';
 
-export class FieldBuilder extends Map<string, FieldTypes> {
-  constructor() {
-    super();
-  }
-
-  public concat(fieldBuilder: FieldBuilder) {
+export class FieldStore extends Map<string, FieldTypes> {
+  public concat(fieldBuilder: FieldStore) {
     fieldBuilder.forEach((type, name) => {
       this.set(name, type);
     });

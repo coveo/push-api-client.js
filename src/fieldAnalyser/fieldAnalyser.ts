@@ -1,7 +1,7 @@
 import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
 import {DocumentBuilder, MetadataValue} from '..';
 import {listAllFieldsFromOrg} from './utils';
-import {FieldBuilder} from './fieldBuilder';
+import {FieldStore} from './fieldStore';
 import {Inconsistencies} from './inconsistencies';
 import {InvalidPermanentId} from '../errors/fieldErrors';
 
@@ -56,11 +56,11 @@ export class FieldAnalyser {
    * @return {*}  {FieldAnalyserReport}
    */
   public report(): FieldAnalyserReport {
-    const fieldBuilder = this.getFieldTypes();
-    this.ensurePermanentId(fieldBuilder);
+    const fieldStore = this.getFieldTypes();
+    this.ensurePermanentId(fieldStore);
 
     return {
-      fields: fieldBuilder.marshal(),
+      fields: fieldStore.marshal(),
       inconsistencies: this.inconsistencies,
     };
   }
@@ -90,7 +90,7 @@ export class FieldAnalyser {
     return this.existingFields;
   }
 
-  private ensurePermanentId(fieldBuilder: FieldBuilder) {
+  private ensurePermanentId(fieldStore: FieldStore) {
     const permanentid = this.existingFields?.find(
       (field) => field.name === 'permanentid'
     );
@@ -100,20 +100,20 @@ export class FieldAnalyser {
         throw new InvalidPermanentId(permanentid);
       }
     } else {
-      fieldBuilder.set('permanentid', FieldTypes.STRING);
+      fieldStore.set('permanentid', FieldTypes.STRING);
     }
   }
 
-  private getFieldTypes(): FieldBuilder {
-    const fieldBuilder = new FieldBuilder();
+  private getFieldTypes(): FieldStore {
+    const fieldStore = new FieldStore();
 
     this.missingFields.forEach((fieldTypeMap, fieldName) => {
       this.storePossibleTypeInconsistencies(fieldName, fieldTypeMap);
       const fieldType = this.getMostProbableType(fieldTypeMap);
-      fieldBuilder.set(fieldName, fieldType);
+      fieldStore.set(fieldName, fieldType);
     });
 
-    return fieldBuilder;
+    return fieldStore;
   }
 
   private storePossibleTypeInconsistencies(
