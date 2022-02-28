@@ -3,6 +3,7 @@ import {DocumentBuilder, MetadataValue} from '..';
 import {listAllFieldsFromOrg} from './utils';
 import {FieldBuilder} from './fieldBuilder';
 import {Inconsistencies} from './inconsistencies';
+import performance from '../performances/performance';
 
 type FieldTypeMap = Map<FieldTypes, number>;
 type TypeOccurence = [fieldType: FieldTypes, occurence: number];
@@ -37,14 +38,19 @@ export class FieldAnalyser {
   public async add(batch: DocumentBuilder[]) {
     const existingFields = await this.ensureExistingFields();
 
+    performance.inspect();
     batch.flatMap((doc: DocumentBuilder) => {
       const documentMetadata = Object.entries({...doc.build().metadata});
+      performance.inspect();
 
       for (const [metadataKey, metadataValue] of documentMetadata) {
         if (existingFields.includes(metadataKey)) {
+          performance.inspect();
           continue;
         }
+        performance.inspect();
         this.storeMetadata(metadataKey, metadataValue);
+        performance.inspect();
       }
     });
     return this;
@@ -57,6 +63,7 @@ export class FieldAnalyser {
    */
   public report(): FieldAnalyserReport {
     const fieldBuilder = this.getFieldTypes();
+    performance.inspect();
 
     return {
       fields: fieldBuilder.marshal(),
