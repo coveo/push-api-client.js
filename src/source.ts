@@ -379,7 +379,7 @@ export class Source {
   private async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
-    if (inconsistencies.count > 0) {
+    if (inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(inconsistencies);
     }
     await createFields(this.platformClient, fields);
