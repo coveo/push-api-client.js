@@ -12,7 +12,7 @@ describe('Inconsistencies', () => {
   });
 
   it('should return the inconsistencies count', () => {
-    expect(insconsitencies.count).toEqual(2);
+    expect(insconsitencies.size).toEqual(2);
   });
 
   it('should retrieve a specific inconsistency', () => {

@@ -76,7 +76,7 @@ describe('FieldAnalyser', () => {
     });
 
     it('should not detect inconsistencies', async () => {
-      expect(report.inconsistencies.count).toStrictEqual(0);
+      expect(report.inconsistencies.size).toStrictEqual(0);
     });
   });
 
@@ -123,7 +123,7 @@ describe('FieldAnalyser', () => {
     });
 
     it('should detect 2 inconsistencies', () => {
-      expect(report.inconsistencies.count).toBe(2);
+      expect(report.inconsistencies.size).toBe(2);
     });
 
     it('should detect type inconsistencies', () => {
