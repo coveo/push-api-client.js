@@ -3,6 +3,7 @@ import {DocumentBuilder, MetadataValue} from '..';
 import {listAllFieldsFromOrg} from './utils';
 import {FieldBuilder} from './fieldBuilder';
 import {Inconsistencies} from './inconsistencies';
+import {InvalidPermanentId} from '../errors/fieldErrors';
 
 type FieldTypeMap = Map<FieldTypes, number>;
 
@@ -19,7 +20,7 @@ export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
   private inconsistencies: Inconsistencies;
   private missingFields: Map<string, FieldTypeMap>;
-  private existingFields: string[] | undefined;
+  private existingFields: FieldModel[] | undefined;
 
   public constructor(private platformClient: PlatformClient) {
     this.inconsistencies = new Inconsistencies();
@@ -40,7 +41,7 @@ export class FieldAnalyser {
       const documentMetadata = Object.entries({...doc.build().metadata});
 
       for (const [metadataKey, metadataValue] of documentMetadata) {
-        if (existingFields.includes(metadataKey)) {
+        if (existingFields.some((field) => field.name === metadataKey)) {
           continue;
         }
         this.storeMetadata(metadataKey, metadataValue);
@@ -56,6 +57,7 @@ export class FieldAnalyser {
    */
   public report(): FieldAnalyserReport {
     const fieldBuilder = this.getFieldTypes();
+    this.ensurePermanentId(fieldBuilder);
 
     return {
       fields: fieldBuilder.marshal(),
@@ -81,11 +83,25 @@ export class FieldAnalyser {
     }
   }
 
-  private async ensureExistingFields(): Promise<string[]> {
+  private async ensureExistingFields(): Promise<FieldModel[]> {
     if (this.existingFields === undefined) {
       this.existingFields = await listAllFieldsFromOrg(this.platformClient);
     }
     return this.existingFields;
+  }
+
+  private ensurePermanentId(fieldBuilder: FieldBuilder) {
+    const permanentid = this.existingFields?.find(
+      (field) => field.name === 'permanentid'
+    );
+
+    if (permanentid) {
+      if (permanentid.type !== FieldTypes.STRING) {
+        throw new InvalidPermanentId(permanentid);
+      }
+    } else {
+      fieldBuilder.set('permanentid', FieldTypes.STRING);
+    }
   }
 
   private getFieldTypes(): FieldBuilder {
@@ -94,7 +110,7 @@ export class FieldAnalyser {
     this.missingFields.forEach((fieldTypeMap, fieldName) => {
       this.storePossibleTypeInconsistencies(fieldName, fieldTypeMap);
       const fieldType = this.getMostProbableType(fieldTypeMap);
-      fieldBuilder.add(fieldName, fieldType);
+      fieldBuilder.set(fieldName, fieldType);
     });
 
     return fieldBuilder;

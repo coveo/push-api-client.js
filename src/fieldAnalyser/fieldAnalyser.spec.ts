@@ -1,7 +1,8 @@
 jest.mock('@coveord/platform-client');
 
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient, {FieldTypes} from '@coveord/platform-client';
 import {DocumentBuilder, Metadata} from '..';
+import {InvalidPermanentId} from '../errors/fieldErrors';
 import {FieldAnalyser, FieldAnalyserReport} from './fieldAnalyser';
 
 const buildDocument = (metadata?: Metadata) => {
@@ -39,6 +40,36 @@ describe('FieldAnalyser', () => {
   const mockedPlatformClient = jest.mocked(PlatformClient);
   const mockedListFields = jest.fn();
 
+  const mockListFieldsWithValidPermanentId = () => {
+    mockedListFields
+      .mockResolvedValueOnce({
+        items: [
+          {name: 'brand', type: FieldTypes.STRING},
+          {name: 'category', type: FieldTypes.STRING},
+          {name: 'permanentid', type: FieldTypes.STRING},
+        ],
+        totalPages: 2,
+      })
+      .mockResolvedValueOnce({
+        items: [{name: 'type'}],
+        totalPages: 2,
+      });
+  };
+
+  const mockListFieldsWithInvalidPermanentId = () => {
+    mockedListFields.mockResolvedValueOnce({
+      items: [{name: 'permanentid', type: FieldTypes.DATE}],
+      totalPages: 1,
+    });
+  };
+
+  const mockListFieldsWithNoPermanentId = () => {
+    mockedListFields.mockResolvedValueOnce({
+      items: [],
+      totalPages: 1,
+    });
+  };
+
   const doMockPlatformClient = () => {
     mockedPlatformClient.mockImplementation(
       () =>
@@ -50,26 +81,21 @@ describe('FieldAnalyser', () => {
 
   beforeAll(() => {
     doMockPlatformClient();
-    analyser = new FieldAnalyser(dummyPlatformClient());
   });
 
   beforeEach(() => {
-    mockedListFields
-      .mockReturnValueOnce({
-        items: [{name: 'brand'}, {name: 'category'}],
-        totalPages: 2,
-      })
-      .mockReturnValueOnce({
-        items: [{name: 'type'}],
-        totalPages: 2,
-      });
+    mockedListFields.mockReset();
+    analyser = new FieldAnalyser(dummyPlatformClient());
   });
 
   describe('when fields from the batch already exist in the org', () => {
     let report: FieldAnalyserReport;
     beforeEach(async () => {
+      mockListFieldsWithValidPermanentId();
       report = (await analyser.add([docWithExistingFields])).report();
     });
+
+    afterEach(() => {});
 
     it('should not return fields to create', async () => {
       expect(report.fields).toStrictEqual([]);
@@ -81,6 +107,10 @@ describe('FieldAnalyser', () => {
   });
 
   describe('when batch contain new fields', () => {
+    beforeEach(() => {
+      mockListFieldsWithValidPermanentId();
+    });
+
     it('should return fields to create', async () => {
       const docBuilders = [docWithNewFields, docWithExistingFields];
       const {fields} = (await analyser.add(docBuilders)).report();
@@ -119,6 +149,7 @@ describe('FieldAnalyser', () => {
     ];
 
     beforeEach(async () => {
+      mockListFieldsWithValidPermanentId();
       report = (await analyser.add(docBuilders)).report();
     });
 
@@ -174,6 +205,32 @@ describe('FieldAnalyser', () => {
       expect(report.fields).toContainEqual({
         name: 'available',
         type: 'DOUBLE',
+      });
+    });
+  });
+
+  describe('when permanentId is not correctly configured', () => {
+    beforeEach(() => {
+      mockListFieldsWithInvalidPermanentId();
+    });
+
+    it('should throw an error', async () => {
+      await analyser.add([docWithExistingFields]);
+      expect(() => analyser.report()).toThrow(InvalidPermanentId);
+    });
+  });
+
+  describe('when permanentId is missing from the organization', () => {
+    beforeEach(() => {
+      mockListFieldsWithNoPermanentId();
+    });
+
+    it('should include permanentid field in the analysis report', async () => {
+      await analyser.add([docWithExistingFields]);
+      const report = analyser.report();
+      expect(report.fields).toContainEqual({
+        name: 'permanentid',
+        type: 'STRING',
       });
     });
   });

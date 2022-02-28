@@ -4,7 +4,7 @@ export const listAllFieldsFromOrg = async (
   client: PlatformClient,
   page = 0,
   fields: FieldModel[] = []
-): Promise<string[]> => {
+): Promise<FieldModel[]> => {
   const list = await client.field.list({
     page,
     perPage: 1000,
@@ -16,7 +16,7 @@ export const listAllFieldsFromOrg = async (
     return listAllFieldsFromOrg(client, page + 1, fields);
   }
 
-  return fields.map(({name}) => `${name}`);
+  return fields;
 };
 
 export const createFields = async (

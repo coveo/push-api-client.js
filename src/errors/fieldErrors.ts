@@ -1,3 +1,4 @@
+import {FieldModel} from '@coveord/platform-client';
 import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
 import {PushApiClientBaseError} from './baseError';
 
@@ -20,5 +21,19 @@ export class FieldTypeInconsistencyError extends PushApiClientBaseError {
     // TODO: CDX-844: display document with type inconsistencies
     this.message += `
       Make sure to review and fix your document metadata before pushing`;
+  }
+}
+
+export class InvalidPermanentId extends PushApiClientBaseError {
+  public name = 'Invalid permanentId field Error';
+  public constructor(field: FieldModel) {
+    super(`
+    The detected permanentid field in the index is incorrectly configured.
+    Expected field type: STRING
+    Current field type: ${field.type}
+
+    You can delete and recreate the permanentid field as a STRING field.
+    See https://docs.coveo.com/en/1913/leverage-machine-learning/about-the-permanentid-field fore more info.
+    `);
   }
 }
