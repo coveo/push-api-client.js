@@ -24,9 +24,6 @@ export const createFields = async (
   fields: FieldModel[],
   fieldBatch = 500
 ) => {
-  if (fields.length === 0) {
-    return;
-  }
   for (let i = 0; i < fields.length; i += fieldBatch) {
     const batch = fields.slice(i, fieldBatch + i);
     await client.field.createFields(batch);
