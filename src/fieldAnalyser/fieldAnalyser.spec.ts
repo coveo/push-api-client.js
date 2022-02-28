@@ -78,7 +78,7 @@ describe('FieldAnalyser', () => {
 
     it('should not detect inconsistencies', async () => {
       const missingFields = await analyser.getFieldsToCreate(batch);
-      expect(missingFields.inconsistencies.count).toStrictEqual(0);
+      expect(missingFields.inconsistencies.size).toStrictEqual(0);
     });
   });
 
