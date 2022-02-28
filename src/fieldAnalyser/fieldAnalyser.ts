@@ -4,7 +4,6 @@ import {FieldBuilder} from './fieldBuilder';
 import {Inconsistencies} from './inconsistencies';
 
 type FieldTypeMap = Map<FieldTypes, number>;
-type TypeOccurence = [fieldType: FieldTypes, occurence: number];
 
 export type FieldAnalyserReport = {
   fields: FieldModel[];
@@ -128,24 +127,14 @@ export class FieldAnalyser {
     }
   }
 
-  private getMostProbableType(field: FieldTypeMap): FieldTypes {
-    let typeOccurence: TypeOccurence = [FieldTypes.STRING, -1];
-    field.forEach((occurence, fieldType) => {
-      if (typeOccurence[1] < occurence) {
-        typeOccurence = [fieldType, occurence];
-      } else if (typeOccurence[1] === occurence) {
-        typeOccurence[0] = this.getTypeWithMostPrecedence(
-          fieldType,
-          typeOccurence[0]
-        );
+  public getMostProbableType(field: FieldTypeMap): FieldTypes {
+    const sortedType = Array.from(field.entries()).sort(
+      (a: [FieldTypes, number], b: [FieldTypes, number]) => {
+        const countDiff = b[1] - a[1];
+        return countDiff ? countDiff : this.typeCompare(a[0], b[0]);
       }
-    });
-
-    return typeOccurence[0];
-  }
-
-  private getTypeWithMostPrecedence(a: FieldTypes, b: FieldTypes) {
-    return [a, b].sort(this.typeCompare)[0];
+    );
+    return sortedType[0][0];
   }
 
   private typeCompare(field1: FieldTypes, field2: FieldTypes): number {
