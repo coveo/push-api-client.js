@@ -294,6 +294,16 @@ export class Source {
       callback
     );
 
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
+
     // parallelize uploads within the same file
     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
       for (const upload of chunksToUpload(docBuilders)) {
