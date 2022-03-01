@@ -1,34 +1,83 @@
 import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
-import {BatchUpdateDocuments, DocumentBuilder} from '..';
+import {DocumentBuilder, MetadataValue} from '..';
+import {FieldBuilder} from './fieldBuilder';
 import {Inconsistencies} from './inconsistencies';
 
-type FieldTypeDict = {[key in FieldTypes]?: number};
-type TypeOccurence = [fieldType: string, occurence: number];
+type FieldTypeMap = Map<FieldTypes, number>;
 
+export type FieldAnalyserReport = {
+  fields: FieldModel[];
+  inconsistencies: Inconsistencies;
+};
+
+/**
+ * Analyse documents to detect type inconsistencies and missing fields in your index.
+ *
+ */
 export class FieldAnalyser {
   private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
-  private inconsistentFields: Inconsistencies;
+  private inconsistencies: Inconsistencies;
+  private missingFields: Map<string, FieldTypeMap>;
+  private existingFields: string[] | undefined;
 
   public constructor(private platformClient: PlatformClient) {
-    this.inconsistentFields = new Inconsistencies();
+    this.inconsistencies = new Inconsistencies();
+    this.missingFields = new Map();
   }
 
-  public async getFieldsToCreate(batch: BatchUpdateDocuments): Promise<{
-    fields: Record<string, FieldTypes>;
-    inconsistencies: Inconsistencies;
-  }> {
-    const existingFields = await this.listAllFieldsFromOrg();
-    const fieldsToCreate = this.getMissingFieldsFromOrg(batch, existingFields);
+  /**
+   * Adds a batch of document builders to the analyser
+   * This method can be called as many time as needed as it will take into consideration document builders previously added.
+   *
+   * @param {DocumentBuilder[]} batch
+   * @return {*}
+   */
+  public async add(batch: DocumentBuilder[]) {
+    const existingFields = await this.ensureExistingFields();
+
+    batch.flatMap((doc: DocumentBuilder) => {
+      const documentMetadata = Object.entries({...doc.build().metadata});
+
+      for (const [metadataKey, metadataValue] of documentMetadata) {
+        if (existingFields.includes(metadataKey)) {
+          continue;
+        }
+        this.storeMetadata(metadataKey, metadataValue);
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Returns the analyser report containing the fields to create as well as the type inconsistencies in the documents
+   *
+   * @return {*}  {FieldAnalyserReport}
+   */
+  public report(): FieldAnalyserReport {
+    const fieldBuilder = this.getFieldTypes();
 
     return {
-      fields: this.getFieldTypes(fieldsToCreate),
-      inconsistencies: this.inconsistentFields,
+      fields: fieldBuilder.marshal(),
+      inconsistencies: this.inconsistencies,
     };
   }
 
-  public createFields(_fieldDict: Record<string, FieldTypes>) {
-    // TODO: CDX-835
-    throw new Error('Method not implemented.');
+  private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
+    const initialTypeCount = 1;
+    const metadataType = this.getGuessedTypeFromValue(metadataValue);
+    const fieldTypeMap = this.missingFields.get(metadataKey);
+
+    if (fieldTypeMap) {
+      // Possible metadata inconsitency
+      const fieldTypeCount = fieldTypeMap.get(metadataType);
+      fieldTypeMap.set(
+        metadataType,
+        fieldTypeCount ? fieldTypeCount + 1 : initialTypeCount
+      );
+    } else {
+      const newFieldTypeMap = new Map().set(metadataType, initialTypeCount);
+      this.missingFields.set(metadataKey, newFieldTypeMap);
+    }
   }
 
   private async listAllFieldsFromOrg(
@@ -49,75 +98,48 @@ export class FieldAnalyser {
     return fields.map(({name}) => `${name}`);
   }
 
-  private getMissingFieldsFromOrg(
-    batch: BatchUpdateDocuments,
-    alreadyCreatedFields: string[]
-  ): Record<string, FieldTypeDict> {
-    const missingFieldsFromOrg: Record<string, FieldTypeDict> = {};
-
-    batch.addOrUpdate.flatMap((doc: DocumentBuilder) => {
-      const documentMetadata = Object.entries({...doc.build().metadata});
-
-      for (const [metadataKey, metadataValue] of documentMetadata) {
-        if (alreadyCreatedFields.includes(metadataKey)) {
-          continue;
-        }
-        const metadataType = this.getValue(metadataValue);
-        if (missingFieldsFromOrg[metadataKey]) {
-          // Possible metadata inconsistency
-          let fieldType = missingFieldsFromOrg[metadataKey][metadataType];
-          missingFieldsFromOrg[metadataKey][metadataType] = fieldType
-            ? ++fieldType
-            : 1;
-        } else {
-          missingFieldsFromOrg[metadataKey] = {[metadataType]: 1};
-        }
-      }
-    });
-
-    return missingFieldsFromOrg;
+  private async ensureExistingFields(): Promise<string[]> {
+    if (this.existingFields === undefined) {
+      this.existingFields = await this.listAllFieldsFromOrg();
+    }
+    return this.existingFields;
   }
 
-  private getFieldTypes(
-    missingFieldsFromOrg: Record<string, FieldTypeDict>
-  ): Record<string, FieldTypes> {
-    const fieldsToCreate: Record<string, FieldTypes> = {};
+  private getFieldTypes(): FieldBuilder {
+    const fieldBuilder = new FieldBuilder();
 
-    Object.entries(missingFieldsFromOrg).map(([fieldName, fieldTypeDict]) => {
-      this.storePossibleTypeInconsistencies(fieldName, fieldTypeDict);
-      const fieldType = this.getMostProbableType(fieldTypeDict);
-      fieldsToCreate[fieldName] = fieldType;
+    this.missingFields.forEach((fieldTypeMap, fieldName) => {
+      this.storePossibleTypeInconsistencies(fieldName, fieldTypeMap);
+      const fieldType = this.getMostProbableType(fieldTypeMap);
+      fieldBuilder.add(fieldName, fieldType);
     });
 
-    return fieldsToCreate;
+    return fieldBuilder;
   }
 
   private storePossibleTypeInconsistencies(
     fieldName: string,
-    fieldTypeDict: FieldTypeDict
+    fieldTypeMap: FieldTypeMap
   ) {
-    const typePossibilities = Object.keys(fieldTypeDict) as FieldTypes[];
-    if (typePossibilities.length > 1) {
-      this.inconsistentFields.add(fieldName, typePossibilities);
+    if (fieldTypeMap.size > 1) {
+      const fieldTypes = Array.from(fieldTypeMap.keys());
+      this.inconsistencies.add(fieldName, fieldTypes);
     }
   }
 
-  private getMostProbableType(field: FieldTypeDict): FieldTypes {
-    const [fieldType] = Object.entries(field).reduce((previous, current) => {
-      if (current[1] > previous[1]) {
-        return current;
-      } else if (current[1] < previous[1]) {
-        return previous;
-      } else {
-        return [current, previous].sort(this.typeCompare)[0];
+  public getMostProbableType(field: FieldTypeMap): FieldTypes {
+    const sortedType = Array.from(field.entries()).sort(
+      (a: [FieldTypes, number], b: [FieldTypes, number]) => {
+        const countDiff = b[1] - a[1];
+        return countDiff ? countDiff : this.typeCompare(a[0], b[0]);
       }
-    });
-    return fieldType as FieldTypes;
+    );
+    return sortedType[0][0];
   }
 
-  private typeCompare(field1: TypeOccurence, field2: TypeOccurence): number {
-    const precedence = (field: TypeOccurence) =>
-      FieldAnalyser.fieldTypePrecedence.indexOf(field[0]);
+  private typeCompare(field1: FieldTypes, field2: FieldTypes): number {
+    const precedence = (field: FieldTypes) =>
+      FieldAnalyser.fieldTypePrecedence.indexOf(field);
     if (precedence(field1) < precedence(field2)) {
       return 1;
     }
@@ -127,7 +149,7 @@ export class FieldAnalyser {
     return 0;
   }
 
-  private getValue(obj: unknown): FieldTypes {
+  private getGuessedTypeFromValue(obj: unknown): FieldTypes {
     switch (typeof obj) {
       case 'number':
         return this.getSpecificNumericType(obj);
