@@ -1,11 +1,5 @@
 import {PathLike} from 'fs';
-
-export abstract class PushApiClientBaseError extends Error {
-  public name = 'Push API Client Error';
-  public constructor(message?: string) {
-    super(message);
-  }
-}
+import {PushApiClientBaseError} from './baseError';
 
 export class NotAFileError extends PushApiClientBaseError {
   public name = 'Not A File Error';

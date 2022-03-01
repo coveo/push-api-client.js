@@ -7,6 +7,7 @@ export {
   UploadBatchCallbackData,
   BatchUpdateDocumentsFromFiles,
 } from './source';
+export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
 export {PlatformEnvironment, Region} from './environment';
