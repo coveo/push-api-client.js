@@ -29,6 +29,7 @@ import {
 } from './environment';
 import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from './errors/fieldErrors';
+import {createFields} from './fieldAnalyser/utils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -275,6 +276,17 @@ export class Source {
       ...options,
     };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
+
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
+
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
       sourceID,
@@ -380,9 +392,7 @@ export class Source {
     if (inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(inconsistencies);
     }
-    if (fields.length > 0) {
-      await this.platformClient.field.createFields(fields);
-    }
+    await createFields(this.platformClient, fields);
   }
 
   private getFileContainerAxiosConfig(
