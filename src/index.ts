@@ -6,7 +6,6 @@ export {
   UploadBatchCallback,
   UploadBatchCallbackData,
   BatchUpdateDocumentsFromFiles,
-  SupportedSourceType,
 } from './source';
 export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';

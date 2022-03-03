@@ -2,20 +2,19 @@ require('isomorphic-fetch');
 require('abortcontroller-polyfill');
 
 import {
-  //   CreateSourceModel,
   PlatformClient,
-  //   SecurityIdentityAliasModel,
-  //   SecurityIdentityBatchConfig,
-  //   SecurityIdentityDelete,
-  //   SecurityIdentityDeleteOptions,
-  //   SecurityIdentityModel,
+  SecurityIdentityAliasModel,
+  SecurityIdentityBatchConfig,
+  SecurityIdentityDelete,
+  SecurityIdentityDeleteOptions,
+  SecurityIdentityModel,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {DocumentBuilder} from './documentBuilder';
-// import dayjs = require('dayjs');
+import dayjs = require('dayjs');
 import {URL} from 'url';
 import {consumeGenerator} from './help/generator';
 import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
@@ -28,7 +27,9 @@ import {
   platformUrl,
   PlatformUrlOptions,
 } from './environment';
-import {FileContainerResponse} from './source';
+import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from './errors/fieldErrors';
+import {createFields} from './fieldAnalyser/utils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 export enum SupportedSourceType {
@@ -58,7 +59,15 @@ export type UploadBatchCallback = (
   data: UploadBatchCallbackData
 ) => void;
 
-export interface BatchUpdateDocumentsFromFiles {
+export interface BatchUpdateDocumentsOptions {
+  /**
+   * Whether to create fields required in the index based on the document batch metadata.
+   */
+  createFields?: boolean;
+}
+
+export interface BatchUpdateDocumentsFromFiles
+  extends BatchUpdateDocumentsOptions {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
    * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
@@ -68,19 +77,10 @@ export interface BatchUpdateDocumentsFromFiles {
   maxConcurrent?: number;
 }
 
-interface StreamResponse extends FileContainerResponse {
-  streamId: string;
-}
-
-function makeid(length: number) {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
+export interface FileContainerResponse {
+  uploadUri: string;
+  fileId: string;
+  requiredHeaders: Record<string, string>;
 }
 
 /**
@@ -95,8 +95,7 @@ export class CatalogSource {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
-  // TODO: should be 256 * 1024 * 1024 for stream
-  private static maxContentLength = 156 * 1024 * 1024;
+  private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -125,94 +124,189 @@ export class CatalogSource {
   public create(name: string, sourceVisibility: SourceVisibility) {
     return this.platformClient.source.create({
       sourceType: SourceType.CATALOG,
-      streamEnabled: true,
+      pushEnabled: true,
       name,
       sourceVisibility,
     });
   }
 
   /**
-   * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
-   * @param sourceID
-   * @param docBuilder
+   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
+   * @param securityProviderId
+   * @param securityIdentity
    * @returns
    */
-  public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
-    //   TODO: should update
-    // const doc = docBuilder.build();
-    // const addURL = new URL(this.getBaseAPIURLForStream(sourceID));
-    // addURL.searchParams.append('documentId', doc.uri);
-    // return axios.put(
-    //   addURL.toString(),
-    //   docBuilder.marshal(),
-    //   this.documentsAxiosConfig
-    // );
+  public createSecurityIdentity(
+    securityProviderId: string,
+    securityIdentity: SecurityIdentityModel
+  ) {
+    return this.platformClient.pushApi.createOrUpdateSecurityIdentity(
+      securityProviderId,
+      securityIdentity
+    );
   }
 
   /**
-   * Does a full Catalog uplaod and [Full Catalog upload](https://docs.coveo.com/en/2956/coveo-for-commerce/index-commerce-catalog-content-with-the-stream-api#step-4-stream-your-catalog-data-to-your-source).
-   * TODO: check if it really deletes all documents
+   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
+   * @param securityProviderId
+   * @param securityIdentityAlias
+   * @returns
+   */
+  public createOrUpdateSecurityIdentityAlias(
+    securityProviderId: string,
+    securityIdentityAlias: SecurityIdentityAliasModel
+  ) {
+    return this.platformClient.pushApi.createOrUpdateSecurityIdentityAlias(
+      securityProviderId,
+      securityIdentityAlias
+    );
+  }
+
+  /**
+   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
+   * @param securityProviderId
+   * @param securityIdentityToDelete
+   * @returns
+   */
+  public deleteSecurityIdentity(
+    securityProviderId: string,
+    securityIdentityToDelete: SecurityIdentityDelete
+  ) {
+    return this.platformClient.pushApi.deleteSecurityIdentity(
+      securityProviderId,
+      securityIdentityToDelete
+    );
+  }
+
+  /**
+   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
+   * @param securityProviderId
+   * @param batchDelete
+   * @returns
+   */
+  public deleteOldSecurityIdentities(
+    securityProviderId: string,
+    batchDelete: SecurityIdentityDeleteOptions
+  ) {
+    return this.platformClient.pushApi.deleteOldSecurityIdentities(
+      securityProviderId,
+      batchDelete
+    );
+  }
+
+  /**
+   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
+   */
+  public manageSecurityIdentities(
+    securityProviderId: string,
+    batchConfig: SecurityIdentityBatchConfig
+  ) {
+    return this.platformClient.pushApi.manageSecurityIdentities(
+      securityProviderId,
+      batchConfig
+    );
+  }
+
+  /**
+   * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
+   * @param sourceID
+   * @param docBuilder
+   * @param {BatchUpdateDocumentsOptions} [{createFields = true}={}]
+   * @returns
+   */
+  public async addOrUpdateDocument(
+    sourceID: string,
+    docBuilder: DocumentBuilder,
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+  ) {
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add([docBuilder]);
+      await this.createFields(analyser);
+    }
+
+    const doc = docBuilder.build();
+    const addURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
+    addURL.searchParams.append('documentId', doc.uri);
+    return axios.put(
+      addURL.toString(),
+      docBuilder.marshal(),
+      this.documentsAxiosConfig
+    );
+  }
+
+  /**
+   * Manage batches of items in a push source. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
    * @param sourceID
    * @param batch
    * @returns
    */
-  public async batchUploadDocuments(
-    sourceID: string,
-    batch: BatchUpdateDocuments
-  ) {
-    const fileContainer = await this.openStream(sourceID);
-    // TODO: support larger chunks
-    await this.uploadContentToStream(fileContainer, batch);
-    return this.closeStream(fileContainer.streamId, sourceID);
-  }
-
-  /**
-   * https://docs.coveo.com/en/l62e0540/coveo-for-commerce/update-your-catalog-source#step-2-upload-the-content-update-into-the-file-container
-   *
-   * @param {string} sourceID
-   * @param {BatchUpdateDocuments} batch
-   * @return {*}
-   */
   public async batchUpdateDocuments(
     sourceID: string,
     batch: BatchUpdateDocuments,
-    resetCatalog = false // or something like that
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    //   TODO:
-    // Create a source instance and use batch update document
-    // Only thing to change is getBaseAPIURLForDocuments from
-    // - return `${this.baseAPIURL}/sources/${sourceID}/documents`; .../batch
-    // - return `${this.baseAPIURL}/sources/${sourceID}/stream`; ... /update
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add(batch.addOrUpdate);
+      await this.createFields(analyser);
+    }
+
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
-  public async batchUploadDocumentsFromFiles(
+  /**
+   *
+   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * @param {string} sourceID The unique identifier of the target Push source
+   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
+   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
+   * @param {BatchUpdateDocumentsFromFiles} options
+   */
+  public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     callback: UploadBatchCallback,
-    {maxConcurrent = 1}: BatchUpdateDocumentsFromFiles = {}
+    options?: BatchUpdateDocumentsFromFiles
   ) {
-    console.log('open stream');
-    // const fileContainer = await this.openStream(sourceID);
-    const fileContainer = {
-      fileId: makeid(10),
-      streamId: makeid(10),
-      uploadUri: makeid(10),
-      requiredHeaders: {},
+    const defaultOptions = {
+      maxConcurrent: 10,
+      createFields: true,
     };
-
-    console.log('get all files');
+    const {maxConcurrent, createFields: createFields} = {
+      ...defaultOptions,
+      ...options,
+    };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
+
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
+
     const fileNames = files.map((path) => basename(path));
-    console.log('get all chunks');
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
       sourceID,
-      fileContainer,
       fileNames,
       callback
     );
+
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
 
     // parallelize uploads within the same file
     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
@@ -232,52 +326,7 @@ export class CatalogSource {
 
     await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
     await close();
-
-    console.log('close stream');
-    return this.closeStream(fileContainer.streamId, sourceID);
   }
-
-  /**
-   *
-   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
-   * @param {string} sourceID The unique identifier of the target Push source
-   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
-   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
-   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
-   */
-  //   public async batchUpdateDocumentsFromFiles(
-  //     sourceID: string,
-  //     filesOrDirectories: string[],
-  //     callback: UploadBatchCallback,
-  //     {maxConcurrent = 1}: BatchUpdateDocumentsFromFiles = {}
-  //   ) {
-  //     const files = getAllJsonFilesFromEntries(filesOrDirectories);
-  //     const fileNames = files.map((path) => basename(path));
-  //     const chunksToUpload = this.splitByChunkAndUpload(
-  //       sourceID,
-  //       fileContainer,
-  //       fileNames,
-  //       callback
-  //     );
-
-  //     // parallelize uploads within the same file
-  //     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
-  //       for (const upload of chunksToUpload(docBuilders)) {
-  //         yield upload();
-  //       }
-  //     };
-
-  //     // parallelize uploads across multiple files
-  //     const fileGenerator = function* () {
-  //       for (const filePath of files.values()) {
-  //         const docBuilders =
-  //           parseAndGetDocumentBuilderFromJSONDocument(filePath);
-  //         yield* docBuilderGenerator(docBuilders);
-  //       }
-  //     };
-
-  //     await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
-  //   }
 
   /**
    * Deletes a specific item from a Push source. Optionally, the child items of that item can also be deleted. See [Deleting an Item in a Push Source](https://docs.coveo.com/en/171).
@@ -291,11 +340,10 @@ export class CatalogSource {
     documentId: string,
     deleteChildren = false
   ) {
-    //   TODO:
-    // const deleteURL = new URL(this.getBaseAPIURLForStream(sourceID));
-    // deleteURL.searchParams.append('documentId', documentId);
-    // deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
-    // return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+    const deleteURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
+    deleteURL.searchParams.append('documentId', documentId);
+    deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
   }
 
   /**
@@ -308,21 +356,32 @@ export class CatalogSource {
     sourceID: string,
     olderThan: Date | string | number
   ) {
-    //   TODO: not sure that is supported
-    // const date = dayjs(olderThan);
-    // const deleteURL = new URL(
-    //   `${this.getBaseAPIURLForStream(sourceID)}/olderthan`
-    // );
-    // deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
-    // return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+    const date = dayjs(olderThan);
+    const deleteURL = new URL(
+      `${this.getBaseAPIURLForDocuments(sourceID)}/olderthan`
+    );
+    deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+  }
+
+  /**
+   * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
+   * @param sourceID
+   * @param status
+   * @returns
+   */
+  public setSourceStatus(sourceID: string, status: SourceStatus) {
+    const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
+    urlStatus.searchParams.append('statusType', status);
+    return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
   private get baseAPIURL() {
     return `${platformUrl(this.options)}/${this.organizationid}`;
   }
 
-  private getBaseAPIURLForStream(sourceID: string) {
-    return `${this.baseAPIURL}/sources/${sourceID}/stream`;
+  private getBaseAPIURLForDocuments(sourceID: string) {
+    return `${this.baseAPIURL}/sources/${sourceID}/documents`;
   }
 
   private get documentsAxiosConfig(): AxiosRequestConfig {
@@ -331,8 +390,17 @@ export class CatalogSource {
     };
   }
 
+  private async createFields(analyser: FieldAnalyser) {
+    const {fields, inconsistencies} = analyser.report();
+
+    if (inconsistencies.size > 0) {
+      throw new FieldTypeInconsistencyError(inconsistencies);
+    }
+    await createFields(this.platformClient, fields);
+  }
+
   private getFileContainerAxiosConfig(
-    fileContainer: StreamResponse | FileContainerResponse
+    fileContainer: FileContainerResponse
   ): AxiosRequestConfig {
     return {
       headers: fileContainer.requiredHeaders,
@@ -384,73 +452,21 @@ export class CatalogSource {
     sourceID: string,
     fileContainer: FileContainerResponse
   ) {
-    const pushURL = new URL(`${this.getBaseAPIURLForStream(sourceID)}/update`);
+    const pushURL = new URL(
+      `${this.getBaseAPIURLForDocuments(sourceID)}/batch`
+    );
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
   }
 
-  private async openStream(sourceID: string) {
-    const streamUrl = new URL(`${this.getBaseAPIURLForStream(sourceID)}/open`);
-    const res = await axios.post(
-      streamUrl.toString(),
-      {},
-      this.documentsAxiosConfig
-    );
-    return res.data as StreamResponse;
-  }
-
-  private async uploadContentToStream(
-    fileContainer: StreamResponse,
-    batch: BatchUpdateDocuments
-  ) {
-    const uploadURL = new URL(fileContainer.uploadUri);
-    return await axios.put(
-      uploadURL.toString(),
-      {
-        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
-          docBuilder.marshal()
-        ),
-        delete: batch.delete,
-      },
-      this.getFileContainerAxiosConfig(fileContainer)
-    );
-  }
-
-  private async getStreamChunk(streamID: string, sourceID: string) {
-    const streamUrl = new URL(
-      `${this.getBaseAPIURLForStream(sourceID)}/${streamID}`
-    );
-    const res = await axios.post(
-      streamUrl.toString(),
-      {},
-      this.documentsAxiosConfig
-    );
-    return res.data as StreamResponse;
-  }
-
-  private async closeStream(streamID: string, sourceID: string) {
-    const streamUrl = new URL(
-      `${this.getBaseAPIURLForStream(sourceID)}/${streamID}/close`
-    );
-    const res = await axios.post(
-      streamUrl.toString(),
-      {},
-      this.documentsAxiosConfig
-    );
-    return res.data as StreamResponse;
-  }
-
   private splitByChunkAndUpload(
     sourceID: string,
-    fileContainer: StreamResponse,
     fileNames: string[],
     callback: UploadBatchCallback,
     accumulator = this.accumulator
   ) {
     const chunksToUpload = (documentBuilders: DocumentBuilder[]) => {
       const batchesToUpload: Array<() => Promise<void>> = [];
-      // TODO: handle initial push
-      // let initialPush = true;
 
       for (const docBuilder of documentBuilders) {
         const sizeOfDoc = Buffer.byteLength(
@@ -460,19 +476,9 @@ export class CatalogSource {
         if (accumulator.size + sizeOfDoc >= CatalogSource.maxContentLength) {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
-            console.log(' -> Push to batch');
-            batchesToUpload.push(async () => {
-              fileContainer = await this.getNewStreamChunk(
-                fileContainer.streamId,
-                sourceID
-              );
-              return this.uploadBatch(
-                fileContainer,
-                chunks,
-                fileNames,
-                callback
-              );
-            });
+            batchesToUpload.push(() =>
+              this.uploadBatch(sourceID, chunks, fileNames, callback)
+            );
           }
           accumulator.chunks = [docBuilder];
           accumulator.size = sizeOfDoc;
@@ -484,54 +490,26 @@ export class CatalogSource {
       return batchesToUpload;
     };
     const close = async () => {
-      console.log('---- Close');
-      //   TODO: handle initial push
-      //   if (!initialPush) {
-      //     console.log('last initialPush: ' + initialPush);
-      //     fileContainer = await this.getNewStreamChunk();
-      //   }
-      fileContainer = await this.getNewStreamChunk();
-      return this.uploadBatch(
-        fileContainer,
-        accumulator.chunks,
-        fileNames,
-        callback
-      );
+      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, callback);
     };
     return {chunksToUpload, close};
   }
 
-  private async getNewStreamChunk(
-    streamID: string,
-    sourceID: string
-  ): Promise<StreamResponse> {
-    // return this.getStreamChunk(fileContainer.streamId, sourceID);
-    return {
-      fileId: makeid(10),
-      streamId: makeid(10),
-      uploadUri: makeid(10),
-      requiredHeaders: {},
-    };
-  }
-
   private async uploadBatch(
-    filecontainer: StreamResponse,
+    sourceID: string,
     batch: DocumentBuilder[],
     fileNames: string[],
     callback: UploadBatchCallback
   ) {
     try {
-      console.log('New File container: ' + filecontainer.streamId);
-      //   const res = await this.uploadContentToStream(filecontainer, {
-      //     addOrUpdate: batch,
-      //     delete: [],
-      //   });
-
-      const res: any = await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve({status: 200, statusText: 'All good'});
-        }, 500);
-      });
+      const res = await this.batchUpdateDocuments(
+        sourceID,
+        {
+          addOrUpdate: batch,
+          delete: [],
+        },
+        {createFields: false}
+      );
       callback(null, {
         files: fileNames,
         batch,

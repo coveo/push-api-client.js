@@ -32,10 +32,10 @@ import {FieldTypeInconsistencyError} from './errors/fieldErrors';
 import {createFields} from './fieldAnalyser/utils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-export enum SupportedSourceType {
-  PUSH = SourceType.PUSH,
-  CATALOG = SourceType.CATALOG,
-}
+// export enum SupportedSourceType {
+//   PUSH = SourceType.PUSH,
+//   CATALOG = SourceType.CATALOG,
+// }
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
@@ -121,9 +121,13 @@ export class Source {
    * @param sourceVisibility The security option that should be applied to the content of the source. See [Content Security](https://docs.coveo.com/en/1779).
    * @returns
    */
-  public create(name: string, sourceVisibility: SourceVisibility) {
+  public create(
+    name: string,
+    sourceVisibility: SourceVisibility,
+    sourceType: SourceType.PUSH | SourceType.CATALOG = SourceType.PUSH
+  ) {
     return this.platformClient.source.create({
-      sourceType: SourceType.PUSH,
+      sourceType,
       pushEnabled: true,
       name,
       sourceVisibility,
