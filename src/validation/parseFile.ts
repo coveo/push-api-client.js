@@ -19,7 +19,7 @@ import {
   InvalidDocument,
   NotAFileError,
   NotAJsonFileError,
-} from './validatorErrors';
+} from '../errors/validatorErrors';
 import {RequiredKeyValidator} from './requiredKeyValidator';
 
 export const parseAndGetDocumentBuilderFromJSONDocument = (

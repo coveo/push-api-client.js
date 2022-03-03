@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/coveo/push-api-client.js/compare/v1.5.7...v1.6.0) (2022-03-01)
+
+
+### Features
+
+* add field analyser module ([#102](https://github.com/coveo/push-api-client.js/issues/102)) ([93cf6f1](https://github.com/coveo/push-api-client.js/commit/93cf6f1d0d8291efa29a11eab87d55d43accfd3a)), closes [#91](https://github.com/coveo/push-api-client.js/issues/91) [#92](https://github.com/coveo/push-api-client.js/issues/92) [#95](https://github.com/coveo/push-api-client.js/issues/95) [#96](https://github.com/coveo/push-api-client.js/issues/96) [#97](https://github.com/coveo/push-api-client.js/issues/97) [#101](https://github.com/coveo/push-api-client.js/issues/101)
+
+### [1.5.7](https://github.com/coveo/push-api-client.js/compare/v1.5.6...v1.5.7) (2022-02-28)
+
+### [1.5.6](https://github.com/coveo/push-api-client.js/compare/v1.5.5...v1.5.6) (2022-02-28)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#99](https://github.com/coveo/push-api-client.js/issues/99)) ([c65cec4](https://github.com/coveo/push-api-client.js/commit/c65cec473834f061cf3a3ca49f5a547c10e943e5))
+
+### [1.5.5](https://github.com/coveo/push-api-client.js/compare/v1.5.4...v1.5.5) (2022-02-28)
+
+### [1.5.4](https://github.com/coveo/push-api-client.js/compare/v1.5.3...v1.5.4) (2022-02-21)
+
+### [1.5.3](https://github.com/coveo/push-api-client.js/compare/v1.5.2...v1.5.3) (2022-02-21)
+
 ### [1.5.2](https://github.com/coveo/push-api-client.js/compare/v1.5.1...v1.5.2) (2022-02-14)
 
 ### [1.5.1](https://github.com/coveo/push-api-client.js/compare/v1.5.0...v1.5.1) (2022-02-14)

@@ -27,6 +27,9 @@ import {
   platformUrl,
   PlatformUrlOptions,
 } from './environment';
+import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from './errors/fieldErrors';
+import {createFields} from './fieldAnalyser/utils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 export enum SupportedSourceType {
@@ -56,7 +59,15 @@ export type UploadBatchCallback = (
   data: UploadBatchCallbackData
 ) => void;
 
-export interface BatchUpdateDocumentsFromFiles {
+export interface BatchUpdateDocumentsOptions {
+  /**
+   * Whether to create fields required in the index based on the document batch metadata.
+   */
+  createFields?: boolean;
+}
+
+export interface BatchUpdateDocumentsFromFiles
+  extends BatchUpdateDocumentsOptions {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
    * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
@@ -200,9 +211,20 @@ export class Source {
    * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
    * @param sourceID
    * @param docBuilder
+   * @param {BatchUpdateDocumentsOptions} [{createFields = true}={}]
    * @returns
    */
-  public addOrUpdateDocument(sourceID: string, docBuilder: DocumentBuilder) {
+  public async addOrUpdateDocument(
+    sourceID: string,
+    docBuilder: DocumentBuilder,
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+  ) {
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add([docBuilder]);
+      await this.createFields(analyser);
+    }
+
     const doc = docBuilder.build();
     const addURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
     addURL.searchParams.append('documentId', doc.uri);
@@ -221,8 +243,15 @@ export class Source {
    */
   public async batchUpdateDocuments(
     sourceID: string,
-    batch: BatchUpdateDocuments
+    batch: BatchUpdateDocuments,
+    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add(batch.addOrUpdate);
+      await this.createFields(analyser);
+    }
+
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
@@ -234,21 +263,50 @@ export class Source {
    * @param {string} sourceID The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
-   * @param {BatchUpdateDocumentsFromFiles} [{maxConcurrent = 10}={}]
+   * @param {BatchUpdateDocumentsFromFiles} options
    */
   public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     callback: UploadBatchCallback,
-    {maxConcurrent = 10}: BatchUpdateDocumentsFromFiles = {}
+    options?: BatchUpdateDocumentsFromFiles
   ) {
+    const defaultOptions = {
+      maxConcurrent: 10,
+      createFields: true,
+    };
+    const {maxConcurrent, createFields: createFields} = {
+      ...defaultOptions,
+      ...options,
+    };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
+
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
+
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(
       sourceID,
       fileNames,
       callback
     );
+
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
 
     // parallelize uploads within the same file
     const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
@@ -330,6 +388,15 @@ export class Source {
     return {
       headers: this.documentsRequestHeaders,
     };
+  }
+
+  private async createFields(analyser: FieldAnalyser) {
+    const {fields, inconsistencies} = analyser.report();
+
+    if (inconsistencies.size > 0) {
+      throw new FieldTypeInconsistencyError(inconsistencies);
+    }
+    await createFields(this.platformClient, fields);
   }
 
   private getFileContainerAxiosConfig(
@@ -435,10 +502,14 @@ export class Source {
     callback: UploadBatchCallback
   ) {
     try {
-      const res = await this.batchUpdateDocuments(sourceID, {
-        addOrUpdate: batch,
-        delete: [],
-      });
+      const res = await this.batchUpdateDocuments(
+        sourceID,
+        {
+          addOrUpdate: batch,
+          delete: [],
+        },
+        {createFields: false}
+      );
       callback(null, {
         files: fileNames,
         batch,
