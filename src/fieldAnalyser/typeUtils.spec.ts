@@ -2,7 +2,7 @@ import {FieldTypes} from '@coveord/platform-client';
 import {getGuessedTypeFromValue, isValidTypeTransition} from './typeUtils';
 
 describe('typeUtils', () => {
-  const signedIntegerLimit = 2147483647;
+  const signedIntegerLimit = 0b1111111111111111111111111111111;
 
   it.each([
     // String

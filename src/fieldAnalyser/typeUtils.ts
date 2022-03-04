@@ -1,19 +1,19 @@
 import {FieldTypes} from '@coveord/platform-client';
 
-const acceptedTransitions: Partial<Record<FieldTypes, FieldTypes[]>> = {
-  [FieldTypes.LONG]: [FieldTypes.LONG_64, FieldTypes.DOUBLE],
-  [FieldTypes.LONG_64]: [FieldTypes.DOUBLE],
-};
+const acceptedTransitions: Array<{from: FieldTypes; to: Array<FieldTypes>}> = [
+  {from: FieldTypes.LONG, to: [FieldTypes.LONG_64, FieldTypes.DOUBLE]},
+  {from: FieldTypes.LONG_64, to: [FieldTypes.DOUBLE]},
+];
 
 export function isValidTypeTransition(
   currentState: FieldTypes,
   nextState: FieldTypes
 ): boolean {
   const sameStateTransition = currentState === nextState;
-  const differentStateTransition = (
-    acceptedTransitions[currentState] || []
-  ).includes(nextState);
-  return sameStateTransition || differentStateTransition;
+  const differentStateTransition = acceptedTransitions
+    .find((a) => a.from === currentState)
+    ?.to.includes(nextState);
+  return sameStateTransition || Boolean(differentStateTransition);
 }
 
 export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
