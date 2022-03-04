@@ -29,7 +29,7 @@ import {
 } from './environment';
 import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from './errors/fieldErrors';
-import {createFields} from './fieldAnalyser/utils';
+import {createFields} from './fieldAnalyser/fieldUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
