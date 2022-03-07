@@ -1,11 +1,10 @@
 import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
 import {DocumentBuilder, MetadataValue} from '..';
-import {listAllFieldsFromOrg} from './utils';
+import {listAllFieldsFromOrg} from './fieldUtils';
 import {FieldStore} from './fieldStore';
 import {Inconsistencies} from './inconsistencies';
 import {InvalidPermanentId} from '../errors/fieldErrors';
-
-type FieldTypeMap = Map<FieldTypes, number>;
+import {getGuessedTypeFromValue, isValidTypeTransition} from './typeUtils';
 
 export type FieldAnalyserReport = {
   fields: FieldModel[];
@@ -17,14 +16,13 @@ export type FieldAnalyserReport = {
  *
  */
 export class FieldAnalyser {
-  private static fieldTypePrecedence = ['DOUBLE', 'STRING'];
   private inconsistencies: Inconsistencies;
-  private missingFields: Map<string, FieldTypeMap>;
+  private missingFields: FieldStore;
   private existingFields: FieldModel[] | undefined;
 
   public constructor(private platformClient: PlatformClient) {
     this.inconsistencies = new Inconsistencies();
-    this.missingFields = new Map();
+    this.missingFields = new FieldStore();
   }
 
   /**
@@ -56,30 +54,35 @@ export class FieldAnalyser {
    * @return {*}  {FieldAnalyserReport}
    */
   public report(): FieldAnalyserReport {
-    const fieldStore = this.getFieldTypes();
-    this.ensurePermanentId(fieldStore);
+    this.ensurePermanentId(this.missingFields);
+    this.removeInconsistentFields();
 
     return {
-      fields: fieldStore.marshal(),
+      fields: this.missingFields.marshal(),
       inconsistencies: this.inconsistencies,
     };
   }
 
-  private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
-    const initialTypeCount = 1;
-    const metadataType = this.getGuessedTypeFromValue(metadataValue);
-    const fieldTypeMap = this.missingFields.get(metadataKey);
+  private removeInconsistentFields() {
+    for (const fieldname of this.inconsistencies.keys()) {
+      this.missingFields.delete(fieldname);
+    }
+  }
 
-    if (fieldTypeMap) {
-      // Possible metadata inconsitency
-      const fieldTypeCount = fieldTypeMap.get(metadataType);
-      fieldTypeMap.set(
-        metadataType,
-        fieldTypeCount ? fieldTypeCount + 1 : initialTypeCount
-      );
+  private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
+    const alreadyGuessedType = this.missingFields.get(metadataKey);
+    const newGuessedType = getGuessedTypeFromValue(metadataValue);
+
+    if (
+      !alreadyGuessedType ||
+      isValidTypeTransition(alreadyGuessedType, newGuessedType)
+    ) {
+      this.missingFields.set(metadataKey, newGuessedType);
     } else {
-      const newFieldTypeMap = new Map().set(metadataType, initialTypeCount);
-      this.missingFields.set(metadataKey, newFieldTypeMap);
+      this.inconsistencies.add(metadataKey, [
+        alreadyGuessedType,
+        newGuessedType,
+      ]);
     }
   }
 
@@ -102,65 +105,5 @@ export class FieldAnalyser {
     } else {
       fieldStore.set('permanentid', FieldTypes.STRING);
     }
-  }
-
-  private getFieldTypes(): FieldStore {
-    const fieldStore = new FieldStore();
-
-    this.missingFields.forEach((fieldTypeMap, fieldName) => {
-      this.storePossibleTypeInconsistencies(fieldName, fieldTypeMap);
-      const fieldType = this.getMostProbableType(fieldTypeMap);
-      fieldStore.set(fieldName, fieldType);
-    });
-
-    return fieldStore;
-  }
-
-  private storePossibleTypeInconsistencies(
-    fieldName: string,
-    fieldTypeMap: FieldTypeMap
-  ) {
-    if (fieldTypeMap.size > 1) {
-      const fieldTypes = Array.from(fieldTypeMap.keys());
-      this.inconsistencies.add(fieldName, fieldTypes);
-    }
-  }
-
-  public getMostProbableType(field: FieldTypeMap): FieldTypes {
-    const sortedType = Array.from(field.entries()).sort(
-      (a: [FieldTypes, number], b: [FieldTypes, number]) => {
-        const countDiff = b[1] - a[1];
-        return countDiff ? countDiff : this.typeCompare(a[0], b[0]);
-      }
-    );
-    return sortedType[0][0];
-  }
-
-  private typeCompare(field1: FieldTypes, field2: FieldTypes): number {
-    const precedence = (field: FieldTypes) =>
-      FieldAnalyser.fieldTypePrecedence.indexOf(field);
-    if (precedence(field1) < precedence(field2)) {
-      return 1;
-    }
-    if (precedence(field1) > precedence(field2)) {
-      return -1;
-    }
-    return 0;
-  }
-
-  private getGuessedTypeFromValue(obj: unknown): FieldTypes {
-    switch (typeof obj) {
-      case 'number':
-        return this.getSpecificNumericType(obj);
-      case 'string':
-        return FieldTypes.STRING;
-      default:
-        return FieldTypes.STRING;
-    }
-  }
-
-  private getSpecificNumericType(_number: number): FieldTypes {
-    // TODO: CDX-838 Support LONG, LONG32 and DATE types
-    return FieldTypes.DOUBLE;
   }
 }
