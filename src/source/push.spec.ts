@@ -6,14 +6,14 @@ import PlatformClient, {
   FieldTypes,
   SourceVisibility,
 } from '@coveord/platform-client';
-import {BatchUpdateDocuments, Source} from './source';
-import {DocumentBuilder} from './documentBuilder';
+import {BatchUpdateDocuments, PushSource} from './push';
+import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
-import {FieldAnalyser, PlatformEnvironment, Region} from '.';
-import {Inconsistencies} from './fieldAnalyser/inconsistencies';
-import {FieldTypeInconsistencyError} from './errors/fieldErrors';
+import {FieldAnalyser, PlatformEnvironment, Region} from '..';
+import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -62,15 +62,15 @@ const doMockFieldAnalyser = () => {
   );
 };
 
-describe('Source', () => {
-  let source: Source;
+describe('PushSource', () => {
+  let source: PushSource;
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
   });
 
   beforeEach(() => {
-    source = new Source('the_key', 'the_org');
+    source = new PushSource('the_key', 'the_org');
   });
 
   const expectedDocumentsHeaders = {
@@ -107,7 +107,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right region', async () => {
-    const australianSource = new Source('the_key', 'the_org', {
+    const australianSource = new PushSource('the_key', 'the_org', {
       region: Region.AU,
     });
     await australianSource.addOrUpdateDocument(
@@ -124,7 +124,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right environment', async () => {
-    await new Source('the_key', 'the_org', {
+    await new PushSource('the_key', 'the_org', {
       environment: PlatformEnvironment.Dev,
     }).addOrUpdateDocument(
       'the_id',
@@ -140,7 +140,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right region and environment', async () => {
-    await new Source('the_key', 'the_org', {
+    await new PushSource('the_key', 'the_org', {
       environment: PlatformEnvironment.QA,
       region: Region.EU,
     }).addOrUpdateDocument(
@@ -360,7 +360,7 @@ describe('Source', () => {
   });
 
   describe('when enabling auto field creation', () => {
-    let source: Source;
+    let source: PushSource;
     let batch: BatchUpdateDocuments;
 
     beforeAll(() => {
@@ -375,7 +375,7 @@ describe('Source', () => {
 
     beforeEach(() => {
       doAxiosMockPost();
-      source = new Source('the_key', 'the_org');
+      source = new PushSource('the_key', 'the_org');
     });
 
     describe('when there are no inconsistencies', () => {
