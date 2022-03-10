@@ -9,16 +9,16 @@ import {basename} from 'path';
 import {consumeGenerator} from './generator';
 import {AxiosResponse} from 'axios';
 
-export type SuccessCallback = (data: UploadBatchCallbackData) => void;
-export type ErrorCallback = (
+export type SuccessfulUploadCallback = (data: UploadBatchCallbackData) => void;
+export type FailedUploadCallback = (
   err: unknown,
   value: UploadBatchCallbackData
 ) => void;
 
 export class FileConsumer {
   // TODO: initialize with dummy functions
-  private cbSuccess: SuccessCallback = () => {};
-  private cbFail: ErrorCallback = () => {};
+  private cbSuccess: SuccessfulUploadCallback = () => {};
+  private cbFail: FailedUploadCallback = () => {};
 
   public constructor(
     private upload: (
@@ -55,17 +55,18 @@ export class FileConsumer {
     };
 
     return {
-      onBatchUpload: (callback: SuccessCallback) => this.onSuccess(callback),
-      onBatchError: (callback: ErrorCallback) => this.onError(callback),
+      onBatchUpload: (callback: SuccessfulUploadCallback) =>
+        this.onSuccess(callback),
+      onBatchError: (callback: FailedUploadCallback) => this.onError(callback),
       promise: consumePromise(),
     };
   }
 
-  private onSuccess(callback: SuccessCallback) {
+  private onSuccess(callback: SuccessfulUploadCallback) {
     this.cbSuccess = callback;
   }
 
-  private onError(callback: ErrorCallback) {
+  private onError(callback: FailedUploadCallback) {
     this.cbFail = callback;
   }
 

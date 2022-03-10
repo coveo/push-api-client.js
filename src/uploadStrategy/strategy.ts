@@ -1,4 +1,7 @@
-import type {ErrorCallback, SuccessCallback} from '../help/fileConsumer';
+import type {
+  FailedUploadCallback,
+  SuccessfulUploadCallback,
+} from '../help/fileConsumer';
 import type {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 
 export interface Strategy {
@@ -7,8 +10,8 @@ export interface Strategy {
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) => Promise<{
-    onBatchError: (callback: ErrorCallback) => void;
-    onBatchUpload: (callback: SuccessCallback) => void;
+    onBatchError: (callback: FailedUploadCallback) => void;
+    onBatchUpload: (callback: SuccessfulUploadCallback) => void;
     done: () => Promise<void>;
   }>;
   doTheMagicSingleBatch: (

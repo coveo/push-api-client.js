@@ -6,7 +6,6 @@ import {
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {SourceVisibility} from '@coveord/platform-client';
 import {getAllJsonFilesFromEntries} from '../help';
 import {
   castEnvironmentToPlatformClient,
@@ -35,7 +34,7 @@ import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFil
  *
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
-export class PushSource {
+export class CatalogSource {
   private securityIdentityManager: SecurityIdentityManager;
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
@@ -51,9 +50,9 @@ export class PushSource {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options: PlatformUrlOptions = PushSource.defaultOptions
+    options: PlatformUrlOptions = CatalogSource.defaultOptions
   ) {
-    this.options = {...PushSource.defaultOptions, ...options};
+    this.options = {...CatalogSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),
