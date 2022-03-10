@@ -19,15 +19,13 @@ import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentityManager} from './securityIdentityManager';
 import {StreamChunkStrategy} from '../uploadStrategy/streamStrategy';
-import {
-  FileContainerStrategy,
-  Strategy,
-} from '../uploadStrategy/fileContainerStrategy';
+import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from './interfaces';
+import {Strategy} from '../uploadStrategy/chunkSPlitter';
 
 /**
  * Manage a push source.
@@ -94,13 +92,7 @@ export class PushSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      await analyser.add(batch.addOrUpdate);
-      await this.createFields(analyser);
-    }
-
-    return this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
+    this.singleBatch(this.fileContainerStrategy, sourceId, batch, createFields);
   }
 
   public async initialLoad(
@@ -114,13 +106,13 @@ export class PushSource {
       await this.createFields(analyser);
     }
 
-    this.singleBatch(sourceId, batch, this.streamChunkStrategy, this.create);
+    this.singleBatch(this.streamChunkStrategy, sourceId, batch, createFields);
   }
 
   public async singleBatch(
+    strategy: Strategy,
     sourceId: string,
     batch: BatchUpdateDocuments,
-    strategy: Strategy,
     createFields = true
   ) {
     if (createFields) {
@@ -143,13 +135,12 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const strategy = new FileContainerStrategy();
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-    if (createFields) {
-      // ...
-    }
-
-    return strategy.doTheMagic(sourceId, files);
+    return this.multipleBatches(
+      this.fileContainerStrategy,
+      sourceId,
+      filesOrDirectories,
+      options
+    );
   }
 
   public fullLoadFromFiles(
@@ -157,29 +148,25 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-    if (createFields) {
-      // ...
-    }
-    this.multipleBatches(
+    return this.multipleBatches(
+      this.streamChunkStrategy,
       sourceId,
       filesOrDirectories,
-      this.streamChunkStrategy,
       options
     );
   }
 
   public multipleBatches(
+    strategy: Strategy,
     sourceId: string,
     filesOrDirectories: string[],
-    strategy: Strategy,
     options?: BatchUpdateDocumentsFromFiles
   ) {
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     if (createFields) {
       // ...
     }
-    strategy.doTheMagic(sourceId, files);
+    return strategy.doTheMagic(sourceId, files);
   }
 
   // public async sourceContainsDocuments(): Promise<boolean> {

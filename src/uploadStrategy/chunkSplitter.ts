@@ -10,6 +10,22 @@ import {consumeGenerator} from '../help/generator';
 import {AxiosResponse} from 'axios';
 
 // TODO: put in interface
+export interface Strategy {
+  doTheMagic: (
+    sourceId: string,
+    files: string[]
+  ) => Promise<{
+    onBatchError: (callback: ErrorCallback) => void;
+    onBatchUpload: (callback: SuccessCallback) => void;
+    done: () => Promise<void>;
+  }>;
+  doTheMagicSingleBatch: (
+    sourceId: string,
+    batch: BatchUpdateDocuments
+  ) => void;
+}
+
+// TODO: put in interface
 export type SuccessCallback = (data: UploadBatchCallbackData) => void;
 export type ErrorCallback = (
   err: unknown,
@@ -42,7 +58,7 @@ export class BatchConsumer {
   }
 
   public consume(files: string[]) {
-    const done = async () => {
+    const consumePromise = async () => {
       const fileNames = files.map((path) => basename(path));
       const {chunksToUpload, close} = this.splitByChunkAndUpload(fileNames);
 
@@ -68,28 +84,22 @@ export class BatchConsumer {
       await close();
     };
 
-    const onBatchUpload = (callback: SuccessCallback) =>
-      this.onSuccess(callback);
-    const onBatchError = (callback: ErrorCallback) => this.onError(callback);
-
     return {
-      onBatchUpload,
-      onBatchError,
-      done,
+      onBatchUpload: (callback: SuccessCallback) => this.onSuccess(callback),
+      onBatchError: (callback: ErrorCallback) => this.onError(callback),
+      promise: consumePromise(),
     };
   }
 
-  public onSuccess(callback: SuccessCallback): BatchConsumer {
+  private onSuccess(callback: SuccessCallback) {
     this.cbSuccess = callback;
-    return this;
   }
 
-  public onError(callback: ErrorCallback): BatchConsumer {
+  private onError(callback: ErrorCallback) {
     this.cbFail = callback;
-    return this;
   }
 
-  public splitByChunkAndUpload(
+  private splitByChunkAndUpload(
     fileNames: string[],
     accumulator = this.accumulator
   ) {

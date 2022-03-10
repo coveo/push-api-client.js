@@ -12,21 +12,6 @@ export interface FileContainerResponse {
   requiredHeaders: Record<string, string>;
 }
 
-export interface Strategy {
-  doTheMagic: (
-    sourceId: string,
-    files: string[]
-  ) => Promise<{
-    onBatchError: (callback: ErrorCallback) => BatchConsumer;
-    onBatchUpload: (callback: SuccessCallback) => BatchConsumer;
-    done: () => Promise<void>;
-  }>;
-  doTheMagicSingleBatch: (
-    sourceId: string,
-    batch: BatchUpdateDocuments
-  ) => void;
-}
-
 // TODO: rename
 export class FileContainerStrategy implements Strategy {
   public constructor(
@@ -39,12 +24,12 @@ export class FileContainerStrategy implements Strategy {
     const upload = (batch: BatchUpdateDocuments) =>
       this.uploadWrapper(sourceId)(batch);
     const batchConsumer = new BatchConsumer(upload);
-    const {onBatchError, onBatchUpload, done} = batchConsumer.consume(files);
+    const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
 
     return {
       onBatchError,
       onBatchUpload,
-      done,
+      done: () => promise,
     };
   }
 

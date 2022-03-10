@@ -3,9 +3,8 @@ import {URL} from 'url';
 import {BatchUpdateDocuments} from '../source/interfaces';
 import {platformUrl, PlatformUrlOptions} from '../environment';
 import {axiosRequestHeaders} from '../source/axiosUtils';
-import {BatchConsumer} from './chunkSPlitter';
+import {BatchConsumer, Strategy} from './chunkSPlitter';
 import {uploadContentToFileContainer} from './fileContainerUtilis';
-import {Strategy} from './fileContainerStrategy';
 
 export interface StreamResponse {
   uploadUri: string;
@@ -36,20 +35,19 @@ export class StreamChunkStrategy implements Strategy {
     const upload = (batch: BatchUpdateDocuments) =>
       this.uploadWrapper(sourceId, streamId)(batch);
     const batchConsumer = new BatchConsumer(upload);
-    const {onBatchError, onBatchUpload, done} = batchConsumer.consume(files);
-    const closeStreamPromise = this.closeStream(sourceId, streamId);
+    const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
 
-    const allPromises = () =>
-      new Promise<void>((resolve, reject) => {
-        Promise.all([closeStreamPromise, done()])
-          .then(() => resolve())
-          .catch((e) => reject(e));
-      });
+    const endPromise = async () => {
+      await promise;
+      await this.closeStream(sourceId, streamId);
+    };
+
+    const done = endPromise();
 
     return {
       onBatchError,
       onBatchUpload,
-      done: allPromises,
+      done: () => done,
     };
   }
 
@@ -86,7 +84,7 @@ export class StreamChunkStrategy implements Strategy {
       `${this.baseAPIURLForStream(sourceId)}/${streamId}/close`
     );
 
-    return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
+    await axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
   }
 
   private async requestStreamChunk(
