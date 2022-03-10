@@ -39,11 +39,6 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 //   CATALOG = SourceType.CATALOG,
 // }
 
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
 /**
  *
  * @param {string[]} files Files from which the documentBuilders were generated

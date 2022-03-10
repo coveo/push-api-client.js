@@ -7,7 +7,7 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
-import {getAllJsonFilesFromEntries} from '../help/file';
+import {getAllJsonFilesFromEntries} from '../help';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
@@ -18,14 +18,17 @@ import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentityManager} from './securityIdentityManager';
-import {StreamChunkStrategy} from '../uploadStrategy/streamStrategy';
-import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
+import {
+  Strategy,
+  StreamChunkStrategy,
+  FileContainerStrategy,
+} from '../uploadStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
-} from './interfaces';
-import {Strategy} from '../uploadStrategy/chunkSPlitter';
+} from '../interfaces';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
 /**
  * Manage a push source.
@@ -92,7 +95,12 @@ export class PushSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    this.singleBatch(this.fileContainerStrategy, sourceId, batch, createFields);
+    await this.singleBatch(
+      this.fileContainerStrategy,
+      sourceId,
+      batch,
+      createFields
+    );
   }
 
   public async initialLoad(
@@ -106,7 +114,12 @@ export class PushSource {
       await this.createFields(analyser);
     }
 
-    this.singleBatch(this.streamChunkStrategy, sourceId, batch, createFields);
+    await this.singleBatch(
+      this.streamChunkStrategy,
+      sourceId,
+      batch,
+      createFields
+    );
   }
 
   public async singleBatch(
@@ -156,26 +169,34 @@ export class PushSource {
     );
   }
 
-  public multipleBatches(
+  public async multipleBatches(
     strategy: Strategy,
     sourceId: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
+    const defaultOptions = {
+      maxConcurrent: 10,
+      createFields: true,
+    };
+    const {createFields, maxConcurrent} = {
+      ...defaultOptions,
+      ...options,
+    };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
-    if (createFields) {
-      // ...
-    }
-    return strategy.doTheMagic(sourceId, files);
-  }
 
-  // public async sourceContainsDocuments(): Promise<boolean> {
-  //   // useful to know if should return an error when a user tries to udpate a source before doing a full load
-  //   throw new Error('TODO:');
-  //   throw new Error(
-  //     `no documents detected for this source. You probably want to perform an full catalog uplaod first.`
-  //   );
-  // }
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
+    }
+
+    return strategy.doTheMagic(sourceId, files, {maxConcurrent});
+  }
 
   private get fileContainerStrategy() {
     return new FileContainerStrategy(

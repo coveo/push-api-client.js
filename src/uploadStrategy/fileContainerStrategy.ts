@@ -1,10 +1,13 @@
-import axios, {AxiosResponse} from 'axios';
+import axios from 'axios';
 import {URL} from 'url';
-import {BatchUpdateDocuments} from '../source/interfaces';
+import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 import {platformUrl, PlatformUrlOptions} from '../environment';
-import {BatchConsumer, ErrorCallback, SuccessCallback} from './chunkSPlitter';
-import {axiosRequestHeaders} from '../source/axiosUtils';
-import {uploadContentToFileContainer} from './fileContainerUtilis';
+import {Strategy} from './strategy';
+import {
+  FileConsumer,
+  axiosRequestHeaders,
+  uploadContentToFileContainer,
+} from '../help';
 
 export interface FileContainerResponse {
   uploadUri: string;
@@ -20,10 +23,14 @@ export class FileContainerStrategy implements Strategy {
     private options: Required<PlatformUrlOptions>
   ) {}
 
-  public async doTheMagic(sourceId: string, files: string[]) {
+  public async doTheMagic(
+    sourceId: string,
+    files: string[],
+    processingConfig: Required<ConcurrentProcessing>
+  ) {
     const upload = (batch: BatchUpdateDocuments) =>
       this.uploadWrapper(sourceId)(batch);
-    const batchConsumer = new BatchConsumer(upload);
+    const batchConsumer = new FileConsumer(upload, processingConfig);
     const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
 
     return {

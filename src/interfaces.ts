@@ -1,5 +1,5 @@
-import {AxiosResponse} from 'axios';
-import {DocumentBuilder} from '../documentBuilder';
+import type {AxiosResponse} from 'axios';
+import type {DocumentBuilder} from './documentBuilder';
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];

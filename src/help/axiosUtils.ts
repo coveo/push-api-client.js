@@ -1,4 +1,3 @@
-// TODO: Put in separate folder and rename
 export const axiosRequestHeaders = (apikey: string) => {
   const authorizationHeader = {
     Authorization: `Bearer ${apikey}`,

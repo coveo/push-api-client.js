@@ -1,7 +1,7 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
-import {BatchUpdateDocuments} from '../source/interfaces';
-import {FileContainerResponse} from './fileContainerStrategy';
+import {BatchUpdateDocuments} from '../interfaces';
+import {FileContainerResponse} from '../uploadStrategy/fileContainerStrategy';
 
 export const uploadContentToFileContainer = async (
   fileContainer: FileContainerResponse,

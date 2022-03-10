@@ -1,10 +1,13 @@
 import axios from 'axios';
 import {URL} from 'url';
-import {BatchUpdateDocuments} from '../source/interfaces';
+import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 import {platformUrl, PlatformUrlOptions} from '../environment';
-import {axiosRequestHeaders} from '../source/axiosUtils';
-import {BatchConsumer, Strategy} from './chunkSPlitter';
-import {uploadContentToFileContainer} from './fileContainerUtilis';
+import {Strategy} from './strategy';
+import {
+  FileConsumer,
+  uploadContentToFileContainer,
+  axiosRequestHeaders,
+} from '../help';
 
 export interface StreamResponse {
   uploadUri: string;
@@ -13,15 +16,6 @@ export interface StreamResponse {
   streamId: string;
 }
 
-// // TODO: remove circular deps by moving in its separate file
-// export interface Strategy {
-//   // doTheMagic --> shoulbe called uploadFromFile
-//   upload: (batch: BatchUpdateDocuments) => Promise<AxiosResponse<any, any>>;
-// }
-
-// TODO: rename
-// TODO: make static or functions
-// export class StreamChunkStrategy implements Strategy {
 export class StreamChunkStrategy implements Strategy {
   public constructor(
     private organizationId: string,
@@ -29,12 +23,17 @@ export class StreamChunkStrategy implements Strategy {
     private options: Required<PlatformUrlOptions>
   ) {}
 
-  public async doTheMagic(sourceId: string, files: string[]) {
+  // TODO: rename
+  public async doTheMagic(
+    sourceId: string,
+    files: string[],
+    processingConfig: Required<ConcurrentProcessing>
+  ) {
     // TODO: check if can simplify by removing the arrow function
-    const streamId = await this.getNewStream(sourceId);
+    const {streamId} = await this.openStream(sourceId);
     const upload = (batch: BatchUpdateDocuments) =>
       this.uploadWrapper(sourceId, streamId)(batch);
-    const batchConsumer = new BatchConsumer(upload);
+    const batchConsumer = new FileConsumer(upload, processingConfig);
     const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
 
     const endPromise = async () => {
@@ -51,11 +50,12 @@ export class StreamChunkStrategy implements Strategy {
     };
   }
 
+  // TODO: rename
   public async doTheMagicSingleBatch(
     sourceId: string,
     batch: BatchUpdateDocuments
   ) {
-    const streamId = await this.getNewStream(sourceId); // openNewStreamIfnecessary
+    const {streamId} = await this.openStream(sourceId);
     await this.uploadWrapper(sourceId, streamId)(batch);
     await this.closeStream(sourceId, streamId);
   }
@@ -64,19 +64,17 @@ export class StreamChunkStrategy implements Strategy {
     // TODO: rename
     return async (batch: BatchUpdateDocuments) => {
       const chunk = await this.requestStreamChunk(sourceId, streamId);
-      return uploadContentToFileContainer(chunk, batch); // TODO: maybe rename
+      return uploadContentToFileContainer(chunk, batch);
     };
   }
 
-  private async getNewStream(sourceId: string): Promise<string> {
+  private async openStream(sourceId: string): Promise<StreamResponse> {
     const openStreamUrl = new URL(`${this.baseAPIURLForStream(sourceId)}/open`);
-    const res: StreamResponse = await axios.post(
+    return await axios.post(
       openStreamUrl.toString(),
       {},
       this.documentsAxiosConfig
     );
-
-    return res.streamId;
   }
 
   private async closeStream(sourceId: string, streamId: string) {
