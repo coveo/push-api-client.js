@@ -72,8 +72,7 @@ export class PushSource {
       region: this.options.region,
     });
     this.securityIdentityManager = new SecurityIdentityManager(
-      this.platformClient,
-      options
+      this.platformClient
     );
   }
 
@@ -139,7 +138,7 @@ export class PushSource {
       await analyser.add(batch.addOrUpdate);
       await this.createFields(analyser);
     }
-    await this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
+    return this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
   }
 
   // TODO: document

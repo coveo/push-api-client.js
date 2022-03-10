@@ -8,55 +8,15 @@ import {
   SecurityIdentityDelete,
   SecurityIdentityDeleteOptions,
   SecurityIdentityModel,
-  SourceType,
-  SourceVisibility,
 } from '@coveord/platform-client';
-export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosResponse} from 'axios';
-import {DocumentBuilder} from '../documentBuilder';
-import {URL} from 'url';
-import {consumeGenerator} from '../help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {basename} from 'path';
-import {getAllJsonFilesFromEntries} from '../help/file';
-import {
-  castEnvironmentToPlatformClient,
-  DEFAULT_ENVIRONMENT,
-  DEFAULT_REGION,
-  platformUrl,
-  PlatformUrlOptions,
-} from '../environment';
-import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
-import {createFields} from '../fieldAnalyser/fieldUtils';
-import {authorizeAxiosRequests} from '../help/axiosUtils';
 
-export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-/**
- * Manage a push source.
- *
- * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
- */
 export class SecurityIdentityManager {
-  private options: Required<PlatformUrlOptions>;
-  private static defaultOptions: Required<PlatformUrlOptions> = {
-    region: DEFAULT_REGION,
-    environment: DEFAULT_ENVIRONMENT,
-  };
-  private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param organizationid The Coveo Organization identifier.
    */
-  constructor(
-    private platformClient: PlatformClient,
-    options: PlatformUrlOptions = SecurityIdentityManager.defaultOptions
-  ) {
-    this.options = {...SecurityIdentityManager.defaultOptions, ...options};
-    // authorizeAxiosRequests(this.apikey); // TODO: not sure that is the best strategy to use. it can be hard to troubleshoot and test
-  }
+  constructor(private platformClient: PlatformClient) {}
 
   /**
    * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).

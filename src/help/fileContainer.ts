@@ -8,7 +8,7 @@ export const uploadContentToFileContainer = async (
   batch: BatchUpdateDocuments
 ) => {
   const uploadURL = new URL(fileContainer.uploadUri);
-  return await axios.put(
+  return axios.put(
     uploadURL.toString(),
     {
       addOrUpdate: batch.addOrUpdate.map((docBuilder) => docBuilder.marshal()),

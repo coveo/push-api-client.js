@@ -60,8 +60,7 @@ export class CatalogSource {
       region: this.options.region,
     });
     this.securityIdentityManager = new SecurityIdentityManager(
-      this.platformClient,
-      options
+      this.platformClient
     );
   }
 
@@ -94,7 +93,7 @@ export class CatalogSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    await this.singleBatch(
+    return this.singleBatch(
       this.fileContainerStrategy,
       sourceId,
       batch,
@@ -113,7 +112,7 @@ export class CatalogSource {
       await this.createFields(analyser);
     }
 
-    await this.singleBatch(
+    return this.singleBatch(
       this.streamChunkStrategy,
       sourceId,
       batch,
@@ -132,7 +131,7 @@ export class CatalogSource {
       await analyser.add(batch.addOrUpdate);
       await this.createFields(analyser);
     }
-    strategy.doTheMagicSingleBatch(sourceId, batch);
+    return strategy.doTheMagicSingleBatch(sourceId, batch);
   }
 
   /**

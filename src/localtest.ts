@@ -1,12 +1,13 @@
 // eslint-disable-next-line node/no-unpublished-import
 import 'dotenv/config';
 import {DocumentBuilder} from './documentBuilder';
+import { BatchUpdateDocuments } from './interfaces';
 import {UserSecurityIdentityBuilder} from './securityIdentityBuilder';
 const API_KEY = process.env.API_KEY as string;
 const ORG_ID = process.env.ORG_ID as string;
 const SOURCE_ID = process.env.SOURCE_ID as string;
 
-import {BatchUpdateDocuments, PushSource} from './source/push';
+import {PushSource} from './source/push';
 
 async function main() {
   const source = new PushSource(API_KEY, ORG_ID);

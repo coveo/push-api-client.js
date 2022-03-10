@@ -57,7 +57,7 @@ export class StreamChunkStrategy implements Strategy {
   ) {
     const {streamId} = await this.openStream(sourceId);
     await this.uploadWrapper(sourceId, streamId)(batch);
-    await this.closeStream(sourceId, streamId);
+    return this.closeStream(sourceId, streamId);
   }
 
   private uploadWrapper(sourceId: string, streamId: string) {
@@ -82,7 +82,7 @@ export class StreamChunkStrategy implements Strategy {
       `${this.baseAPIURLForStream(sourceId)}/${streamId}/close`
     );
 
-    await axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
+    return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
   }
 
   private async requestStreamChunk(

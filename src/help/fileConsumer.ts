@@ -17,6 +17,7 @@ export type FailedUploadCallback = (
 
 export class FileConsumer {
   // TODO: initialize with dummy functions
+  private static maxContentLength = 5 * 1024 * 1024;
   private cbSuccess: SuccessfulUploadCallback = () => {};
   private cbFail: FailedUploadCallback = () => {};
 
@@ -82,10 +83,7 @@ export class FileConsumer {
           JSON.stringify(docBuilder.marshal())
         );
 
-        if (
-          accumulator.size + sizeOfDoc >=
-          this.processingConfig.maxContentLength
-        ) {
+        if (accumulator.size + sizeOfDoc >= FileConsumer.maxContentLength) {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
             batchesToUpload.push(() => this.uploadBatch(chunks, fileNames));

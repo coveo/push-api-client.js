@@ -44,7 +44,7 @@ export class FileContainerStrategy implements Strategy {
     sourceId: string,
     batch: BatchUpdateDocuments
   ) {
-    await this.uploadWrapper(sourceId)(batch);
+    return this.uploadWrapper(sourceId)(batch);
   }
 
   /**
@@ -64,12 +64,12 @@ export class FileContainerStrategy implements Strategy {
 
   private async createFileContainer() {
     const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
-    const res = await axios.post(
+    const res = await axios.post<FileContainerResponse>(
       fileContainerURL.toString(),
       {},
       this.documentsAxiosConfig
     );
-    return res.data as FileContainerResponse;
+    return res.data;
   }
 
   private pushFileContainerContent(

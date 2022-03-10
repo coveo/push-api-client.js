@@ -1,3 +1,4 @@
+import {AxiosResponse} from 'axios';
 import type {
   FailedUploadCallback,
   SuccessfulUploadCallback,
@@ -17,5 +18,5 @@ export interface Strategy {
   doTheMagicSingleBatch: (
     sourceId: string,
     batch: BatchUpdateDocuments
-  ) => void;
+  ) => Promise<AxiosResponse>;
 }
