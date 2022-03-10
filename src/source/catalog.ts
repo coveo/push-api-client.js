@@ -161,7 +161,25 @@ export class PushSource {
     if (createFields) {
       // ...
     }
-    this.streamChunkStrategy.doTheMagic(sourceId, files);
+    this.multipleBatches(
+      sourceId,
+      filesOrDirectories,
+      this.streamChunkStrategy,
+      options
+    );
+  }
+
+  public multipleBatches(
+    sourceId: string,
+    filesOrDirectories: string[],
+    strategy: Strategy,
+    options?: BatchUpdateDocumentsFromFiles
+  ) {
+    const files = getAllJsonFilesFromEntries(filesOrDirectories);
+    if (createFields) {
+      // ...
+    }
+    strategy.doTheMagic(sourceId, files);
   }
 
   // public async sourceContainsDocuments(): Promise<boolean> {

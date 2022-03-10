@@ -29,7 +29,7 @@ import {
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {authorizeAxiosRequests} from './rest';
+import {authorizeAxiosRequests} from './axiosUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
