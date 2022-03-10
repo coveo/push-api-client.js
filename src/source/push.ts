@@ -30,7 +30,7 @@ import {
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {SecurityIdentityManager} from './baseSource';
+import {SecurityIdentityManager} from './securityIdentityManager';
 import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
@@ -50,34 +50,6 @@ export interface BatchUpdateDocuments {
  * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
  * @param {AxiosResponse} res Axios response
  */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
-
-export type UploadBatchCallback = (
-  err: unknown | null,
-  data: UploadBatchCallbackData
-) => void;
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
 
 /**
  * Manage a push source.

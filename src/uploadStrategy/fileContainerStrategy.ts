@@ -1,9 +1,10 @@
-import axios, {AxiosRequestConfig} from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import {URL} from 'url';
-import {BatchUpdateDocuments, DocumentBuilder, PlatformUrlOptions} from '..';
-import {platformUrl} from '../environment';
-import {UploadBatchCallback} from '../source/baseSource';
-import {BatchConsumer} from './chunkSPlitter';
+import {BatchUpdateDocuments} from '../source/interfaces';
+import {platformUrl, PlatformUrlOptions} from '../environment';
+import {BatchConsumer, ErrorCallback, SuccessCallback} from './chunkSPlitter';
+import {axiosRequestHeaders} from '../source/axiosUtils';
+import {uploadContentToFileContainer} from './fileContainerUtilis';
 
 export interface FileContainerResponse {
   uploadUri: string;
@@ -11,26 +12,47 @@ export interface FileContainerResponse {
   requiredHeaders: Record<string, string>;
 }
 
-export interface endpointOptions {
-  baseUrl: string;
-  updateUrl: string;
-  axiosConfig: Object;
+export interface Strategy {
+  doTheMagic: (
+    sourceId: string,
+    files: string[]
+  ) => Promise<{
+    onBatchError: (callback: ErrorCallback) => BatchConsumer;
+    onBatchUpload: (callback: SuccessCallback) => BatchConsumer;
+    done: () => Promise<void>;
+  }>;
+  doTheMagicSingleBatch: (
+    sourceId: string,
+    batch: BatchUpdateDocuments
+  ) => void;
 }
 
 // TODO: rename
-// TODO: make static
-export class FileContainerStrategy {
-  public constructor() {}
+export class FileContainerStrategy implements Strategy {
+  public constructor(
+    private organizationId: string,
+    private apiKey: string,
+    private options: Required<PlatformUrlOptions>
+  ) {}
 
-  public doTheMagic(
+  public async doTheMagic(sourceId: string, files: string[]) {
+    const upload = (batch: BatchUpdateDocuments) =>
+      this.uploadWrapper(sourceId)(batch);
+    const batchConsumer = new BatchConsumer(upload);
+    const {onBatchError, onBatchUpload, done} = batchConsumer.consume(files);
+
+    return {
+      onBatchError,
+      onBatchUpload,
+      done,
+    };
+  }
+
+  public async doTheMagicSingleBatch(
     sourceId: string,
-    files: string[],
-    callback: UploadBatchCallback // TODO: remove circular dep
+    batch: BatchUpdateDocuments
   ) {
-    const uploadMethod = (sourceId: string, batch: BatchUpdateDocuments) =>
-      this.upload(sourceId, batch);
-
-    return new BatchConsumer(uploadMethod).consume(sourceId, files, callback);
+    await this.uploadWrapper(sourceId)(batch);
   }
 
   /**
@@ -39,10 +61,13 @@ export class FileContainerStrategy {
    * @param batch
    * @returns
    */
-  public async upload(sourceId: string, batch: BatchUpdateDocuments) {
-    const fileContainer = await this.createFileContainer();
-    await this.uploadContentToFileContainer(fileContainer, batch);
-    return this.pushFileContainerContent(sourceId, fileContainer);
+  public uploadWrapper(sourceId: string) {
+    // TODO: rename
+    return async (batch: BatchUpdateDocuments) => {
+      const fileContainer = await this.createFileContainer();
+      await uploadContentToFileContainer(fileContainer, batch);
+      return this.pushFileContainerContent(sourceId, fileContainer);
+    };
   }
 
   private async createFileContainer() {
@@ -55,39 +80,24 @@ export class FileContainerStrategy {
     return res.data as FileContainerResponse;
   }
 
-  private async uploadContentToFileContainer(
-    fileContainer: FileContainerResponse,
-    batch: BatchUpdateDocuments
-  ) {
-    const uploadURL = new URL(fileContainer.uploadUri);
-    return await axios.put(
-      uploadURL.toString(),
-      {
-        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
-          docBuilder.marshal()
-        ),
-        delete: batch.delete,
-      },
-      this.getFileContainerAxiosConfig(fileContainer)
-    );
-  }
-
-  private getFileContainerAxiosConfig(
-    fileContainer: FileContainerResponse
-  ): AxiosRequestConfig {
-    return {
-      headers: fileContainer.requiredHeaders,
-    };
-  }
-
   private pushFileContainerContent(
     sourceId: string,
     fileContainer: FileContainerResponse
   ) {
-    const pushURL = new URL(
-      `${this.getBaseAPIURLForDocuments(sourceId)}/batch`
-    );
+    const pushURL = new URL(`${this.baseAPIURLForDocuments(sourceId)}/batch`);
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
+  }
+
+  private baseAPIURLForDocuments(sourceId: string) {
+    return `${this.baseAPIURL}/sources/${sourceId}/documents`;
+  }
+
+  private get documentsAxiosConfig() {
+    return axiosRequestHeaders(this.apiKey);
+  }
+
+  private get baseAPIURL() {
+    return `${platformUrl(this.options)}/${this.organizationId}`;
   }
 }

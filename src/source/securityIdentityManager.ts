@@ -29,51 +29,9 @@ import {
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {authorizeAxiosRequests} from './interceptors';
-import {FieldCreator} from '../fieldAnalyser/fieldCreator';
+import {authorizeAxiosRequests} from './rest';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
-/**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
-
-export interface FileContainerResponse {
-  uploadUri: string;
-  fileId: string;
-  requiredHeaders: Record<string, string>;
-}
 
 /**
  * Manage a push source.

@@ -3,78 +3,31 @@ require('abortcontroller-polyfill');
 
 import {
   PlatformClient,
-  SecurityIdentityAliasModel,
-  SecurityIdentityBatchConfig,
-  SecurityIdentityDelete,
-  SecurityIdentityDeleteOptions,
-  SecurityIdentityModel,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-import {DocumentBuilder} from '../documentBuilder';
-import dayjs = require('dayjs');
-import {URL} from 'url';
-import {consumeGenerator} from '../help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {basename} from 'path';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
-  platformUrl,
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {SecurityIdentityManager} from './baseSource';
+import {SecurityIdentityManager} from './securityIdentityManager';
 import {StreamChunkStrategy} from '../uploadStrategy/streamStrategy';
-import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
-
-export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
-/**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
-
-export type UploadBatchCallback = (
-  err: unknown | null,
-  data: UploadBatchCallbackData
-) => void;
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
+import {
+  FileContainerStrategy,
+  Strategy,
+} from '../uploadStrategy/fileContainerStrategy';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsFromFiles,
+  BatchUpdateDocumentsOptions,
+} from './interfaces';
 
 /**
  * Manage a push source.
@@ -147,8 +100,7 @@ export class PushSource {
       await this.createFields(analyser);
     }
 
-    const strategy = new FileContainerStrategy(sourceId);
-    return strategy.doTheMagicOneBatch(batch);
+    return this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
   }
 
   public async initialLoad(
@@ -162,8 +114,21 @@ export class PushSource {
       await this.createFields(analyser);
     }
 
-    const strategy = new StreamChunkStrategy(sourceId);
-    await strategy.doTheMagicSingleBatch(batch);
+    this.singleBatch(sourceId, batch, this.streamChunkStrategy, this.create);
+  }
+
+  public async singleBatch(
+    sourceId: string,
+    batch: BatchUpdateDocuments,
+    strategy: Strategy,
+    createFields = true
+  ) {
+    if (createFields) {
+      const analyser = new FieldAnalyser(this.platformClient);
+      await analyser.add(batch.addOrUpdate);
+      await this.createFields(analyser);
+    }
+    strategy.doTheMagicSingleBatch(sourceId, batch);
   }
 
   /**
@@ -171,13 +136,11 @@ export class PushSource {
    * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
    * @param {string} sourceId The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
-   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} options
    */
   public async batchUpdateDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
-    callback: UploadBatchCallback,
     options?: BatchUpdateDocumentsFromFiles
   ) {
     const strategy = new FileContainerStrategy();
@@ -186,22 +149,19 @@ export class PushSource {
       // ...
     }
 
-    return strategy.doTheMagic(sourceId, files, callback);
+    return strategy.doTheMagic(sourceId, files);
   }
 
   public fullLoadFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
-    callback: UploadBatchCallback,
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const strategy = new StreamChunkStrategy();
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
     if (createFields) {
       // ...
     }
-
-    return strategy.doTheMagic(files);
+    this.streamChunkStrategy.doTheMagic(sourceId, files);
   }
 
   // public async sourceContainsDocuments(): Promise<boolean> {
@@ -212,12 +172,20 @@ export class PushSource {
   //   );
   // }
 
-  private get baseAPIURL() {
-    return `${platformUrl(this.options)}/${this.organizationid}`;
+  private get fileContainerStrategy() {
+    return new FileContainerStrategy(
+      this.organizationid,
+      this.apikey,
+      this.options
+    );
   }
 
-  private getBaseAPIURLForDocuments(sourceId: string) {
-    return `${this.baseAPIURL}/sources/${sourceId}/documents`;
+  private get streamChunkStrategy() {
+    return new StreamChunkStrategy(
+      this.organizationid,
+      this.apikey,
+      this.options
+    );
   }
 
   private async createFields(analyser: FieldAnalyser) {

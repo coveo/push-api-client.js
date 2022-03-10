@@ -1,20 +1,45 @@
-import {DocumentBuilder, UploadBatchCallbackData} from '..';
+import {DocumentBuilder} from '../documentBuilder';
+import {
+  BatchUpdateDocuments,
+  UploadBatchCallbackData,
+  ConcurrentProcessing,
+} from '../source/interfaces';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
 import {consumeGenerator} from '../help/generator';
-import {Strategy} from './streamStrategy';
+import {AxiosResponse} from 'axios';
 
-type SuccessCallback = (data: UploadBatchCallbackData) => void;
-type ErrorCallback = (err: unknown, value: UploadBatchCallbackData) => void;
+// TODO: put in interface
+export type SuccessCallback = (data: UploadBatchCallbackData) => void;
+export type ErrorCallback = (
+  err: unknown,
+  value: UploadBatchCallbackData
+) => void;
+
+export interface BatchConsumerOptions extends ConcurrentProcessing {
+  maxContentLength?: number;
+}
 
 // TODO: rename StrategyConsumer
 export class BatchConsumer {
-  private static maxContentLength = 5 * 1024 * 1024;
+  private static defaultOptions: Required<BatchConsumerOptions> = {
+    maxConcurrent: 10,
+    maxContentLength: 5 * 1024 * 1024,
+  };
+  private options: Required<BatchConsumerOptions>;
   // TODO: initialize with dummy functions
   private cbSuccess: SuccessCallback = () => {};
   private cbFail: ErrorCallback = () => {};
 
-  public constructor(private strategy: Strategy) {}
+  // public constructor(private strategy: Strategy) {}
+  public constructor(
+    private upload: (
+      batch: BatchUpdateDocuments
+    ) => Promise<AxiosResponse<any, any>>, // TODO: review any
+    options?: BatchConsumerOptions
+  ) {
+    this.options = {...BatchConsumer.defaultOptions, ...options};
+  }
 
   public consume(files: string[]) {
     const done = async () => {
@@ -36,7 +61,10 @@ export class BatchConsumer {
         }
       };
 
-      await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
+      await consumeGenerator(
+        fileGenerator.bind(this),
+        this.options.maxConcurrent
+      );
       await close();
     };
 
@@ -73,7 +101,7 @@ export class BatchConsumer {
           JSON.stringify(docBuilder.marshal())
         );
 
-        if (accumulator.size + sizeOfDoc >= BatchConsumer.maxContentLength) {
+        if (accumulator.size + sizeOfDoc >= this.options.maxContentLength) {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
             batchesToUpload.push(() => this.uploadBatch(chunks, fileNames));
@@ -95,7 +123,7 @@ export class BatchConsumer {
 
   private async uploadBatch(batch: DocumentBuilder[], fileNames: string[]) {
     try {
-      const res = await this.strategy.upload({
+      const res = await this.upload({
         addOrUpdate: batch,
         delete: [],
       });
