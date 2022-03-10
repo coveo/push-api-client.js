@@ -3,22 +3,13 @@ require('abortcontroller-polyfill');
 
 import {
   PlatformClient,
-  SecurityIdentityAliasModel,
-  SecurityIdentityBatchConfig,
-  SecurityIdentityDelete,
-  SecurityIdentityDeleteOptions,
-  SecurityIdentityModel,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
-export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {consumeGenerator} from '../help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {basename} from 'path';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
@@ -28,16 +19,19 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentityManager} from './securityIdentityManager';
 import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsFromFiles,
+  BatchUpdateDocumentsOptions,
+} from '../interfaces';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {axiosRequestHeaders} from '../help';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-// export enum SupportedSourceType {
-//   PUSH = SourceType.PUSH,
-//   CATALOG = SourceType.CATALOG,
-// }
 
 /**
  *
@@ -52,15 +46,14 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private source: SecurityIdentityManager;
-  // TODO: maybe will no longer need to use this.platformclient
+  private securityIdentityManager: SecurityIdentityManager;
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
-  private static maxContentLength = 5 * 1024 * 1024;
+
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -78,79 +71,28 @@ export class PushSource {
       organizationId: this.organizationid,
       region: this.options.region,
     });
-    this.source = new SecurityIdentityManager(apikey, organizationid, options);
+    this.securityIdentityManager = new SecurityIdentityManager(
+      this.platformClient,
+      options
+    );
   }
 
   /**
-   * Create a new push source
+   * Create a new catalog source
    * @param name The name of the source to create.
    * @param sourceVisibility The security option that should be applied to the content of the source. See [Content Security](https://docs.coveo.com/en/1779).
    * @returns
    */
   public create(name: string, sourceVisibility: SourceVisibility) {
-    return this.source.create(name, sourceVisibility, SourceType.PUSH);
+    return this.platformClient.source.create({
+      name,
+      sourceVisibility,
+      sourceType: SourceType.PUSH,
+    });
   }
 
-  /**
-   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
-   * @param securityProviderId
-   * @param securityIdentity
-   * @returns
-   */
-  public createSecurityIdentity(
-    securityProviderId: string,
-    securityIdentity: SecurityIdentityModel
-  ) {
-    // TODO: base source
-  }
-
-  /**
-   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
-   * @param securityProviderId
-   * @param securityIdentityAlias
-   * @returns
-   */
-  public createOrUpdateSecurityIdentityAlias(
-    securityProviderId: string,
-    securityIdentityAlias: SecurityIdentityAliasModel
-  ) {
-    // TODO: base source
-  }
-
-  /**
-   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
-   * @param securityProviderId
-   * @param securityIdentityToDelete
-   * @returns
-   */
-  public deleteSecurityIdentity(
-    securityProviderId: string,
-    securityIdentityToDelete: SecurityIdentityDelete
-  ) {
-    // TODO: base source
-  }
-
-  /**
-   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
-   * @param securityProviderId
-   * @param batchDelete
-   * @returns
-   */
-  public deleteOldSecurityIdentities(
-    securityProviderId: string,
-    batchDelete: SecurityIdentityDeleteOptions
-  ) {
-    // TODO: base source
-  }
-
-  /**
-   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
-   */
-  public manageSecurityIdentities(
-    securityProviderId: string,
-    batchConfig: SecurityIdentityBatchConfig
-  ) {
-    // TODO: base source
+  public get identity() {
+    return this.securityIdentityManager;
   }
 
   /**
@@ -174,7 +116,11 @@ export class PushSource {
     const doc = docBuilder.build();
     const addURL = new URL(this.getBaseAPIURLForDocuments(sourceId));
     addURL.searchParams.append('documentId', doc.uri);
-    return axios.put(addURL.toString(), docBuilder.marshal());
+    return axios.put(
+      addURL.toString(),
+      docBuilder.marshal(),
+      this.documentsAxiosConfig
+    );
   }
 
   /**
@@ -193,32 +139,38 @@ export class PushSource {
       await analyser.add(batch.addOrUpdate);
       await this.createFields(analyser);
     }
-
-    const strategy = new FileContainerStrategy();
-    await strategy.upload(sourceId, batch);
+    await this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
   }
 
-  /**
-   *
-   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
-   * @param {string} sourceId The unique identifier of the target Push source
-   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
-   * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
-   * @param {BatchUpdateDocumentsFromFiles} options
-   */
+  // TODO: document
   public async batchUpdateDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
-    callback: UploadBatchCallback,
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const strategy = new FileContainerStrategy();
+    const defaultOptions = {
+      maxConcurrent: 10,
+      createFields: true,
+    };
+    const {createFields, maxConcurrent} = {
+      ...defaultOptions,
+      ...options,
+    };
     const files = getAllJsonFilesFromEntries(filesOrDirectories);
+
     if (createFields) {
-      // ... TODO:
+      const analyser = new FieldAnalyser(this.platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        await analyser.add(docBuilders);
+      }
+      await this.createFields(analyser);
     }
 
-    await strategy.doTheMagic(sourceId, files, callback);
+    return this.fileContainerStrategy.doTheMagic(sourceId, files, {
+      maxConcurrent,
+    });
   }
 
   /**
@@ -236,7 +188,19 @@ export class PushSource {
     const deleteURL = new URL(this.getBaseAPIURLForDocuments(sourceId));
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
-    return axios.delete(deleteURL.toString());
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+  }
+
+  /**
+   * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
+   * @param sourceID
+   * @param status
+   * @returns
+   */
+  public setSourceStatus(sourceID: string, status: SourceStatus) {
+    const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
+    urlStatus.searchParams.append('statusType', status);
+    return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
   /**
@@ -254,7 +218,19 @@ export class PushSource {
       `${this.getBaseAPIURLForDocuments(sourceId)}/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
-    return axios.delete(deleteURL.toString());
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
+  }
+
+  private get documentsAxiosConfig() {
+    return axiosRequestHeaders(this.apikey);
+  }
+
+  private get fileContainerStrategy() {
+    return new FileContainerStrategy(
+      this.organizationid,
+      this.apikey,
+      this.options
+    );
   }
 
   private get baseAPIURL() {
@@ -263,5 +239,14 @@ export class PushSource {
 
   private getBaseAPIURLForDocuments(sourceId: string) {
     return `${this.baseAPIURL}/sources/${sourceId}/documents`;
+  }
+
+  private async createFields(analyser: FieldAnalyser) {
+    const {fields, inconsistencies} = analyser.report();
+
+    if (inconsistencies.size > 0) {
+      throw new FieldTypeInconsistencyError(inconsistencies);
+    }
+    await createFields(this.platformClient, fields);
   }
 }
