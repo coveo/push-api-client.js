@@ -1,8 +1,4 @@
-import {
-  Source,
-  UploadBatchCallback,
-  UploadBatchCallbackData,
-} from '@coveo/push-api-client';
+import {PushSource, UploadBatchCallbackData} from '@coveo/push-api-client';
 
 function onSuccessCallback({batch, files, res}: UploadBatchCallbackData) {
   const numAdded = batch.length;
@@ -16,7 +12,7 @@ function onSuccessCallback({batch, files, res}: UploadBatchCallbackData) {
     } accepted by the Push API from ${fileNames}.`
   );
   console.log(`         Status code: ${(res?.status, res?.statusText)}
-      `);
+        `);
 }
 
 function onErrorCallback(err: unknown, {files}: UploadBatchCallbackData) {
@@ -24,7 +20,7 @@ function onErrorCallback(err: unknown, {files}: UploadBatchCallbackData) {
 }
 
 async function main() {
-  const source = new Source('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
   source.setSourceStatus('my_source_id', 'REFRESH');
 
   /**
@@ -37,18 +33,13 @@ async function main() {
     '/path/to/fileB.json',
   ];
 
-  const callback: UploadBatchCallback = (
-    err: unknown,
-    data: UploadBatchCallbackData
-  ) => {
-    if (err) {
-      onErrorCallback(err, data);
-    } else {
-      onSuccessCallback(data);
-    }
-  };
+  const {onBatchUpload, onBatchError, done} =
+    await source.batchUpdateDocumentsFromFiles('my_source_id', entries);
 
-  await source.batchUpdateDocumentsFromFiles('my_source_id', entries, callback);
+  onBatchUpload(onSuccessCallback);
+  onBatchError(onErrorCallback);
+  await done();
+
   source.setSourceStatus('my_source_id', 'IDLE');
 }
 
