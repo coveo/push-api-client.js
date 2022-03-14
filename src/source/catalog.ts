@@ -16,7 +16,7 @@ import {
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {SecurityIdentityManager} from './securityIdentityManager';
+import {SecurityIdentity} from './securityIdentityManager';
 import {
   Strategy,
   StreamChunkStrategy,
@@ -35,7 +35,7 @@ import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFil
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class CatalogSource {
-  private securityIdentityManager: SecurityIdentityManager;
+  private securityIdentityManager: SecurityIdentity;
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
@@ -59,9 +59,7 @@ export class CatalogSource {
       organizationId: this.organizationid,
       region: this.options.region,
     });
-    this.securityIdentityManager = new SecurityIdentityManager(
-      this.platformClient
-    );
+    this.securityIdentityManager = new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -73,6 +71,7 @@ export class CatalogSource {
   public create(name: string, sourceVisibility: SourceVisibility) {
     return this.platformClient.source.create({
       name,
+      streamEnabled: true,
       sourceVisibility,
       sourceType: SourceType.CATALOG,
     });

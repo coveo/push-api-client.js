@@ -20,7 +20,7 @@ import {
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {SecurityIdentityManager} from './securityIdentityManager';
+import {SecurityIdentity} from './securityIdentityManager';
 import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
 import {
   BatchUpdateDocuments,
@@ -46,7 +46,7 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private securityIdentityManager: SecurityIdentityManager;
+  private securityIdentityManager: SecurityIdentity;
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
@@ -71,9 +71,7 @@ export class PushSource {
       organizationId: this.organizationid,
       region: this.options.region,
     });
-    this.securityIdentityManager = new SecurityIdentityManager(
-      this.platformClient
-    );
+    this.securityIdentityManager = new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -85,6 +83,7 @@ export class PushSource {
   public create(name: string, sourceVisibility: SourceVisibility) {
     return this.platformClient.source.create({
       name,
+      pushEnabled: true,
       sourceVisibility,
       sourceType: SourceType.PUSH,
     });

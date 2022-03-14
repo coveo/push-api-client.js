@@ -53,7 +53,7 @@ export class FileContainerStrategy implements Strategy {
    * @param batch
    * @returns
    */
-  public uploadWrapper(sourceId: string) {
+  private uploadWrapper(sourceId: string) {
     // TODO: rename
     return async (batch: BatchUpdateDocuments) => {
       const fileContainer = await this.createFileContainer();

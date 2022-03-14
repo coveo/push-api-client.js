@@ -10,7 +10,7 @@ import {
   SecurityIdentityModel,
 } from '@coveord/platform-client';
 
-export class SecurityIdentityManager {
+export class SecurityIdentity {
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
