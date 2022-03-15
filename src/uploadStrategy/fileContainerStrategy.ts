@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
 import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 import {platformUrl, PlatformUrlOptions} from '../environment';
@@ -18,18 +18,16 @@ export interface FileContainerResponse {
 // TODO: rename
 export class FileContainerStrategy implements Strategy {
   public constructor(
-    private organizationId: string,
-    private apiKey: string,
-    private options: Required<PlatformUrlOptions>
+    private apiThingy: UrlBuilder,
+    private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
   public async doTheMagic(
-    sourceId: string,
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) {
-    const upload = (batch: BatchUpdateDocuments) =>
-      this.uploadWrapper(sourceId)(batch);
+    // TODO: remove lasy arrow if possible and use bind
+    const upload = (batch: BatchUpdateDocuments) => this.upload(batch);
     const batchConsumer = new FileConsumer(upload, processingConfig);
     const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
 
@@ -40,56 +38,81 @@ export class FileContainerStrategy implements Strategy {
     };
   }
 
-  public async doTheMagicSingleBatch(
-    sourceId: string,
-    batch: BatchUpdateDocuments
-  ) {
-    return this.uploadWrapper(sourceId)(batch);
+  public async doTheMagicSingleBatch(batch: BatchUpdateDocuments) {
+    return this.upload(batch);
   }
 
   /**
+   * TODO: document
    * Manage batches of items in a push source. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
-   * @param sourceId
-   * @param batch
-   * @returns
    */
-  private uploadWrapper(sourceId: string) {
-    // TODO: rename
-    return async (batch: BatchUpdateDocuments) => {
-      const fileContainer = await this.createFileContainer();
-      await uploadContentToFileContainer(fileContainer, batch);
-      return this.pushFileContainerContent(sourceId, fileContainer);
-    };
+  private async upload(batch: BatchUpdateDocuments) {
+    const fileContainer = await this.createFileContainer();
+    await uploadContentToFileContainer(fileContainer, batch);
+    return this.pushFileContainerContent(fileContainer);
   }
 
   private async createFileContainer() {
-    const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
+    const fileContainerURL = this.apiThingy.fileContainerUrl.toString();
     const res = await axios.post<FileContainerResponse>(
-      fileContainerURL.toString(),
+      fileContainerURL,
       {},
       this.documentsAxiosConfig
     );
     return res.data;
   }
 
-  private pushFileContainerContent(
-    sourceId: string,
-    fileContainer: FileContainerResponse
-  ) {
-    const pushURL = new URL(`${this.baseAPIURLForDocuments(sourceId)}/batch`);
+  private pushFileContainerContent(fileContainer: FileContainerResponse) {
+    const pushURL = new URL(`${this.apiThingy.baseAPIURLForUpdate}/batch`);
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
   }
+}
 
-  private baseAPIURLForDocuments(sourceId: string) {
-    return `${this.baseAPIURL}/sources/${sourceId}/documents`;
-  }
-
-  private get documentsAxiosConfig() {
-    return axiosRequestHeaders(this.apiKey);
-  }
-
-  private get baseAPIURL() {
+abstract class UrlBuilder {
+  public constructor(
+    private organizationId: string,
+    private apiKey: string,
+    private options: Required<PlatformUrlOptions>
+  ) {}
+  protected get platformURL() {
     return `${platformUrl(this.options)}/${this.organizationId}`;
+  }
+  public get fileContainerUrl() {
+    return new URL(`${this.platformURL}/files`);
+  }
+  public abstract get baseAPIURLForUpdate(): URL;
+}
+
+export class PushUrlBuilder extends UrlBuilder {
+  public constructor(
+    private sourceId: string,
+    organizationId: string,
+    apiKey: string,
+    options: Required<PlatformUrlOptions>
+  ) {
+    super(organizationId, apiKey, options);
+  }
+  public get baseURL() {
+    return new URL(`${this.platformURL}/sources/${this.sourceId}`);
+  }
+  public get baseAPIURLForUpdate() {
+    return new URL(`${this.baseURL}/documents/batch`);
+  }
+}
+export class StreamUrlBuilder extends UrlBuilder {
+  public constructor(
+    private sourceId: string,
+    organizationId: string,
+    apiKey: string,
+    options: Required<PlatformUrlOptions>
+  ) {
+    super(organizationId, apiKey, options);
+  }
+  public get baseStreamURL() {
+    return new URL(`${this.platformURL}/sources/${this.sourceId}/stream`);
+  }
+  public get baseAPIURLForUpdate() {
+    return new URL(`${this.baseStreamURL}/update`);
   }
 }

@@ -7,7 +7,6 @@ import type {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 
 export interface Strategy {
   doTheMagic: (
-    sourceId: string,
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) => Promise<{
@@ -16,7 +15,6 @@ export interface Strategy {
     done: () => Promise<void>;
   }>;
   doTheMagicSingleBatch: (
-    sourceId: string,
     batch: BatchUpdateDocuments
   ) => Promise<AxiosResponse>;
 }

@@ -20,8 +20,11 @@ import {
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFields} from '../fieldAnalyser/fieldUtils';
-import {SecurityIdentity} from './securityIdentityManager';
-import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
+import {SecurityIdentity} from './securityIdenty';
+import {
+  FileContainerStrategy,
+  PushUrlBuilder,
+} from '../uploadStrategy/fileContainerStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
@@ -30,6 +33,7 @@ import {
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {axiosRequestHeaders} from '../help';
+import {DocumentPusher} from './documentPusher';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -46,9 +50,10 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
+  private urlBuilderFactory: (sourceId: string) => PushUrlBuilder;
+  private documentPusher: DocumentPusher;
   private securityIdentityManager: SecurityIdentity;
   private platformClient: PlatformClient;
-  private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
@@ -61,17 +66,20 @@ export class PushSource {
    */
   constructor(
     private apikey: string,
-    private organizationid: string,
+    organizationid: string,
     options: PlatformUrlOptions = PushSource.defaultOptions
   ) {
-    this.options = {...PushSource.defaultOptions, ...options};
+    const opts = {...PushSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
-      accessToken: this.apikey,
-      environment: castEnvironmentToPlatformClient(this.options.environment),
-      organizationId: this.organizationid,
-      region: this.options.region,
+      accessToken: apikey,
+      environment: castEnvironmentToPlatformClient(opts.environment),
+      organizationId: organizationid,
+      region: options.region,
     });
     this.securityIdentityManager = new SecurityIdentity(this.platformClient);
+    this.documentPusher = new DocumentPusher(this.platformClient);
+    this.urlBuilderFactory = (sourceId: string) =>
+      new PushUrlBuilder(sourceId, organizationid, apikey, opts);
   }
 
   /**
@@ -112,7 +120,7 @@ export class PushSource {
     }
 
     const doc = docBuilder.build();
-    const addURL = new URL(this.getBaseAPIURLForDocuments(sourceId));
+    const addURL = this.urlBuilderFactory(sourceId).baseURL;
     addURL.searchParams.append('documentId', doc.uri);
     return axios.put(
       addURL.toString(),
@@ -132,12 +140,11 @@ export class PushSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      await analyser.add(batch.addOrUpdate);
-      await this.createFields(analyser);
-    }
-    return this.fileContainerStrategy.doTheMagicSingleBatch(sourceId, batch);
+    return this.documentPusher.singleBatch(
+      this.fileContainerStrategy(sourceId),
+      batch,
+      createFields
+    );
   }
 
   // TODO: document
@@ -146,29 +153,11 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {createFields, maxConcurrent} = {
-      ...defaultOptions,
-      ...options,
-    };
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    return this.fileContainerStrategy.doTheMagic(sourceId, files, {
-      maxConcurrent,
-    });
+    return this.documentPusher.multipleBatches(
+      this.fileContainerStrategy(sourceId),
+      filesOrDirectories,
+      options
+    );
   }
 
   /**
@@ -183,7 +172,7 @@ export class PushSource {
     documentId: string,
     deleteChildren = false
   ) {
-    const deleteURL = new URL(this.getBaseAPIURLForDocuments(sourceId));
+    const deleteURL = this.urlBuilderFactory(sourceId).baseURL;
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -196,7 +185,9 @@ export class PushSource {
    * @returns
    */
   public setSourceStatus(sourceID: string, status: SourceStatus) {
-    const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
+    const urlStatus = new URL(
+      `${this.urlBuilderFactory(sourceID).baseURL}/status`
+    );
     urlStatus.searchParams.append('statusType', status);
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
@@ -213,7 +204,7 @@ export class PushSource {
   ) {
     const date = dayjs(olderThan);
     const deleteURL = new URL(
-      `${this.getBaseAPIURLForDocuments(sourceId)}/olderthan`
+      `${this.urlBuilderFactory(sourceId).baseURL}/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -223,22 +214,6 @@ export class PushSource {
     return axiosRequestHeaders(this.apikey);
   }
 
-  private get fileContainerStrategy() {
-    return new FileContainerStrategy(
-      this.organizationid,
-      this.apikey,
-      this.options
-    );
-  }
-
-  private get baseAPIURL() {
-    return `${platformUrl(this.options)}/${this.organizationid}`;
-  }
-
-  private getBaseAPIURLForDocuments(sourceId: string) {
-    return `${this.baseAPIURL}/sources/${sourceId}/documents`;
-  }
-
   private async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
@@ -246,5 +221,11 @@ export class PushSource {
       throw new FieldTypeInconsistencyError(inconsistencies);
     }
     await createFields(this.platformClient, fields);
+  }
+
+  private fileContainerStrategy(sourceId: string) {
+    const urlBuilder = this.urlBuilderFactory(sourceId);
+    const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
+    return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 }

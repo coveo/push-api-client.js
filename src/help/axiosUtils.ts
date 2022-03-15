@@ -1,4 +1,6 @@
-export const axiosRequestHeaders = (apikey: string) => {
+import type {AxiosRequestConfig} from 'axios';
+
+export const axiosRequestHeaders = (apikey: string): AxiosRequestConfig => {
   const authorizationHeader = {
     Authorization: `Bearer ${apikey}`,
   };
