@@ -86,8 +86,8 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
-  private options: PlatformUrlOptions;
-  private static defaultOptions: PlatformUrlOptions = {
+  private options: Required<PlatformUrlOptions>;
+  private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
@@ -100,7 +100,7 @@ export class Source {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: Partial<PlatformUrlOptions>
+    options?: PlatformUrlOptions
   ) {
     this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
