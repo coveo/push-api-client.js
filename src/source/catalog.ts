@@ -31,7 +31,6 @@ import {StreamUrlBuilder} from '../help/urlUtils';
 export class CatalogSource {
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
-  private securityIdentityManager: SecurityIdentity;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
@@ -55,7 +54,6 @@ export class CatalogSource {
       organizationId: organizationid,
       region: this.options.region,
     });
-    this.securityIdentityManager = new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -74,7 +72,7 @@ export class CatalogSource {
   }
 
   public get identity() {
-    return this.securityIdentityManager;
+    return new SecurityIdentity(this.platformClient);
   }
 
   /**

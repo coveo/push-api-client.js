@@ -40,7 +40,6 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 export class PushSource {
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
-  private securityIdentityManager: SecurityIdentity;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
@@ -64,7 +63,6 @@ export class PushSource {
       organizationId: organizationid,
       region: opts.region,
     });
-    this.securityIdentityManager = new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -82,7 +80,7 @@ export class PushSource {
   }
 
   public get identity() {
-    return this.securityIdentityManager;
+    return new SecurityIdentity(this.platformClient);
   }
 
   /**
