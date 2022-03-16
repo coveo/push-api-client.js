@@ -16,15 +16,12 @@ export type FailedUploadCallback = (
 ) => void;
 
 export class FileConsumer {
-  // TODO: initialize with dummy functions
   private static maxContentLength = 5 * 1024 * 1024;
   private cbSuccess: SuccessfulUploadCallback = () => {};
   private cbFail: FailedUploadCallback = () => {};
 
   public constructor(
-    private upload: (
-      batch: BatchUpdateDocuments
-    ) => Promise<AxiosResponse<any, any>>, // TODO: review any
+    private upload: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>,
     private processingConfig: Required<ConcurrentProcessing>
   ) {}
 

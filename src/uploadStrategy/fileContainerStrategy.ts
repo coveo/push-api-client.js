@@ -1,5 +1,4 @@
 import axios, {AxiosRequestConfig} from 'axios';
-import {URL} from 'url';
 import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 import {UploadStrategy} from './strategy';
 import {FileConsumer, uploadContentToFileContainer} from '../help';
@@ -11,7 +10,12 @@ export interface FileContainerResponse {
   requiredHeaders: Record<string, string>;
 }
 
-// TODO: rename
+/**
+ * Upload documents using the [File container](https://docs.coveo.com/en/43/index-content/creating-a-file-container)
+ *
+ * @class FileContainerStrategy
+ * @implements {UploadStrategy}
+ */
 export class FileContainerStrategy implements UploadStrategy {
   public constructor(
     private urlBuilder: URLBuilder,
@@ -22,7 +26,6 @@ export class FileContainerStrategy implements UploadStrategy {
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) {
-    // TODO: remove lasy arrow if possible and use bind
     const upload = (batch: BatchUpdateDocuments) => this.uploadBatch(batch);
     const batchConsumer = new FileConsumer(upload, processingConfig);
     const {onBatchError, onBatchUpload, promise} = batchConsumer.consume(files);
@@ -34,10 +37,6 @@ export class FileContainerStrategy implements UploadStrategy {
     };
   }
 
-  /**
-   * TODO: document
-   * Manage batches of items in a push source. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
-   */
   public async uploadBatch(batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
     await uploadContentToFileContainer(fileContainer, batch);

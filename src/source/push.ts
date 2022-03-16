@@ -33,13 +33,6 @@ import {PushUrlBuilder} from '../help/urlUtils';
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
 /**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-
-/**
  * Manage a push source.
  *
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
@@ -54,9 +47,10 @@ export class PushSource {
   };
 
   /**
-   *
-   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
-   * @param organizationid The Coveo Organization identifier.
+   * Creates an instance of PushSource.
+   * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
+   * @param {string} organizationid The Coveo Organization identifier.
+   * @param {PlatformUrlOptions} [opts=PushSource.defaultOptions]
    */
   constructor(
     private apikey: string,
@@ -77,7 +71,6 @@ export class PushSource {
    * Create a new push source
    * @param name The name of the source to create.
    * @param sourceVisibility The security option that should be applied to the content of the source. See [Content Security](https://docs.coveo.com/en/1779).
-   * @returns
    */
   public create(name: string, sourceVisibility: SourceVisibility) {
     return this.platformClient.source.create({
@@ -139,7 +132,12 @@ export class PushSource {
     );
   }
 
-  // TODO: document
+  /**
+   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * @param {string} sourceID The unique identifier of the target Push source
+   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
+   * @param {BatchUpdateDocumentsFromFiles} options
+   */
   public async batchUpdateDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],

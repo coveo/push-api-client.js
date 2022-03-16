@@ -12,6 +12,12 @@ export interface StreamResponse {
   streamId: string;
 }
 
+/**
+ * Upload documents using the [Stream API](https://docs.coveo.com/en/lb4a0344/coveo-for-commerce/how-to-stream-your-catalog-data-to-your-source)
+ *
+ * @class StreamChunkStrategy
+ * @implements {UploadStrategy}
+ */
 export class StreamChunkStrategy implements UploadStrategy {
   public constructor(
     private urlBuilder: StreamUrlBuilder,
@@ -22,7 +28,6 @@ export class StreamChunkStrategy implements UploadStrategy {
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) {
-    // TODO: check if can simplify by removing the arrow function
     const {streamId} = await this.openStream();
     const upload = (batch: BatchUpdateDocuments) =>
       this.upload(streamId, batch);

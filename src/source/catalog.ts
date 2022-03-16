@@ -26,7 +26,7 @@ import {StreamUrlBuilder} from '../help/urlUtils';
 /**
  * Manage a catalog source.
  *
- * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
+ * Allows you to create a new catalog source, manage security identities and documents in a Coveo organization.
  */
 export class CatalogSource {
   private platformClient: PlatformClient;
@@ -36,10 +36,12 @@ export class CatalogSource {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
+
   /**
-   *
-   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
-   * @param organizationid The Coveo Organization identifier.
+   * Creates an instance of CatalogSource.
+   * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
+   * @param {string} organizationid The Coveo Organization identifier.
+   * @param {PlatformUrlOptions} [opts=CatalogSource.defaultOptions]
    */
   constructor(
     private apikey: string,
@@ -76,9 +78,11 @@ export class CatalogSource {
   }
 
   /**
-   * Manage batches of items in a push source. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * Manage batches of items in a catalog source.
+   * See [Full Document Update](https://docs.coveo.com/en/l62e0540)
    * @param sourceId
    * @param batch
+   * @param {BatchUpdateDocumentsOptions} [{createFields: createFields = true}={}]
    * @returns
    */
   public async batchUpdateDocuments(
@@ -94,7 +98,13 @@ export class CatalogSource {
     );
   }
 
-  // TODO: https://docs.coveo.com/en/lb4a0344/coveo-for-commerce/how-to-stream-your-catalog-data-to-your-source
+  /**
+   * Send your catalog data to your catalog source.
+   * See [How to Stream Your Catalog Data to Your Source](https://docs.coveo.com/en/lb4a0344)
+   * @param {string} sourceId
+   * @param {BatchUpdateDocuments} batch
+   * @param {BatchUpdateDocumentsOptions} [{createFields: createFields = true}={}]
+   */
   public async batchStreamDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
@@ -109,8 +119,7 @@ export class CatalogSource {
   }
 
   /**
-   *
-   * Manage batches of items in a push source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * Manage batches of items in a catalog source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
    * @param {string} sourceId The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
    * @param {BatchUpdateDocumentsFromFiles} options
@@ -128,6 +137,13 @@ export class CatalogSource {
     );
   }
 
+  /**
+   * Send your catalog data to your catalog source from a list of JSON files.
+   * See [How to Stream Your Catalog Data to Your Source](https://docs.coveo.com/en/lb4a0344)
+   * @param {string} sourceId The unique identifier of the target Push source
+   * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
+   * @param {BatchUpdateDocumentsFromFiles} [options]
+   */
   public batchStreamDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
