@@ -5,8 +5,8 @@ import type {
 } from '../help/fileConsumer';
 import type {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
 
-export interface Strategy {
-  doTheMagic: (
+export interface UploadStrategy {
+  uploadFiles: (
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) => Promise<{
@@ -14,7 +14,5 @@ export interface Strategy {
     onBatchUpload: (callback: SuccessfulUploadCallback) => void;
     done: () => Promise<void>;
   }>;
-  doTheMagicSingleBatch: (
-    batch: BatchUpdateDocuments
-  ) => Promise<AxiosResponse>;
+  uploadBatch: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>;
 }

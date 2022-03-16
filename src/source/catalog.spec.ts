@@ -3,8 +3,8 @@ jest.mock('@coveord/platform-client');
 jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
 import PlatformClient, {
-  FieldTypes,
   SourceVisibility,
+  FieldTypes,
 } from '@coveord/platform-client';
 import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
@@ -143,7 +143,7 @@ describe('CatalogSource', () => {
         createFields: false,
       });
       expect(mockAxios.put).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/batch?fileId=file_id',
+        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/update?fileId=file_id',
         {},
         expectedDocumentsHeaders
       );
@@ -247,6 +247,99 @@ describe('CatalogSource', () => {
     });
   });
 
-  // initialLoad
-  // fullLoadFromFiles
+  describe('when streaming data from batch', () => {
+    it.todo('should open a stream');
+    it.todo('should close a stream');
+    it.todo('should request a stream chunk');
+    it.todo('should upload content to stream chunk');
+  });
+
+  describe('when streaming data from local files', () => {
+    it.todo('should open a stream');
+    it.todo('should close a stream');
+    it.todo('should request a stream chunk');
+    it.todo('should upload content to stream chunk');
+    it.todo('should upload documents from local file');
+    it.todo('should throw an error if the path is invalid');
+    it.todo('should call the callback without error when uploading documents');
+    it.todo('should only push JSON files');
+    it.todo('should call the errorCallback on a failure from the API');
+  });
+
+  describe('when enabling auto field creation', () => {
+    let batch: BatchUpdateDocuments;
+
+    beforeAll(() => {
+      batch = {
+        addOrUpdate: [
+          new DocumentBuilder('the_uri_1', 'the_title_1'),
+          new DocumentBuilder('the_uri_2', 'the_title_2'),
+        ],
+        delete: [],
+      };
+    });
+
+    beforeEach(() => {
+      doAxiosMockPost();
+    });
+
+    describe('when there are no inconsistencies', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies();
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+      });
+
+      it('should analyse document builder batch', async () => {
+        await source.batchUpdateDocuments('the_id', batch);
+        expect(mockAnalyserAdd).toHaveBeenCalledWith(batch.addOrUpdate);
+      });
+    });
+
+    describe('when document batches contain type inconsistencies', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies().add('foo', [
+          FieldTypes.STRING,
+          FieldTypes.DOUBLE,
+        ]);
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+      });
+      it('should throw', () => {
+        expect(() =>
+          source.batchUpdateDocuments('the_id', batch)
+        ).rejects.toThrow(FieldTypeInconsistencyError);
+      });
+    });
+
+    describe('when document batches contain missing fields', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies();
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [
+            {name: 'stringfield', type: FieldTypes.STRING},
+            {name: 'numericalfield', type: FieldTypes.DOUBLE},
+          ],
+          inconsistencies,
+        });
+      });
+      it('should create fields', async () => {
+        await source.batchUpdateDocuments('the_id', batch);
+        expect(mockCreateField).toHaveBeenCalledWith([
+          {name: 'stringfield', type: FieldTypes.STRING},
+          {name: 'numericalfield', type: FieldTypes.DOUBLE},
+        ]);
+      });
+    });
+
+    describe('when document batches do not contain missing fields', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies();
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+      });
+
+      it('should not create fields', async () => {
+        source.batchUpdateDocuments('the_id', batch);
+        expect(mockCreateField).not.toHaveBeenCalled();
+      });
+    });
+  });
 });

@@ -1,9 +1,9 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
 import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
-import {Strategy} from './strategy';
+import {UploadStrategy} from './strategy';
 import {FileConsumer, uploadContentToFileContainer} from '../help';
-import {StreamUrlBuilder} from '.';
+import {StreamUrlBuilder} from '../help/urlUtils';
 
 export interface StreamResponse {
   uploadUri: string;
@@ -12,14 +12,13 @@ export interface StreamResponse {
   streamId: string;
 }
 
-export class StreamChunkStrategy implements Strategy {
+export class StreamChunkStrategy implements UploadStrategy {
   public constructor(
-    private apiThingy: StreamUrlBuilder,
+    private urlBuilder: StreamUrlBuilder,
     private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
-  // TODO: rename
-  public async doTheMagic(
+  public async uploadFiles(
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) {
@@ -44,8 +43,7 @@ export class StreamChunkStrategy implements Strategy {
     };
   }
 
-  // TODO: rename
-  public async doTheMagicSingleBatch(batch: BatchUpdateDocuments) {
+  public async uploadBatch(batch: BatchUpdateDocuments) {
     const {streamId} = await this.openStream();
     await this.upload(streamId, batch);
     return this.closeStream(streamId);
@@ -57,7 +55,7 @@ export class StreamChunkStrategy implements Strategy {
   }
 
   private async openStream(): Promise<StreamResponse> {
-    const openStreamUrl = new URL(`${this.apiThingy.baseStreamURL}/open`);
+    const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
     return await axios.post(
       openStreamUrl.toString(),
       {},
@@ -67,7 +65,7 @@ export class StreamChunkStrategy implements Strategy {
 
   private async closeStream(streamId: string) {
     const openStreamUrl = new URL(
-      `${this.apiThingy.baseStreamURL}/${streamId}/close`
+      `${this.urlBuilder.baseStreamURL}/${streamId}/close`
     );
 
     return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
@@ -75,7 +73,7 @@ export class StreamChunkStrategy implements Strategy {
 
   private async requestStreamChunk(streamId: string): Promise<StreamResponse> {
     const openStreamUrl = new URL(
-      `${this.apiThingy.baseStreamURL}/${streamId}/chunk`
+      `${this.urlBuilder.baseStreamURL}/${streamId}/chunk`
     );
 
     return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);

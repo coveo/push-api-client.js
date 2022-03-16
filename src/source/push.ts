@@ -10,30 +10,25 @@ import axios from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
-  platformUrl,
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
-import {
-  FileContainerStrategy,
-  PushUrlBuilder,
-} from '../uploadStrategy/fileContainerStrategy';
+import {FileContainerStrategy} from '../uploadStrategy/fileContainerStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {axiosRequestHeaders} from '../help';
-import {DocumentPusher} from './documentPusher';
+import {uploadBatch, uploadFiles} from './documentUploader';
+import {PushUrlBuilder} from '../help/urlUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -50,10 +45,9 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private urlBuilderFactory: (sourceId: string) => PushUrlBuilder;
-  private documentPusher: DocumentPusher;
-  private securityIdentityManager: SecurityIdentity;
   private platformClient: PlatformClient;
+  private options: Required<PlatformUrlOptions>;
+  private securityIdentityManager: SecurityIdentity;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
@@ -66,24 +60,21 @@ export class PushSource {
    */
   constructor(
     private apikey: string,
-    organizationid: string,
-    options: PlatformUrlOptions = PushSource.defaultOptions
+    private organizationid: string,
+    opts: PlatformUrlOptions = PushSource.defaultOptions
   ) {
-    const opts = {...PushSource.defaultOptions, ...options};
+    this.options = {...PushSource.defaultOptions, ...opts};
     this.platformClient = new PlatformClient({
       accessToken: apikey,
-      environment: castEnvironmentToPlatformClient(opts.environment),
+      environment: castEnvironmentToPlatformClient(this.options.environment),
       organizationId: organizationid,
-      region: options.region,
+      region: opts.region,
     });
     this.securityIdentityManager = new SecurityIdentity(this.platformClient);
-    this.documentPusher = new DocumentPusher(this.platformClient);
-    this.urlBuilderFactory = (sourceId: string) =>
-      new PushUrlBuilder(sourceId, organizationid, apikey, opts);
   }
 
   /**
-   * Create a new catalog source
+   * Create a new push source
    * @param name The name of the source to create.
    * @param sourceVisibility The security option that should be applied to the content of the source. See [Content Security](https://docs.coveo.com/en/1779).
    * @returns
@@ -120,7 +111,7 @@ export class PushSource {
     }
 
     const doc = docBuilder.build();
-    const addURL = this.urlBuilderFactory(sourceId).baseURL;
+    const addURL = new URL(`${this.urlBuilder(sourceId).baseURL}/documents`);
     addURL.searchParams.append('documentId', doc.uri);
     return axios.put(
       addURL.toString(),
@@ -140,7 +131,8 @@ export class PushSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    return this.documentPusher.singleBatch(
+    return uploadBatch(
+      this.platformClient,
       this.fileContainerStrategy(sourceId),
       batch,
       createFields
@@ -153,7 +145,8 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return this.documentPusher.multipleBatches(
+    return uploadFiles(
+      this.platformClient,
       this.fileContainerStrategy(sourceId),
       filesOrDirectories,
       options
@@ -172,7 +165,7 @@ export class PushSource {
     documentId: string,
     deleteChildren = false
   ) {
-    const deleteURL = this.urlBuilderFactory(sourceId).baseURL;
+    const deleteURL = new URL(`${this.urlBuilder(sourceId).baseURL}/documents`);
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -180,14 +173,12 @@ export class PushSource {
 
   /**
    * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
-   * @param sourceID
+   * @param sourceId
    * @param status
    * @returns
    */
-  public setSourceStatus(sourceID: string, status: SourceStatus) {
-    const urlStatus = new URL(
-      `${this.urlBuilderFactory(sourceID).baseURL}/status`
-    );
+  public setSourceStatus(sourceId: string, status: SourceStatus) {
+    const urlStatus = new URL(`${this.urlBuilder(sourceId).baseURL}/status`);
     urlStatus.searchParams.append('statusType', status);
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
@@ -204,7 +195,7 @@ export class PushSource {
   ) {
     const date = dayjs(olderThan);
     const deleteURL = new URL(
-      `${this.urlBuilderFactory(sourceId).baseURL}/olderthan`
+      `${this.urlBuilder(sourceId).baseURL}/documents/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -212,6 +203,10 @@ export class PushSource {
 
   private get documentsAxiosConfig() {
     return axiosRequestHeaders(this.apikey);
+  }
+
+  private urlBuilder(sourceId: string) {
+    return new PushUrlBuilder(sourceId, this.organizationid, this.options);
   }
 
   private async createFields(analyser: FieldAnalyser) {
@@ -224,7 +219,7 @@ export class PushSource {
   }
 
   private fileContainerStrategy(sourceId: string) {
-    const urlBuilder = this.urlBuilderFactory(sourceId);
+    const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }

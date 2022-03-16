@@ -13,18 +13,15 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
-import {
-  StreamChunkStrategy,
-  FileContainerStrategy,
-  StreamUrlBuilder,
-} from '../uploadStrategy';
+import {StreamChunkStrategy, FileContainerStrategy} from '../uploadStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
-import {DocumentPusher} from './documentPusher';
 import {axiosRequestHeaders} from '../help';
+import {uploadBatch, uploadFiles} from './documentUploader';
+import {StreamUrlBuilder} from '../help/urlUtils';
 
 /**
  * Manage a catalog source.
@@ -32,11 +29,9 @@ import {axiosRequestHeaders} from '../help';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class CatalogSource {
-  private urlBuilderFactory: (sourceId: string) => StreamUrlBuilder;
-  private documentPusher: DocumentPusher;
-  private securityIdentityManager: SecurityIdentity;
   private platformClient: PlatformClient;
-
+  private options: Required<PlatformUrlOptions>;
+  private securityIdentityManager: SecurityIdentity;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
@@ -48,20 +43,17 @@ export class CatalogSource {
    */
   constructor(
     private apikey: string,
-    organizationid: string,
-    options: PlatformUrlOptions = CatalogSource.defaultOptions
+    private organizationid: string,
+    opts: PlatformUrlOptions = CatalogSource.defaultOptions
   ) {
-    const opts = {...CatalogSource.defaultOptions, ...options};
+    this.options = {...CatalogSource.defaultOptions, ...opts};
     this.platformClient = new PlatformClient({
       accessToken: apikey,
-      environment: castEnvironmentToPlatformClient(opts.environment),
+      environment: castEnvironmentToPlatformClient(this.options.environment),
       organizationId: organizationid,
-      region: options.region,
+      region: this.options.region,
     });
     this.securityIdentityManager = new SecurityIdentity(this.platformClient);
-    this.documentPusher = new DocumentPusher(this.platformClient);
-    this.urlBuilderFactory = (sourceId: string) =>
-      new StreamUrlBuilder(sourceId, organizationid, apikey, opts);
   }
 
   /**
@@ -94,19 +86,22 @@ export class CatalogSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    return this.documentPusher.singleBatch(
+    return uploadBatch(
+      this.platformClient,
       this.fileContainerStrategy(sourceId),
       batch,
       createFields
     );
   }
 
-  public async initialLoad(
+  // TODO: https://docs.coveo.com/en/lb4a0344/coveo-for-commerce/how-to-stream-your-catalog-data-to-your-source
+  public async batchStreamDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    return this.documentPusher.singleBatch(
+    return uploadBatch(
+      this.platformClient,
       this.streamChunkStrategy(sourceId),
       batch,
       createFields
@@ -125,33 +120,39 @@ export class CatalogSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return this.documentPusher.multipleBatches(
+    return uploadFiles(
+      this.platformClient,
       this.fileContainerStrategy(sourceId),
       filesOrDirectories,
       options
     );
   }
 
-  public fullLoadFromFiles(
+  public batchStreamDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return this.documentPusher.multipleBatches(
+    return uploadFiles(
+      this.platformClient,
       this.streamChunkStrategy(sourceId),
       filesOrDirectories,
       options
     );
   }
 
+  private urlBuilder(sourceId: string) {
+    return new StreamUrlBuilder(sourceId, this.organizationid, this.options);
+  }
+
   private fileContainerStrategy(sourceId: string) {
-    const urlBuilder = this.urlBuilderFactory(sourceId);
+    const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 
   private streamChunkStrategy(sourceId: string) {
-    const urlBuilder = this.urlBuilderFactory(sourceId);
+    const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new StreamChunkStrategy(urlBuilder, documentsAxiosConfig);
   }
