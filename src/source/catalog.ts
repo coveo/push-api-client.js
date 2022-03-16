@@ -13,7 +13,11 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
-import {StreamChunkStrategy, FileContainerStrategy} from '../uploadStrategy';
+import {
+  StreamChunkStrategy,
+  FileContainerStrategy,
+  UploadStrategy,
+} from '../uploadStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
@@ -159,13 +163,13 @@ export class CatalogSource {
     return new StreamUrlBuilder(sourceId, this.organizationid, this.options);
   }
 
-  private fileContainerStrategy(sourceId: string) {
+  private fileContainerStrategy(sourceId: string): UploadStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 
-  private streamChunkStrategy(sourceId: string) {
+  private streamChunkStrategy(sourceId: string): UploadStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new StreamChunkStrategy(urlBuilder, documentsAxiosConfig);

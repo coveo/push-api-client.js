@@ -29,6 +29,7 @@ import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {axiosRequestHeaders} from '../help';
 import {uploadBatch, uploadFiles} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
+import {UploadStrategy} from '../uploadStrategy';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -214,7 +215,7 @@ export class PushSource {
     await createFields(this.platformClient, fields);
   }
 
-  private fileContainerStrategy(sourceId: string) {
+  private fileContainerStrategy(sourceId: string): UploadStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
