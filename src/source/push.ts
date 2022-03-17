@@ -8,24 +8,24 @@ import {
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-import {DocumentBuilder} from './documentBuilder';
+import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {consumeGenerator} from './help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
+import {consumeGenerator} from '../help/generator';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
-import {getAllJsonFilesFromEntries} from './help/file';
+import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
   platformUrl,
   PlatformUrlOptions,
-} from './environment';
-import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from './errors/fieldErrors';
-import {createFields} from './fieldAnalyser/fieldUtils';
-import {SecurityIdentity} from './source/securityIdenty';
+} from '../environment';
+import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {createFields} from '../fieldAnalyser/fieldUtils';
+import {SecurityIdentity} from './securityIdenty';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -80,7 +80,7 @@ interface FileContainerResponse {
  *
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
-export class Source {
+export class PushSource {
   private platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
@@ -98,7 +98,7 @@ export class Source {
     private organizationid: string,
     options?: PlatformUrlOptions
   ) {
-    this.options = {...Source.defaultOptions, ...options};
+    this.options = {...PushSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),
@@ -392,7 +392,7 @@ export class Source {
           JSON.stringify(docBuilder.marshal())
         );
 
-        if (accumulator.size + sizeOfDoc >= Source.maxContentLength) {
+        if (accumulator.size + sizeOfDoc >= PushSource.maxContentLength) {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
             batchesToUpload.push(() =>

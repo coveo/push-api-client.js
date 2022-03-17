@@ -1,12 +1,12 @@
 export * from './document';
 export {
-  Source,
+  PushSource,
   SourceVisibility,
   BatchUpdateDocuments,
   UploadBatchCallback,
   UploadBatchCallbackData,
   BatchUpdateDocumentsFromFiles,
-} from './source';
+} from './source/push';
 export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
