@@ -3,6 +3,11 @@ require('abortcontroller-polyfill');
 
 import {
   PlatformClient,
+  SecurityIdentityAliasModel,
+  SecurityIdentityBatchConfig,
+  SecurityIdentityDelete,
+  SecurityIdentityDeleteOptions,
+  SecurityIdentityModel,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
@@ -121,6 +126,56 @@ export class PushSource {
       sourceVisibility,
     });
   }
+
+  /**
+   * @deprecated use `identity.createSecurityIdentity`
+   *
+   * See {@link Source.identity}
+   */
+  public createSecurityIdentity(
+    _securityProviderId: string,
+    _securityIdentity: SecurityIdentityModel
+  ) {}
+
+  /**
+   * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
+   *
+   * See {@link Source.identity}
+   */
+  public createOrUpdateSecurityIdentityAlias(
+    _securityProviderId: string,
+    _securityIdentityAlias: SecurityIdentityAliasModel
+  ) {}
+
+  /**
+   * @deprecated use `identity.deleteSecurityIdentity`
+   *
+   * See {@link Source.identity}
+   */
+  public deleteSecurityIdentity(
+    _securityProviderId: string,
+    _securityIdentityToDelete: SecurityIdentityDelete
+  ) {}
+
+  /**
+   * @deprecated use `identity.deleteOldSecurityIdentities`
+   *
+   * See {@link Source.identity}
+   */
+  public deleteOldSecurityIdentities(
+    _securityProviderId: string,
+    _batchDelete: SecurityIdentityDeleteOptions
+  ) {}
+
+  /**
+   * @deprecated use `identity.manageSecurityIdentities`
+   *
+   * See {@link Source.identity}
+   */
+  public manageSecurityIdentities(
+    _securityProviderId: string,
+    _batchConfig: SecurityIdentityBatchConfig
+  ) {}
 
   public get identity() {
     return new SecurityIdentity(this.platformClient);
