@@ -3,6 +3,11 @@ require('abortcontroller-polyfill');
 
 import {
   PlatformClient,
+  SecurityIdentityAliasModel,
+  SecurityIdentityBatchConfig,
+  SecurityIdentityDelete,
+  SecurityIdentityDeleteOptions,
+  SecurityIdentityModel,
   SourceType,
   SourceVisibility,
 } from '@coveord/platform-client';
