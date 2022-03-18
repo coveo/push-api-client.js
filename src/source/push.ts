@@ -12,7 +12,7 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
@@ -31,54 +31,24 @@ import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
+import {
+  FileContainerResponse,
+  uploadContentToFileContainer,
+} from '../help/fileContainer';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsFromFiles,
+  BatchUpdateDocumentsOptions,
+  UploadBatchCallbackData,
+} from '../interfaces';
+import {axiosRequestHeaders} from '../help/axiosUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
-/**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
 
 export type UploadBatchCallback = (
   err: unknown | null,
   data: UploadBatchCallbackData
 ) => void;
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
-
-interface FileContainerResponse {
-  uploadUri: string;
-  fileId: string;
-  requiredHeaders: Record<string, string>;
-}
 
 /**
  * Manage a push source.
@@ -227,7 +197,7 @@ export class PushSource {
     }
 
     const fileContainer = await this.createFileContainer();
-    await this.uploadContentToFileContainer(fileContainer, batch);
+    await uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
@@ -359,9 +329,7 @@ export class PushSource {
   }
 
   private get documentsAxiosConfig(): AxiosRequestConfig {
-    return {
-      headers: this.documentsRequestHeaders,
-    };
+    return axiosRequestHeaders(this.apikey);
   }
 
   private async createFields(analyser: FieldAnalyser) {
@@ -373,28 +341,6 @@ export class PushSource {
     await createFields(this.platformClient, fields);
   }
 
-  private getFileContainerAxiosConfig(
-    fileContainer: FileContainerResponse
-  ): AxiosRequestConfig {
-    return {
-      headers: fileContainer.requiredHeaders,
-    };
-  }
-
-  private get documentsRequestHeaders() {
-    return {
-      ...this.authorizationHeader,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    };
-  }
-
-  private get authorizationHeader() {
-    return {
-      Authorization: `Bearer ${this.apikey}`,
-    };
-  }
-
   private async createFileContainer() {
     const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
     const res = await axios.post(
@@ -403,23 +349,6 @@ export class PushSource {
       this.documentsAxiosConfig
     );
     return res.data as FileContainerResponse;
-  }
-
-  private async uploadContentToFileContainer(
-    fileContainer: FileContainerResponse,
-    batch: BatchUpdateDocuments
-  ) {
-    const uploadURL = new URL(fileContainer.uploadUri);
-    return await axios.put(
-      uploadURL.toString(),
-      {
-        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
-          docBuilder.marshal()
-        ),
-        delete: batch.delete,
-      },
-      this.getFileContainerAxiosConfig(fileContainer)
-    );
   }
 
   private pushFileContainerContent(

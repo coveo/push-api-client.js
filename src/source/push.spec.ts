@@ -6,12 +6,17 @@ import PlatformClient, {
   FieldTypes,
   SourceVisibility,
 } from '@coveord/platform-client';
-import {BatchUpdateDocuments, PushSource} from './push';
+import {PushSource} from './push';
 import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
-import {FieldAnalyser, PlatformEnvironment, Region} from '..';
+import {
+  BatchUpdateDocuments,
+  FieldAnalyser,
+  PlatformEnvironment,
+  Region,
+} from '..';
 import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 const mockAxios = axios as jest.Mocked<typeof axios>;
