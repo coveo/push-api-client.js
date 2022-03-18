@@ -13,23 +13,24 @@ import {
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-import {DocumentBuilder} from './documentBuilder';
+import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {consumeGenerator} from './help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
+import {consumeGenerator} from '../help/generator';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
-import {getAllJsonFilesFromEntries} from './help/file';
+import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
   platformUrl,
   PlatformUrlOptions,
-} from './environment';
-import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from './errors/fieldErrors';
-import {createFields} from './fieldAnalyser/fieldUtils';
+} from '../environment';
+import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {createFields} from '../fieldAnalyser/fieldUtils';
+import {SecurityIdentity} from './securityIdenty';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -84,10 +85,10 @@ interface FileContainerResponse {
  *
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
-export class Source {
+export class PushSource {
   private platformClient: PlatformClient;
-  private options: PlatformUrlOptions;
-  private static defaultOptions: PlatformUrlOptions = {
+  private options: Required<PlatformUrlOptions>;
+  private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
@@ -100,9 +101,9 @@ export class Source {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: Partial<PlatformUrlOptions>
+    options?: PlatformUrlOptions
   ) {
-    this.options = {...Source.defaultOptions, ...options};
+    this.options = {...PushSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),
@@ -127,80 +128,57 @@ export class Source {
   }
 
   /**
-   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
-   * @param securityProviderId
-   * @param securityIdentity
-   * @returns
+   * @deprecated use `identity.createSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public createSecurityIdentity(
-    securityProviderId: string,
-    securityIdentity: SecurityIdentityModel
-  ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentity(
-      securityProviderId,
-      securityIdentity
-    );
-  }
+    _securityProviderId: string,
+    _securityIdentity: SecurityIdentityModel
+  ) {}
 
   /**
-   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
-   * @param securityProviderId
-   * @param securityIdentityAlias
-   * @returns
+   * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
+   *
+   * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
-    securityProviderId: string,
-    securityIdentityAlias: SecurityIdentityAliasModel
-  ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentityAlias(
-      securityProviderId,
-      securityIdentityAlias
-    );
-  }
+    _securityProviderId: string,
+    _securityIdentityAlias: SecurityIdentityAliasModel
+  ) {}
 
   /**
-   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
-   * @param securityProviderId
-   * @param securityIdentityToDelete
-   * @returns
+   * @deprecated use `identity.deleteSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
-    securityProviderId: string,
-    securityIdentityToDelete: SecurityIdentityDelete
-  ) {
-    return this.platformClient.pushApi.deleteSecurityIdentity(
-      securityProviderId,
-      securityIdentityToDelete
-    );
-  }
+    _securityProviderId: string,
+    _securityIdentityToDelete: SecurityIdentityDelete
+  ) {}
 
   /**
-   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
-   * @param securityProviderId
-   * @param batchDelete
-   * @returns
+   * @deprecated use `identity.deleteOldSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
-    securityProviderId: string,
-    batchDelete: SecurityIdentityDeleteOptions
-  ) {
-    return this.platformClient.pushApi.deleteOldSecurityIdentities(
-      securityProviderId,
-      batchDelete
-    );
-  }
+    _securityProviderId: string,
+    _batchDelete: SecurityIdentityDeleteOptions
+  ) {}
 
   /**
-   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
+   * @deprecated use `identity.manageSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public manageSecurityIdentities(
-    securityProviderId: string,
-    batchConfig: SecurityIdentityBatchConfig
-  ) {
-    return this.platformClient.pushApi.manageSecurityIdentities(
-      securityProviderId,
-      batchConfig
-    );
+    _securityProviderId: string,
+    _batchConfig: SecurityIdentityBatchConfig
+  ) {}
+
+  public get identity() {
+    return new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -469,7 +447,7 @@ export class Source {
           JSON.stringify(docBuilder.marshal())
         );
 
-        if (accumulator.size + sizeOfDoc >= Source.maxContentLength) {
+        if (accumulator.size + sizeOfDoc >= PushSource.maxContentLength) {
           const chunks = accumulator.chunks;
           if (chunks.length > 0) {
             batchesToUpload.push(() =>

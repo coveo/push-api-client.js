@@ -1,5 +1,5 @@
 import {
-  Source,
+  PushSource,
   UploadBatchCallback,
   UploadBatchCallbackData,
 } from '@coveo/push-api-client';
@@ -24,7 +24,7 @@ function onErrorCallback(err: unknown, {files}: UploadBatchCallbackData) {
 }
 
 async function main() {
-  const source = new Source('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
   source.setSourceStatus('my_source_id', 'REFRESH');
 
   /**

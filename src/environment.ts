@@ -12,8 +12,8 @@ export const DEFAULT_ENVIRONMENT = PlatformEnvironment.Prod as const;
 export const DEFAULT_REGION = Region.US as const;
 
 export type PlatformUrlOptions = {
-  environment: PlatformEnvironment;
-  region: Region;
+  environment?: PlatformEnvironment;
+  region?: Region;
 };
 
 const defaultOptions: PlatformUrlOptions = {
@@ -21,7 +21,7 @@ const defaultOptions: PlatformUrlOptions = {
   region: DEFAULT_REGION,
 };
 
-export function platformUrl(options?: Partial<PlatformUrlOptions>) {
+export function platformUrl(options?: PlatformUrlOptions) {
   options = {...defaultOptions, ...options};
   const urlEnv =
     options.environment === DEFAULT_ENVIRONMENT ? '' : options.environment;
