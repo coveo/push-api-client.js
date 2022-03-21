@@ -280,13 +280,11 @@ describe('PushSource', () => {
     });
 
     it('should upload documents from local file', async () => {
-      const {done} = await source.batchUpdateDocumentsFromFiles(
+      await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
         {createFields: false}
       );
-
-      await done();
 
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -322,25 +320,24 @@ describe('PushSource', () => {
     });
 
     it('should call the callback without error when uploading documents', async () => {
-      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-      onBatchError(mockedErrorCallback);
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback);
       expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
     it('should only push JSON files', async () => {
-      const {onBatchUpload, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-
-      onBatchUpload(mockedSuccessCallback);
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchUpload(mockedSuccessCallback);
       expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
@@ -350,13 +347,14 @@ describe('PushSource', () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
 
-      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-      onBatchError(mockedErrorCallback);
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback);
+
       expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
           message: 'Error Message',

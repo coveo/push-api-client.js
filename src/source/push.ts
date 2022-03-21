@@ -16,8 +16,6 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
@@ -34,7 +32,6 @@ import {
   BatchUpdateDocumentsOptions,
   BatchUpdateDocumentsFromFiles,
 } from '../interfaces';
-import {FileConsumer} from '../help/fileConsumer';
 import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';

@@ -1,4 +1,4 @@
-import {PushSource, UploadBatchCallbackData} from '@coveo/push-api-client';
+import {PushSource, UploadBatchCallbackData} from '../src';
 
 function onSuccessCallback({batch, files, res}: UploadBatchCallbackData) {
   const numAdded = batch.length;
