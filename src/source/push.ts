@@ -29,8 +29,11 @@ import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
-import {BatchUpdateDocumentsOptions} from '../interfaces';
-import {BatchUpdateDocuments, BatchUpdateDocumentsFromFiles} from '..';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsOptions,
+  BatchUpdateDocumentsFromFiles,
+} from '../interfaces';
 import {FileConsumer} from '../help/fileConsumer';
 import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
