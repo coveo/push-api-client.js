@@ -1,12 +1,17 @@
 export * from './document';
 export {Source} from './source/deprecatedSource';
+export {PushSource} from './source/push';
 export {
-  BatchUpdateDocuments,
+  SuccessfulUploadCallback,
+  FailedUploadCallback,
+} from './help/fileConsumer';
+export {
   UploadBatchCallbackData,
+  BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
 } from './interfaces';
-export {PushSource, SourceVisibility, UploadBatchCallback} from './source/push';
 export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
-export {PlatformEnvironment, Region} from './environment';
+export {PlatformEnvironment, Region, PlatformUrlOptions} from './environment';
+export {SourceVisibility} from '@coveord/platform-client';

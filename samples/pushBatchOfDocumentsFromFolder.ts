@@ -1,8 +1,4 @@
-import {
-  PushSource,
-  UploadBatchCallback,
-  UploadBatchCallbackData,
-} from '@coveo/push-api-client';
+import {PushSource, UploadBatchCallbackData} from '@coveo/push-api-client';
 
 function onSuccessCallback({batch, files, res}: UploadBatchCallbackData) {
   const numAdded = batch.length;
@@ -37,18 +33,13 @@ async function main() {
     '/path/to/fileB.json',
   ];
 
-  const callback: UploadBatchCallback = (
-    err: unknown,
-    data: UploadBatchCallbackData
-  ) => {
-    if (err) {
-      onErrorCallback(err, data);
-    } else {
-      onSuccessCallback(data);
-    }
-  };
+  const {onBatchUpload, onBatchError, done} =
+    await source.batchUpdateDocumentsFromFiles('my_source_id', entries);
 
-  await source.batchUpdateDocumentsFromFiles('my_source_id', entries, callback);
+  onBatchUpload(onSuccessCallback);
+  onBatchError(onErrorCallback);
+  await done();
+
   source.setSourceStatus('my_source_id', 'IDLE');
 }
 

@@ -27,6 +27,8 @@ const mockCreateSource = jest.fn();
 const mockCreateField = jest.fn();
 const mockAnalyserAdd = jest.fn();
 const mockAnalyserReport = jest.fn();
+const mockedSuccessCallback = jest.fn();
+const mockedErrorCallback = jest.fn();
 const pathToStub = join(cwd(), 'src', '__stub__');
 
 const doAxiosMockPost = () => {
@@ -269,8 +271,6 @@ describe('PushSource', () => {
   });
 
   describe('when doing batch update from local files', () => {
-    const mockedCallback = jest.fn();
-
     afterAll(() => {
       mockAxios.post.mockReset();
     });
@@ -280,12 +280,13 @@ describe('PushSource', () => {
     });
 
     it('should upload documents from local file', async () => {
-      await source.batchUpdateDocumentsFromFiles(
+      const {done} = await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
         {createFields: false}
       );
+
+      await done();
 
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -313,7 +314,6 @@ describe('PushSource', () => {
         source.batchUpdateDocumentsFromFiles(
           'the_id',
           ['path/to/invalid/document'],
-          mockedCallback,
           {createFields: false}
         )
       ).rejects.toThrow(
@@ -322,25 +322,26 @@ describe('PushSource', () => {
     });
 
     it('should call the callback without error when uploading documents', async () => {
-      await source.batchUpdateDocumentsFromFiles(
+      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
         {createFields: false}
       );
-      expect(mockedCallback).toHaveBeenCalledWith(null, expect.anything());
+      onBatchError(mockedErrorCallback);
+      await done();
+      expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
     it('should only push JSON files', async () => {
-      await source.batchUpdateDocumentsFromFiles(
+      const {onBatchUpload, done} = await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
         {createFields: false}
       );
 
-      expect(mockedCallback).toHaveBeenCalledWith(
-        null,
+      onBatchUpload(mockedSuccessCallback);
+      await done();
+      expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
     });
@@ -349,13 +350,14 @@ describe('PushSource', () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
 
-      await source.batchUpdateDocumentsFromFiles(
+      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
         'the_id',
         [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
         {createFields: false}
       );
-      expect(mockedCallback).toHaveBeenCalledWith(
+      onBatchError(mockedErrorCallback);
+      await done();
+      expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
           message: 'Error Message',
         },
