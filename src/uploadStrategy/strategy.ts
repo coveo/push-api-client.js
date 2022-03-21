@@ -15,11 +15,11 @@ export interface UploadStrategy {
   uploadFiles: (
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
-  ) => Promise<{
+  ) => {
     onBatchError: (callback: FailedUploadCallback) => void;
     onBatchUpload: (callback: SuccessfulUploadCallback) => void;
     done: () => Promise<void>;
-  }>;
+  };
   /**
    * Upload a batch of documents
    *

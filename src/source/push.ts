@@ -34,7 +34,7 @@ import {
 import {axiosRequestHeaders} from '../help/axiosUtils';
 import {uploadBatch, uploadFiles} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
-import {UploadStrategy} from '../uploadStrategy';
+import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -274,7 +274,6 @@ export class PushSource {
   private fileContainerStrategy(sourceId: string): UploadStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
-    // return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
-    throw new Error('TODO: CDX-884');
+    return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 }
