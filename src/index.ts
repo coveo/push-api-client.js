@@ -1,5 +1,4 @@
 export * from './document';
-export {Source} from './source/deprecatedSource';
 export {PushSource} from './source/push';
 export {
   SuccessfulUploadCallback,
