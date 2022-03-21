@@ -1,4 +1,5 @@
 export * from './document';
+export {Source} from './source/source';
 export {
   PushSource,
   SourceVisibility,
