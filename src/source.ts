@@ -133,9 +133,18 @@ export class Source {
    * See {@link Source.identity}
    */
   public createSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentity: SecurityIdentityModel
-  ) {}
+    securityProviderId: string,
+    securityIdentity: SecurityIdentityModel
+  ) {
+    console.log('This method has been deprecated');
+    console.log(
+      'Use `source.identity.createOrUpdateSecurityIdentity()` instead'
+    );
+    return this.identity.createSecurityIdentity(
+      securityProviderId,
+      securityIdentity
+    );
+  }
 
   /**
    * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
@@ -143,9 +152,18 @@ export class Source {
    * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
-    _securityProviderId: string,
-    _securityIdentityAlias: SecurityIdentityAliasModel
-  ) {}
+    securityProviderId: string,
+    securityIdentityAlias: SecurityIdentityAliasModel
+  ) {
+    console.log('This method has been deprecated');
+    console.log(
+      'Use `source.identity.createOrUpdateSecurityIdentityAlias()` instead'
+    );
+    return this.identity.createOrUpdateSecurityIdentityAlias(
+      securityProviderId,
+      securityIdentityAlias
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteSecurityIdentity`
@@ -153,9 +171,16 @@ export class Source {
    * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentityToDelete: SecurityIdentityDelete
-  ) {}
+    securityProviderId: string,
+    securityIdentityToDelete: SecurityIdentityDelete
+  ) {
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.deleteSecurityIdentity()` instead');
+    return this.identity.deleteSecurityIdentity(
+      securityProviderId,
+      securityIdentityToDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteOldSecurityIdentities`
@@ -163,9 +188,16 @@ export class Source {
    * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
-    _securityProviderId: string,
-    _batchDelete: SecurityIdentityDeleteOptions
-  ) {}
+    securityProviderId: string,
+    batchDelete: SecurityIdentityDeleteOptions
+  ) {
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.deleteOldSecurityIdentities()` instead');
+    return this.identity.deleteOldSecurityIdentities(
+      securityProviderId,
+      batchDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.manageSecurityIdentities`
@@ -173,9 +205,16 @@ export class Source {
    * See {@link Source.identity}
    */
   public manageSecurityIdentities(
-    _securityProviderId: string,
-    _batchConfig: SecurityIdentityBatchConfig
-  ) {}
+    securityProviderId: string,
+    batchConfig: SecurityIdentityBatchConfig
+  ) {
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.manageSecurityIdentities()` instead');
+    return this.identity.manageSecurityIdentities(
+      securityProviderId,
+      batchConfig
+    );
+  }
 
   public get identity() {
     return new SecurityIdentity(this.platformClient);
