@@ -12,13 +12,11 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {consumeGenerator} from '../help/generator';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {basename} from 'path';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
@@ -31,48 +29,11 @@ import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
+import {BatchUpdateDocumentsOptions} from '../interfaces';
+import {BatchUpdateDocuments, BatchUpdateDocumentsFromFiles} from '..';
+import {FileConsumer} from '../help/fileConsumer';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
-/**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
-
-export type UploadBatchCallback = (
-  err: unknown | null,
-  data: UploadBatchCallbackData
-) => void;
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
 
 interface FileContainerResponse {
   uploadUri: string;
@@ -92,7 +53,6 @@ export class PushSource {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
-  private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -242,14 +202,13 @@ export class PushSource {
   public async batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
-    callback: UploadBatchCallback,
     options?: BatchUpdateDocumentsFromFiles
   ) {
     const defaultOptions = {
       maxConcurrent: 10,
       createFields: true,
     };
-    const {maxConcurrent, createFields: createFields} = {
+    const {maxConcurrent, createFields} = {
       ...defaultOptions,
       ...options,
     };
@@ -265,41 +224,11 @@ export class PushSource {
       await this.createFields(analyser);
     }
 
-    const fileNames = files.map((path) => basename(path));
-    const {chunksToUpload, close} = this.splitByChunkAndUpload(
-      sourceID,
-      fileNames,
-      callback
+    const batchConsumer = new FileConsumer(
+      (batch: BatchUpdateDocuments) => this.uploadBatch(sourceID, batch),
+      {maxConcurrent}
     );
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    // parallelize uploads within the same file
-    const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
-      for (const upload of chunksToUpload(docBuilders)) {
-        yield upload();
-      }
-    };
-
-    // parallelize uploads across multiple files
-    const fileGenerator = function* () {
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        yield* docBuilderGenerator(docBuilders);
-      }
-    };
-
-    await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
-    await close();
+    return batchConsumer.consume(files);
   }
 
   /**
@@ -348,6 +277,12 @@ export class PushSource {
     const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
     urlStatus.searchParams.append('statusType', status);
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
+  }
+
+  private async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
+    const fileContainer = await this.createFileContainer();
+    await this.uploadContentToFileContainer(fileContainer, batch);
+    return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
   private get baseAPIURL() {
@@ -431,76 +366,5 @@ export class PushSource {
     );
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
-  }
-
-  private splitByChunkAndUpload(
-    sourceID: string,
-    fileNames: string[],
-    callback: UploadBatchCallback,
-    accumulator = this.accumulator
-  ) {
-    const chunksToUpload = (documentBuilders: DocumentBuilder[]) => {
-      const batchesToUpload: Array<() => Promise<void>> = [];
-
-      for (const docBuilder of documentBuilders) {
-        const sizeOfDoc = Buffer.byteLength(
-          JSON.stringify(docBuilder.marshal())
-        );
-
-        if (accumulator.size + sizeOfDoc >= PushSource.maxContentLength) {
-          const chunks = accumulator.chunks;
-          if (chunks.length > 0) {
-            batchesToUpload.push(() =>
-              this.uploadBatch(sourceID, chunks, fileNames, callback)
-            );
-          }
-          accumulator.chunks = [docBuilder];
-          accumulator.size = sizeOfDoc;
-        } else {
-          accumulator.size += sizeOfDoc;
-          accumulator.chunks.push(docBuilder);
-        }
-      }
-      return batchesToUpload;
-    };
-    const close = async () => {
-      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, callback);
-    };
-    return {chunksToUpload, close};
-  }
-
-  private async uploadBatch(
-    sourceID: string,
-    batch: DocumentBuilder[],
-    fileNames: string[],
-    callback: UploadBatchCallback
-  ) {
-    try {
-      const res = await this.batchUpdateDocuments(
-        sourceID,
-        {
-          addOrUpdate: batch,
-          delete: [],
-        },
-        {createFields: false}
-      );
-      callback(null, {
-        files: fileNames,
-        batch,
-        res,
-      });
-    } catch (e: unknown) {
-      callback(e, {
-        files: fileNames,
-        batch,
-      });
-    }
-  }
-
-  private get accumulator(): {size: number; chunks: DocumentBuilder[]} {
-    return {
-      size: 0,
-      chunks: [],
-    };
   }
 }
