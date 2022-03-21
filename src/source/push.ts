@@ -16,13 +16,10 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
-  platformUrl,
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
@@ -30,16 +27,14 @@ import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
 import {
-  FileContainerResponse,
-  uploadContentToFileContainer,
-} from '../help/fileContainer';
-import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {axiosRequestHeaders} from '../help/axiosUtils';
-import {FileConsumer} from '../help/fileConsumer';
+import {uploadBatch, uploadFiles} from './documentUploader';
+import {PushUrlBuilder} from '../help/urlUtils';
+import {UploadStrategy} from '../uploadStrategy';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -162,7 +157,7 @@ export class PushSource {
     }
 
     const doc = docBuilder.build();
-    const addURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
+    const addURL = new URL(`${this.urlBuilder(sourceID).baseURL}/documents`);
     addURL.searchParams.append('documentId', doc.uri);
     return axios.put(
       addURL.toString(),
@@ -182,15 +177,12 @@ export class PushSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      await analyser.add(batch.addOrUpdate);
-      await this.createFields(analyser);
-    }
-
-    const fileContainer = await this.createFileContainer();
-    await uploadContentToFileContainer(fileContainer, batch);
-    return this.pushFileContainerContent(sourceID, fileContainer);
+    return uploadBatch(
+      this.platformClient,
+      this.fileContainerStrategy(sourceID),
+      batch,
+      createFields
+    );
   }
 
   /**
@@ -206,31 +198,12 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {maxConcurrent, createFields} = {
-      ...defaultOptions,
-      ...options,
-    };
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    const batchConsumer = new FileConsumer(
-      (batch: BatchUpdateDocuments) => this.uploadBatch(sourceID, batch),
-      {maxConcurrent}
+    return uploadFiles(
+      this.platformClient,
+      this.fileContainerStrategy(sourceID),
+      filesOrDirectories,
+      options
     );
-    return batchConsumer.consume(files);
   }
 
   /**
@@ -245,7 +218,7 @@ export class PushSource {
     documentId: string,
     deleteChildren = false
   ) {
-    const deleteURL = new URL(this.getBaseAPIURLForDocuments(sourceID));
+    const deleteURL = new URL(`${this.urlBuilder(sourceID).baseURL}/documents`);
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -263,7 +236,7 @@ export class PushSource {
   ) {
     const date = dayjs(olderThan);
     const deleteURL = new URL(
-      `${this.getBaseAPIURLForDocuments(sourceID)}/olderthan`
+      `${this.urlBuilder(sourceID).baseURL}/documents/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
     return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
@@ -276,23 +249,9 @@ export class PushSource {
    * @returns
    */
   public setSourceStatus(sourceID: string, status: SourceStatus) {
-    const urlStatus = new URL(`${this.baseAPIURL}/sources/${sourceID}/status`);
+    const urlStatus = new URL(`${this.urlBuilder(sourceID).baseURL}/status`);
     urlStatus.searchParams.append('statusType', status);
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
-  }
-
-  private async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
-    const fileContainer = await this.createFileContainer();
-    await uploadContentToFileContainer(fileContainer, batch);
-    return this.pushFileContainerContent(sourceID, fileContainer);
-  }
-
-  private get baseAPIURL() {
-    return `${platformUrl(this.options)}/${this.organizationid}`;
-  }
-
-  private getBaseAPIURLForDocuments(sourceID: string) {
-    return `${this.baseAPIURL}/sources/${sourceID}/documents`;
   }
 
   private get documentsAxiosConfig(): AxiosRequestConfig {
@@ -308,24 +267,14 @@ export class PushSource {
     await createFields(this.platformClient, fields);
   }
 
-  private async createFileContainer() {
-    const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
-    const res = await axios.post(
-      fileContainerURL.toString(),
-      {},
-      this.documentsAxiosConfig
-    );
-    return res.data as FileContainerResponse;
+  private urlBuilder(sourceId: string) {
+    return new PushUrlBuilder(sourceId, this.organizationid, this.options);
   }
 
-  private pushFileContainerContent(
-    sourceID: string,
-    fileContainer: FileContainerResponse
-  ) {
-    const pushURL = new URL(
-      `${this.getBaseAPIURLForDocuments(sourceID)}/batch`
-    );
-    pushURL.searchParams.append('fileId', fileContainer.fileId);
-    return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
+  private fileContainerStrategy(sourceId: string): UploadStrategy {
+    const urlBuilder = this.urlBuilder(sourceId);
+    const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
+    // return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
+    throw new Error('TODO: CDX-884');
   }
 }
