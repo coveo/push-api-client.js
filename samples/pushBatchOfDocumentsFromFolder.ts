@@ -33,12 +33,10 @@ async function main() {
     '/path/to/fileB.json',
   ];
 
-  const {onBatchUpload, onBatchError, done} =
-    await source.batchUpdateDocumentsFromFiles('my_source_id', entries);
-
-  onBatchUpload(onSuccessCallback);
-  onBatchError(onErrorCallback);
-  await done();
+  await source
+    .batchUpdateDocumentsFromFiles('my_source_id', entries)
+    .onBatchUpload(onSuccessCallback)
+    .onBatchError(onErrorCallback);
 
   source.setSourceStatus('my_source_id', 'IDLE');
 }
