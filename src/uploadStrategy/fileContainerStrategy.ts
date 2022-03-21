@@ -22,7 +22,7 @@ export class FileContainerStrategy implements UploadStrategy {
     private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
-  public uploadFiles(
+  public async uploadFiles(
     files: string[],
     processingConfig: Required<ConcurrentProcessing>
   ) {
