@@ -10,11 +10,8 @@ import {
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {PushSource} from './push';
 
-export class BatchUpdateDocumentsFromFilesReturn implements Promise<void> {
-  public then: Promise<void>['then'];
-  public catch: Promise<void>['catch'];
-  public finally: Promise<void>['finally'];
-  private internalPromise: Promise<void>;
+export class BatchUpdateDocumentsFromFilesReturn {
+  private internalPromise: () => Promise<void>;
   private batchConsumer: FileConsumer;
 
   constructor(
@@ -49,23 +46,20 @@ export class BatchUpdateDocumentsFromFilesReturn implements Promise<void> {
         await pushSource.createFields(analyser);
       }
       await this.batchConsumer.consume(files);
-    }).bind(this)();
-
-    this.then = this.internalPromise.then.bind(this.internalPromise);
-    this.catch = this.internalPromise.catch.bind(this.internalPromise);
-    this.finally = this.internalPromise.finally.bind(this.internalPromise);
-  }
-
-  public get [Symbol.toStringTag]() {
-    return 'BatchUpdateDocumentsFromFilesReturn';
+    }).bind(this);
   }
 
   public onBatchUpload(cb: SuccessfulUploadCallback) {
     this.batchConsumer.onSuccess(cb);
     return this;
   }
+
   public onBatchError(cb: FailedUploadCallback) {
     this.batchConsumer.onError(cb);
     return this;
+  }
+
+  public batch() {
+    return this.internalPromise();
   }
 }

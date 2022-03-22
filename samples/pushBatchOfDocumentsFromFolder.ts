@@ -36,7 +36,8 @@ async function main() {
   await source
     .batchUpdateDocumentsFromFiles('my_source_id', entries)
     .onBatchUpload(onSuccessCallback)
-    .onBatchError(onErrorCallback);
+    .onBatchError(onErrorCallback)
+    .build();
 
   source.setSourceStatus('my_source_id', 'IDLE');
 }

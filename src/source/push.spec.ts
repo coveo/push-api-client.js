@@ -280,11 +280,13 @@ describe('PushSource', () => {
     });
 
     it('should upload documents from local file', async () => {
-      await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .batch();
 
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -309,11 +311,13 @@ describe('PushSource', () => {
 
     it('should throw an error if the path is invalid', () => {
       expect(() =>
-        source.batchUpdateDocumentsFromFiles(
-          'the_id',
-          ['path/to/invalid/document'],
-          {createFields: false}
-        )
+        source
+          .batchUpdateDocumentsFromFiles(
+            'the_id',
+            ['path/to/invalid/document'],
+            {createFields: false}
+          )
+          .batch()
       ).rejects.toThrow(
         "no such file or directory, lstat 'path/to/invalid/document'"
       );
@@ -326,7 +330,8 @@ describe('PushSource', () => {
           [join(pathToStub, 'mixdocuments')],
           {createFields: false}
         )
-        .onBatchError(mockedErrorCallback);
+        .onBatchError(mockedErrorCallback)
+        .batch();
       expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
@@ -337,7 +342,8 @@ describe('PushSource', () => {
           [join(pathToStub, 'mixdocuments')],
           {createFields: false}
         )
-        .onBatchUpload(mockedSuccessCallback);
+        .onBatchUpload(mockedSuccessCallback)
+        .batch();
       expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
@@ -353,7 +359,8 @@ describe('PushSource', () => {
           [join(pathToStub, 'mixdocuments')],
           {createFields: false}
         )
-        .onBatchError(mockedErrorCallback);
+        .onBatchError(mockedErrorCallback)
+        .batch();
 
       expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
