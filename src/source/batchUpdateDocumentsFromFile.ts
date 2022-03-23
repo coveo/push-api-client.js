@@ -8,7 +8,7 @@ import {
   SuccessfulUploadCallback,
 } from '../index';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {PushSource} from './push';
+import type {PushSource} from './push';
 
 export class BatchUpdateDocumentsFromFilesReturn {
   private internalPromise: () => Promise<void>;
