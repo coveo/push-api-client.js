@@ -28,10 +28,9 @@ export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
 }
 
 function getSpecificNumericType(number: number): FieldTypes {
-  const isInteger = (x: number): boolean => Math.floor(x) === x;
   const is32BitInteger = (x: number) => (x | 0) === x;
 
-  if (isInteger(number)) {
+  if (Number.isInteger(number)) {
     return is32BitInteger(number) ? FieldTypes.LONG : FieldTypes.LONG_64;
   } else {
     return FieldTypes.DOUBLE;
