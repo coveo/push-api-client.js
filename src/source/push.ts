@@ -16,8 +16,6 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
@@ -34,7 +32,7 @@ import {
   BatchUpdateDocumentsOptions,
   BatchUpdateDocumentsFromFiles,
 } from '../interfaces';
-import {FileConsumer} from '../help/fileConsumer';
+import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -50,7 +48,7 @@ interface FileContainerResponse {
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private platformClient: PlatformClient;
+  public platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
@@ -202,36 +200,17 @@ export class PushSource {
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} options
    */
-  public async batchUpdateDocumentsFromFiles(
+  public batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {maxConcurrent, createFields} = {
-      ...defaultOptions,
-      ...options,
-    };
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    const batchConsumer = new FileConsumer(
-      (batch: BatchUpdateDocuments) => this.uploadBatch(sourceID, batch),
-      {maxConcurrent}
+    return new BatchUpdateDocumentsFromFilesReturn(
+      this,
+      sourceID,
+      filesOrDirectories,
+      options
     );
-    return batchConsumer.consume(files);
   }
 
   /**
@@ -282,7 +261,7 @@ export class PushSource {
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
-  private async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
+  public async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
     await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
@@ -302,7 +281,7 @@ export class PushSource {
     };
   }
 
-  private async createFields(analyser: FieldAnalyser) {
+  public async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
     if (inconsistencies.size > 0) {
