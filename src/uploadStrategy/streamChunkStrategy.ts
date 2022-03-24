@@ -60,13 +60,15 @@ export class StreamChunkStrategy implements UploadStrategy {
     return uploadContentToFileContainer(chunk, batch);
   }
 
-  private async openStream(): Promise<StreamResponse> {
+  private async openStream() {
     const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
-    return await axios.post(
+    const res = await axios.post<StreamResponse>(
       openStreamUrl.toString(),
       {},
       this.documentsAxiosConfig
     );
+
+    return res.data;
   }
 
   private async closeStream(streamId: string) {
@@ -74,14 +76,25 @@ export class StreamChunkStrategy implements UploadStrategy {
       `${this.urlBuilder.baseStreamURL}/${streamId}/close`
     );
 
-    return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
+    const res = await axios.post(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
+
+    return res.data;
   }
 
-  private async requestStreamChunk(streamId: string): Promise<StreamResponse> {
+  private async requestStreamChunk(streamId: string) {
     const openStreamUrl = new URL(
       `${this.urlBuilder.baseStreamURL}/${streamId}/chunk`
     );
 
-    return axios.post(openStreamUrl.toString(), {}, this.documentsAxiosConfig);
+    const res = await axios.post<StreamResponse>(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
+    return res.data;
   }
 }
