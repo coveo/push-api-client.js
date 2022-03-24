@@ -27,17 +27,19 @@ const mockedSuccessCallback = jest.fn();
 const mockedErrorCallback = jest.fn();
 const pathToStub = join(cwd(), 'src', '__stub__');
 
+const expectedDocumentsHeaders = {
+  headers: {
+    Accept: 'application/json',
+    Authorization: 'Bearer the_key',
+    'Content-Type': 'application/json',
+  },
+};
+
 const doAxiosMockFileContainerResponse = () => ({
   data: {
     uploadUri: 'https://fake.upload.url',
     fileId: 'file_id',
     requiredHeaders: {foo: 'bar'},
-  },
-});
-
-const doAxiosMockOpenStream = () => ({
-  data: {
-    streamId: 'the_stream_id',
   },
 });
 
@@ -73,8 +75,9 @@ const doMockFieldAnalyser = () => {
   );
 };
 
-describe('CatalogSource', () => {
+describe('CatalogSource - Push', () => {
   let source: CatalogSource;
+  let batch: BatchUpdateDocuments;
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
@@ -82,15 +85,14 @@ describe('CatalogSource', () => {
 
   beforeEach(() => {
     source = new CatalogSource('the_key', 'the_org');
+    batch = {
+      addOrUpdate: [
+        new DocumentBuilder('the_uri_1', 'the_title_1'),
+        new DocumentBuilder('the_uri_2', 'the_title_2'),
+      ],
+      delete: [{documentId: 'the_uri_3', deleteChildren: true}],
+    };
   });
-
-  const expectedDocumentsHeaders = {
-    headers: {
-      Accept: 'application/json',
-      Authorization: 'Bearer the_key',
-      'Content-Type': 'application/json',
-    },
-  };
 
   it('should call platform client on creation', () => {
     source.create('the_name', SourceVisibility.SHARED);
@@ -103,17 +105,8 @@ describe('CatalogSource', () => {
     });
   });
 
-  describe.skip('when doing batch update', () => {
-    let batch: BatchUpdateDocuments;
+  describe('when doing batch update', () => {
     beforeEach(() => {
-      batch = {
-        addOrUpdate: [
-          new DocumentBuilder('the_uri_1', 'the_title_1'),
-          new DocumentBuilder('the_uri_2', 'the_title_2'),
-        ],
-        delete: [{documentId: 'the_uri_3', deleteChildren: true}],
-      };
-
       doAxiosMockPost();
     });
 
@@ -159,7 +152,7 @@ describe('CatalogSource', () => {
     });
   });
 
-  describe.skip('when doing batch update from local files', () => {
+  describe('when doing batch update from local files', () => {
     afterAll(() => {
       mockAxios.post.mockReset();
     });
@@ -256,112 +249,12 @@ describe('CatalogSource', () => {
     });
   });
 
-  describe('when streaming data from a batch', () => {
-    let batch: BatchUpdateDocuments;
-
-    const mockAxiosForStreamCalls = () => {
-      mockAxios.post.mockImplementation((url: string) => {
-        if (url.match(/chunk/)) {
-          return Promise.resolve(doAxiosMockFileContainerResponse());
-        }
-        if (url.match(/stream\/open/)) {
-          return Promise.resolve(doAxiosMockOpenStream());
-        }
-        return Promise.resolve({data: {}});
-      });
-    };
-
-    beforeAll(() => {
-      mockAxios.post.mockReset();
-    });
-
-    beforeEach(async () => {
-      batch = {
-        addOrUpdate: [
-          new DocumentBuilder('the_uri_1', 'the_title_1'),
-          new DocumentBuilder('the_uri_2', 'the_title_2'),
-        ],
-        delete: [{documentId: 'the_uri_3', deleteChildren: true}],
-      };
-      mockAxiosForStreamCalls();
-      await source.batchStreamDocuments('the_id', batch, {createFields: false});
-    });
-
-    afterAll(() => {
-      mockAxios.post.mockReset();
-    });
-
-    it('should open a stream', async () => {
-      expect(mockAxios.post).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/open',
-        {},
-        expectedDocumentsHeaders
-      );
-    });
-
-    it('should close a stream', async () => {
-      expect(mockAxios.post).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/close',
-        {},
-        expectedDocumentsHeaders
-      );
-    });
-
-    it('should request a stream chunk', async () => {
-      expect(mockAxios.post).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/chunk',
-        {},
-        expectedDocumentsHeaders
-      );
-    });
-
-    it('should upload content to stream chunk', async () => {
-      expect(mockAxios.put).toHaveBeenCalledWith(
-        'https://fake.upload.url/',
-        expect.objectContaining({
-          addOrUpdate: expect.arrayContaining([
-            expect.objectContaining({documentId: 'the_uri_1'}),
-            expect.objectContaining({documentId: 'the_uri_2'}),
-          ]),
-          delete: expect.arrayContaining([
-            expect.objectContaining({documentId: 'the_uri_3'}),
-          ]),
-        }),
-        {headers: {foo: 'bar'}}
-      );
-    });
-  });
-
-  describe.skip('when streaming data from local files', () => {
-    it.todo('should open a stream');
-    it.todo('should close a stream');
-    it.todo('should request a stream chunk');
-    it.todo('should upload content to stream chunk');
-    it.todo('should upload documents from local file');
-    it.todo('should throw an error if the path is invalid');
-    it.todo('should call the callback without error when uploading documents');
-    it.todo('should only push JSON files');
-    it.todo('should call the errorCallback on a failure from the API');
-  });
-
-  describe.skip('when enabling auto field creation', () => {
-    let batch: BatchUpdateDocuments;
-
-    beforeAll(() => {
-      batch = {
-        addOrUpdate: [
-          new DocumentBuilder('the_uri_1', 'the_title_1'),
-          new DocumentBuilder('the_uri_2', 'the_title_2'),
-        ],
-        delete: [],
-      };
-    });
-
+  describe('when enabling auto field creation', () => {
     beforeEach(() => {
       doAxiosMockPost();
     });
 
-    describe.skip('when there are no inconsistencies', () => {
+    describe('when there are no inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
         mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
@@ -373,7 +266,7 @@ describe('CatalogSource', () => {
       });
     });
 
-    describe.skip('when document batches contain type inconsistencies', () => {
+    describe('when document batches contain type inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies().add('foo', [
           FieldTypes.STRING,
@@ -388,7 +281,7 @@ describe('CatalogSource', () => {
       });
     });
 
-    describe.skip('when document batches contain missing fields', () => {
+    describe('when document batches contain missing fields', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
         mockAnalyserReport.mockReturnValueOnce({
@@ -408,7 +301,7 @@ describe('CatalogSource', () => {
       });
     });
 
-    describe.skip('when document batches do not contain missing fields', () => {
+    describe('when document batches do not contain missing fields', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
         mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
