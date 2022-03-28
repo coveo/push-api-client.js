@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/coveo/push-api-client.js/compare/v1.6.9...v1.7.0) (2022-03-28)
+
+
+### Features
+
+* support 32bit and 64bit integer types ([#103](https://github.com/coveo/push-api-client.js/issues/103)) ([20b2dbd](https://github.com/coveo/push-api-client.js/commit/20b2dbda104d497a3718d388979d736c21ef0670))
+
 ### [1.6.9](https://github.com/coveo/push-api-client.js/compare/v1.6.8...v1.6.9) (2022-03-28)
 
 ### [1.6.8](https://github.com/coveo/push-api-client.js/compare/v1.6.7...v1.6.8) (2022-03-28)
