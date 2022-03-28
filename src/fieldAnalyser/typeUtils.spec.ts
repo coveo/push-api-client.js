@@ -18,6 +18,8 @@ describe('typeUtils', () => {
     // DOUBLE
     {value: 3.14, type: FieldTypes.DOUBLE},
     {value: -1.23, type: FieldTypes.DOUBLE},
+    {value: 9.164e-17, type: FieldTypes.DOUBLE},
+    {value: -9.1642346778e-175, type: FieldTypes.DOUBLE},
   ])('value $value should be of type $type', ({value, type}) => {
     expect(getGuessedTypeFromValue(value)).toBe(type);
   });
