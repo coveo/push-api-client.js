@@ -1,4 +1,4 @@
-import {PushSource} from '..';
+import {PushSource} from './push';
 
 /**
  * @deprecated This class has been replaced by {@link PushSource}
