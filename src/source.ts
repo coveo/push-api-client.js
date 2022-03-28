@@ -30,6 +30,7 @@ import {
 import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 import {FieldTypeInconsistencyError} from './errors/fieldErrors';
 import {createFields} from './fieldAnalyser/fieldUtils';
+import {SecurityIdentity} from './source/securityIdenty';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -86,8 +87,8 @@ interface FileContainerResponse {
  */
 export class Source {
   private platformClient: PlatformClient;
-  private options: PlatformUrlOptions;
-  private static defaultOptions: PlatformUrlOptions = {
+  private options: Required<PlatformUrlOptions>;
+  private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
@@ -100,7 +101,7 @@ export class Source {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: Partial<PlatformUrlOptions>
+    options?: PlatformUrlOptions
   ) {
     this.options = {...Source.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
@@ -127,80 +128,96 @@ export class Source {
   }
 
   /**
-   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
-   * @param securityProviderId
-   * @param securityIdentity
-   * @returns
+   * @deprecated use `identity.createSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public createSecurityIdentity(
     securityProviderId: string,
     securityIdentity: SecurityIdentityModel
   ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentity(
+    console.log('This method has been deprecated');
+    console.log(
+      'Use `source.identity.createOrUpdateSecurityIdentity()` instead'
+    );
+    return this.identity.createSecurityIdentity(
       securityProviderId,
       securityIdentity
     );
   }
 
   /**
-   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
-   * @param securityProviderId
-   * @param securityIdentityAlias
-   * @returns
+   * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
+   *
+   * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
     securityProviderId: string,
     securityIdentityAlias: SecurityIdentityAliasModel
   ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentityAlias(
+    console.log('This method has been deprecated');
+    console.log(
+      'Use `source.identity.createOrUpdateSecurityIdentityAlias()` instead'
+    );
+    return this.identity.createOrUpdateSecurityIdentityAlias(
       securityProviderId,
       securityIdentityAlias
     );
   }
 
   /**
-   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
-   * @param securityProviderId
-   * @param securityIdentityToDelete
-   * @returns
+   * @deprecated use `identity.deleteSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
     securityProviderId: string,
     securityIdentityToDelete: SecurityIdentityDelete
   ) {
-    return this.platformClient.pushApi.deleteSecurityIdentity(
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.deleteSecurityIdentity()` instead');
+    return this.identity.deleteSecurityIdentity(
       securityProviderId,
       securityIdentityToDelete
     );
   }
 
   /**
-   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
-   * @param securityProviderId
-   * @param batchDelete
-   * @returns
+   * @deprecated use `identity.deleteOldSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
     securityProviderId: string,
     batchDelete: SecurityIdentityDeleteOptions
   ) {
-    return this.platformClient.pushApi.deleteOldSecurityIdentities(
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.deleteOldSecurityIdentities()` instead');
+    return this.identity.deleteOldSecurityIdentities(
       securityProviderId,
       batchDelete
     );
   }
 
   /**
-   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
+   * @deprecated use `identity.manageSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public manageSecurityIdentities(
     securityProviderId: string,
     batchConfig: SecurityIdentityBatchConfig
   ) {
-    return this.platformClient.pushApi.manageSecurityIdentities(
+    console.log('This method has been deprecated');
+    console.log('Use `source.identity.manageSecurityIdentities()` instead');
+    return this.identity.manageSecurityIdentities(
       securityProviderId,
       batchConfig
     );
+  }
+
+  public get identity() {
+    return new SecurityIdentity(this.platformClient);
   }
 
   /**
