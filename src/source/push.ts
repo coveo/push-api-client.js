@@ -136,10 +136,6 @@ export class PushSource {
     securityProviderId: string,
     securityIdentity: SecurityIdentityModel
   ) {
-    console.log('This method has been deprecated');
-    console.log(
-      'Use `source.identity.createOrUpdateSecurityIdentity()` instead'
-    );
     return this.identity.createSecurityIdentity(
       securityProviderId,
       securityIdentity
@@ -155,10 +151,6 @@ export class PushSource {
     securityProviderId: string,
     securityIdentityAlias: SecurityIdentityAliasModel
   ) {
-    console.log('This method has been deprecated');
-    console.log(
-      'Use `source.identity.createOrUpdateSecurityIdentityAlias()` instead'
-    );
     return this.identity.createOrUpdateSecurityIdentityAlias(
       securityProviderId,
       securityIdentityAlias
@@ -174,8 +166,6 @@ export class PushSource {
     securityProviderId: string,
     securityIdentityToDelete: SecurityIdentityDelete
   ) {
-    console.log('This method has been deprecated');
-    console.log('Use `source.identity.deleteSecurityIdentity()` instead');
     return this.identity.deleteSecurityIdentity(
       securityProviderId,
       securityIdentityToDelete
@@ -191,8 +181,6 @@ export class PushSource {
     securityProviderId: string,
     batchDelete: SecurityIdentityDeleteOptions
   ) {
-    console.log('This method has been deprecated');
-    console.log('Use `source.identity.deleteOldSecurityIdentities()` instead');
     return this.identity.deleteOldSecurityIdentities(
       securityProviderId,
       batchDelete
@@ -208,8 +196,6 @@ export class PushSource {
     securityProviderId: string,
     batchConfig: SecurityIdentityBatchConfig
   ) {
-    console.log('This method has been deprecated');
-    console.log('Use `source.identity.manageSecurityIdentities()` instead');
     return this.identity.manageSecurityIdentities(
       securityProviderId,
       batchConfig
