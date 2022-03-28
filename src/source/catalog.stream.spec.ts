@@ -2,17 +2,10 @@
 jest.mock('@coveord/platform-client');
 jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
-import PlatformClient, {
-  SourceVisibility,
-  FieldTypes,
-} from '@coveord/platform-client';
-import {DocumentBuilder} from '../documentBuilder';
+import PlatformClient from '@coveord/platform-client';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
-import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
-import {BatchUpdateDocuments} from '../interfaces';
 import {CatalogSource} from './catalog';
 import {FieldAnalyser, SuccessfulUploadCallback} from '..';
 import {FailedUploadCallback} from '../help/fileConsumer';
@@ -50,15 +43,6 @@ const doAxiosMockOpenStream = () => ({
   },
 });
 
-const doAxiosMockPost = () => {
-  mockAxios.post.mockImplementationOnce((url: string) => {
-    if (url.match(/files/)) {
-      return Promise.resolve(doAxiosMockFileContainerResponse());
-    }
-    return Promise.resolve();
-  });
-};
-
 const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
@@ -72,6 +56,7 @@ const doMockPlatformClient = () => {
       } as unknown as PlatformClient)
   );
 };
+
 const doMockFieldAnalyser = () => {
   mockedFieldAnalyser.mockImplementation(
     () =>
@@ -122,7 +107,6 @@ const basicStreamExpectations = () => {
 
 describe('CatalogSource - Stream', () => {
   let source: CatalogSource;
-  let batch: BatchUpdateDocuments;
   let onBatchError: (callback: FailedUploadCallback) => void;
   let onBatchUpload: (callback: SuccessfulUploadCallback) => void;
   let done: () => Promise<void>;
@@ -133,13 +117,6 @@ describe('CatalogSource - Stream', () => {
 
   beforeEach(() => {
     source = new CatalogSource('the_key', 'the_org');
-    batch = {
-      addOrUpdate: [
-        new DocumentBuilder('the_uri_1', 'the_title_1'),
-        new DocumentBuilder('the_uri_2', 'the_title_2'),
-      ],
-      delete: [{documentId: 'the_uri_3', deleteChildren: true}],
-    };
   });
 
   describe('when streaming data from a batch', () => {
@@ -229,40 +206,40 @@ describe('CatalogSource - Stream', () => {
       expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
-    // TODO:
-    // it('should only push JSON files', async () => {
-    //   onBatchUpload(mockedSuccessCallback);
-    //   await done();
+    // TODO: unskip
+    it.skip('should only push JSON files', async () => {
+      onBatchUpload(mockedSuccessCallback);
+      await done();
 
-    //   expect(mockedSuccessCallback).toHaveBeenCalledWith(
-    //     expect.objectContaining({files: ['valid.json']})
-    //   );
-    // });
+      expect(mockedSuccessCallback).toHaveBeenCalledWith(
+        expect.objectContaining({files: ['valid.json']})
+      );
+    });
 
-    // it('should call the errorCallback on a failure from the API', async () => {
-    //   mockAxios.post.mockReset();
-    //   mockAxios.post.mockRejectedValue({message: 'Error Message'});
+    it.skip('should call the errorCallback on a failure from the API', async () => {
+      mockAxios.post.mockReset();
+      mockAxios.post.mockRejectedValue({message: 'Error Message'});
 
-    //   onBatchError(mockedErrorCallback);
-    //   await done();
-    //   expect(mockedErrorCallback).toHaveBeenCalledWith(
-    //     {
-    //       message: 'Error Message',
-    //     },
-    //     expect.anything()
-    //   );
-    // });
+      onBatchError(mockedErrorCallback);
+      await done();
+      expect(mockedErrorCallback).toHaveBeenCalledWith(
+        {
+          message: 'Error Message',
+        },
+        expect.anything()
+      );
+    });
 
-    // it('should throw an error if the path is invalid', () => {
-    //   expect(() =>
-    //     source.batchStreamDocumentsFromFiles(
-    //       'the_id',
-    //       ['path/to/invalid/document'],
-    //       {createFields: false}
-    //     )
-    //   ).rejects.toThrow(
-    //     "no such file or directory, lstat 'path/to/invalid/document'"
-    //   );
-    // });
+    it('should throw an error if the path is invalid', () => {
+      expect(() =>
+        source.batchStreamDocumentsFromFiles(
+          'the_id',
+          ['path/to/invalid/document'],
+          {createFields: false}
+        )
+      ).rejects.toThrow(
+        "no such file or directory, lstat 'path/to/invalid/document'"
+      );
+    });
   });
 });
