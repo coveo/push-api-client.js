@@ -1,6 +1,6 @@
 import {FieldTypes} from '@coveord/platform-client';
 
-export class Inconsistencies extends Map {
+export class Inconsistencies extends Map<string, Set<FieldTypes>> {
   constructor() {
     super();
   }

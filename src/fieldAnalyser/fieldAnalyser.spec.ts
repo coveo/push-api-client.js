@@ -14,7 +14,8 @@ const buildDocument = (metadata?: Metadata) => {
 };
 
 const docWithNewFields = buildDocument({
-  promo_price: 23.13,
+  some_integer: 100,
+  promo_price: 23.99,
   description:
     'Plumbus can generate and store vast amounts of heat, allowing it to be used for cooking, ironing or just heating the room.',
   additional_info:
@@ -116,6 +117,10 @@ describe('FieldAnalyser', () => {
       const {fields} = (await analyser.add(docBuilders)).report();
       expect(fields).toStrictEqual([
         {
+          name: 'some_integer',
+          type: 'LONG',
+        },
+        {
           name: 'promo_price',
           type: 'DOUBLE',
         },
@@ -163,12 +168,16 @@ describe('FieldAnalyser', () => {
         new Set(['DOUBLE', 'STRING'])
       );
       expect(inconsistenciesSet.get('available')).toStrictEqual(
-        new Set(['DOUBLE', 'STRING'])
+        new Set(['LONG', 'STRING'])
       );
     });
 
     it('should still provide fields to create', () => {
       expect(report.fields).toStrictEqual([
+        {
+          name: 'some_integer',
+          type: 'LONG',
+        },
         {
           name: 'promo_price',
           type: 'DOUBLE',
@@ -181,30 +190,13 @@ describe('FieldAnalyser', () => {
           name: 'additional_info',
           type: 'STRING',
         },
-        {
-          name: 'price',
-          type: 'STRING',
-        },
-        {
-          name: 'available',
-          type: 'DOUBLE',
-        },
       ]);
     });
 
-    it('should associate to a field a type based on the type precedence list', () => {
-      // In this scenario, there were equal amount of occurences of numeric string values for the same metadata
-      expect(report.fields).toContainEqual({
-        name: 'price',
-        type: 'STRING',
-      });
-    });
-
-    it('should associate to a field a type with the most occurences', () => {
-      // In this scenario, there were 2 occurences of numeric value and 1 occurence of string value for the same metadata
-      expect(report.fields).toContainEqual({
-        name: 'available',
-        type: 'DOUBLE',
+    it('should not return fields with inconsistencies', () => {
+      report.fields.forEach((field) => {
+        expect(field.name).not.toEqual('available');
+        expect(field.name).not.toEqual('price');
       });
     });
   });
