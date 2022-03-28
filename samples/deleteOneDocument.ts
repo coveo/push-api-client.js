@@ -1,7 +1,7 @@
-import {Source} from '@coveo/push-api-client';
+import {PushSource} from '@coveo/push-api-client';
 
 async function main() {
-  const source = new Source('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
 
   await source.deleteDocument(
     'my_source_id',
