@@ -33,47 +33,37 @@ export class FileConsumer {
     private processingConfig: Required<ConcurrentProcessing>
   ) {}
 
-  public consume(files: string[]) {
-    const consumePromise = async () => {
-      const fileNames = files.map((path) => basename(path));
-      const {chunksToUpload, close} = this.splitByChunkAndUpload(fileNames);
+  public async consume(files: string[]) {
+    const fileNames = files.map((path) => basename(path));
+    const {chunksToUpload, close} = this.splitByChunkAndUpload(fileNames);
 
-      const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
-        for (const upload of chunksToUpload(docBuilders)) {
-          yield upload();
-        }
-      };
-
-      // parallelize uploads across multiple files
-      const fileGenerator = function* () {
-        for (const filePath of files.values()) {
-          const docBuilders =
-            parseAndGetDocumentBuilderFromJSONDocument(filePath);
-          yield* docBuilderGenerator(docBuilders);
-        }
-      };
-
-      await consumeGenerator(
-        fileGenerator.bind(this),
-        this.processingConfig.maxConcurrent
-      );
-      await close();
+    const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
+      for (const upload of chunksToUpload(docBuilders)) {
+        yield upload();
+      }
     };
 
-    const promise = consumePromise();
-
-    return {
-      onBatchUpload: (cb: SuccessfulUploadCallback) => this.onSuccess(cb),
-      onBatchError: (cb: FailedUploadCallback) => this.onError(cb),
-      done: () => promise,
+    // parallelize uploads across multiple files
+    const fileGenerator = function* () {
+      for (const filePath of files.values()) {
+        const docBuilders =
+          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        yield* docBuilderGenerator(docBuilders);
+      }
     };
+
+    await consumeGenerator(
+      fileGenerator.bind(this),
+      this.processingConfig.maxConcurrent
+    );
+    await close();
   }
 
-  private onSuccess(callback: SuccessfulUploadCallback) {
+  public onSuccess(callback: SuccessfulUploadCallback) {
     this.cbSuccess = callback;
   }
 
-  private onError(callback: FailedUploadCallback) {
+  public onError(callback: FailedUploadCallback) {
     this.cbFail = callback;
   }
 

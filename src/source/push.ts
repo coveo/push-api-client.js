@@ -30,18 +30,19 @@ import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
 import {
-  FileContainerResponse,
-  uploadContentToFileContainer,
-} from '../help/fileContainer';
-import {
   BatchUpdateDocuments,
-  BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
+  BatchUpdateDocumentsFromFiles,
 } from '../interfaces';
-import {axiosRequestHeaders} from '../help/axiosUtils';
-import {FileConsumer} from '../help/fileConsumer';
+import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
+
+interface FileContainerResponse {
+  uploadUri: string;
+  fileId: string;
+  requiredHeaders: Record<string, string>;
+}
 
 /**
  * Manage a push source.
@@ -49,7 +50,7 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private platformClient: PlatformClient;
+  public platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
@@ -95,9 +96,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public createSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentity: SecurityIdentityModel
-  ) {}
+    securityProviderId: string,
+    securityIdentity: SecurityIdentityModel
+  ) {
+    return this.identity.createSecurityIdentity(
+      securityProviderId,
+      securityIdentity
+    );
+  }
 
   /**
    * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
@@ -105,9 +111,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
-    _securityProviderId: string,
-    _securityIdentityAlias: SecurityIdentityAliasModel
-  ) {}
+    securityProviderId: string,
+    securityIdentityAlias: SecurityIdentityAliasModel
+  ) {
+    return this.identity.createOrUpdateSecurityIdentityAlias(
+      securityProviderId,
+      securityIdentityAlias
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteSecurityIdentity`
@@ -115,9 +126,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentityToDelete: SecurityIdentityDelete
-  ) {}
+    securityProviderId: string,
+    securityIdentityToDelete: SecurityIdentityDelete
+  ) {
+    return this.identity.deleteSecurityIdentity(
+      securityProviderId,
+      securityIdentityToDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteOldSecurityIdentities`
@@ -125,9 +141,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
-    _securityProviderId: string,
-    _batchDelete: SecurityIdentityDeleteOptions
-  ) {}
+    securityProviderId: string,
+    batchDelete: SecurityIdentityDeleteOptions
+  ) {
+    return this.identity.deleteOldSecurityIdentities(
+      securityProviderId,
+      batchDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.manageSecurityIdentities`
@@ -135,9 +156,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public manageSecurityIdentities(
-    _securityProviderId: string,
-    _batchConfig: SecurityIdentityBatchConfig
-  ) {}
+    securityProviderId: string,
+    batchConfig: SecurityIdentityBatchConfig
+  ) {
+    return this.identity.manageSecurityIdentities(
+      securityProviderId,
+      batchConfig
+    );
+  }
 
   public get identity() {
     return new SecurityIdentity(this.platformClient);
@@ -189,7 +215,7 @@ export class PushSource {
     }
 
     const fileContainer = await this.createFileContainer();
-    await uploadContentToFileContainer(fileContainer, batch);
+    await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
@@ -201,36 +227,17 @@ export class PushSource {
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} options
    */
-  public async batchUpdateDocumentsFromFiles(
+  public batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {maxConcurrent, createFields} = {
-      ...defaultOptions,
-      ...options,
-    };
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    const batchConsumer = new FileConsumer(
-      (batch: BatchUpdateDocuments) => this.uploadBatch(sourceID, batch),
-      {maxConcurrent}
+    return new BatchUpdateDocumentsFromFilesReturn(
+      this,
+      sourceID,
+      filesOrDirectories,
+      options
     );
-    return batchConsumer.consume(files);
   }
 
   /**
@@ -281,9 +288,9 @@ export class PushSource {
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
-  private async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
+  public async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
-    await uploadContentToFileContainer(fileContainer, batch);
+    await this.uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
@@ -296,16 +303,40 @@ export class PushSource {
   }
 
   private get documentsAxiosConfig(): AxiosRequestConfig {
-    return axiosRequestHeaders(this.apikey);
+    return {
+      headers: this.documentsRequestHeaders,
+    };
   }
 
-  private async createFields(analyser: FieldAnalyser) {
+  public async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
     if (inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(inconsistencies);
     }
     await createFields(this.platformClient, fields);
+  }
+
+  private getFileContainerAxiosConfig(
+    fileContainer: FileContainerResponse
+  ): AxiosRequestConfig {
+    return {
+      headers: fileContainer.requiredHeaders,
+    };
+  }
+
+  private get documentsRequestHeaders() {
+    return {
+      ...this.authorizationHeader,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+  }
+
+  private get authorizationHeader() {
+    return {
+      Authorization: `Bearer ${this.apikey}`,
+    };
   }
 
   private async createFileContainer() {
@@ -316,6 +347,23 @@ export class PushSource {
       this.documentsAxiosConfig
     );
     return res.data as FileContainerResponse;
+  }
+
+  private async uploadContentToFileContainer(
+    fileContainer: FileContainerResponse,
+    batch: BatchUpdateDocuments
+  ) {
+    const uploadURL = new URL(fileContainer.uploadUri);
+    return await axios.put(
+      uploadURL.toString(),
+      {
+        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
+          docBuilder.marshal()
+        ),
+        delete: batch.delete,
+      },
+      this.getFileContainerAxiosConfig(fileContainer)
+    );
   }
 
   private pushFileContainerContent(
