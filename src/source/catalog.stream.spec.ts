@@ -8,7 +8,6 @@ import {join} from 'path';
 import {cwd} from 'process';
 import {CatalogSource} from './catalog';
 import {FieldAnalyser} from '..';
-import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -81,24 +80,31 @@ const mockAxiosForStreamCalls = () => {
 
 const basicStreamExpectations = () => {
   it('should open a stream', async () => {
-    expect(mockAxios.post).toHaveBeenCalledWith(
+    expect(mockAxios.post).toHaveReturnedTimes(3);
+  });
+
+  it('should open a stream', async () => {
+    expect(mockAxios.post).toHaveBeenNthCalledWith(
+      1,
       'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/open',
       {},
       expectedDocumentsHeaders
     );
   });
 
-  it('should close a stream', async () => {
-    expect(mockAxios.post).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/close',
+  it('should request a stream chunk', async () => {
+    expect(mockAxios.post).toHaveBeenNthCalledWith(
+      2,
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/chunk',
       {},
       expectedDocumentsHeaders
     );
   });
 
-  it('should request a stream chunk', async () => {
-    expect(mockAxios.post).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/chunk',
+  it('should close a stream', async () => {
+    expect(mockAxios.post).toHaveBeenNthCalledWith(
+      3,
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/close',
       {},
       expectedDocumentsHeaders
     );
@@ -158,7 +164,6 @@ describe('CatalogSource - Stream', () => {
   });
 
   describe('when streaming data from local files', () => {
-    // let batchReturn: BatchUploadDocumentsFromFilesReturn;
     beforeEach(async () => {
       mockAxiosForStreamCalls();
     });
