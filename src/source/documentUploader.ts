@@ -1,4 +1,5 @@
 import PlatformClient from '@coveord/platform-client';
+import {AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields as create} from '../fieldAnalyser/fieldUtils';
@@ -10,7 +11,7 @@ export async function uploadBatch(
   strategy: UploadStrategy,
   batch: BatchUpdateDocuments,
   createFields = true
-) {
+): Promise<AxiosResponse> {
   if (createFields) {
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add(batch.addOrUpdate);
@@ -22,6 +23,8 @@ export async function uploadBatch(
 
     await create(platformClient, fields);
   }
-  await strategy.upload(batch);
-  return strategy.postUpload();
+  const res = await strategy.upload(batch);
+  await strategy.postUpload();
+
+  return res;
 }
