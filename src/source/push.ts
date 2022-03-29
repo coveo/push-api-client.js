@@ -16,8 +16,6 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import {getAllJsonFilesFromEntries} from '../help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
@@ -30,19 +28,18 @@ import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
 import {
+  FileContainerResponse,
+  uploadContentToFileContainer,
+} from '../help/fileContainer';
+import {
   BatchUpdateDocuments,
-  BatchUpdateDocumentsOptions,
   BatchUpdateDocumentsFromFiles,
+  BatchUpdateDocumentsOptions,
 } from '../interfaces';
+import {axiosRequestHeaders} from '../help/axiosUtils';
 import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-interface FileContainerResponse {
-  uploadUri: string;
-  fileId: string;
-  requiredHeaders: Record<string, string>;
-}
 
 /**
  * Manage a push source.
@@ -215,7 +212,7 @@ export class PushSource {
     }
 
     const fileContainer = await this.createFileContainer();
-    await this.uploadContentToFileContainer(fileContainer, batch);
+    await uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
@@ -290,7 +287,7 @@ export class PushSource {
 
   public async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
-    await this.uploadContentToFileContainer(fileContainer, batch);
+    await uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(sourceID, fileContainer);
   }
 
@@ -303,9 +300,7 @@ export class PushSource {
   }
 
   private get documentsAxiosConfig(): AxiosRequestConfig {
-    return {
-      headers: this.documentsRequestHeaders,
-    };
+    return axiosRequestHeaders(this.apikey);
   }
 
   public async createFields(analyser: FieldAnalyser) {
@@ -317,28 +312,6 @@ export class PushSource {
     await createFields(this.platformClient, fields);
   }
 
-  private getFileContainerAxiosConfig(
-    fileContainer: FileContainerResponse
-  ): AxiosRequestConfig {
-    return {
-      headers: fileContainer.requiredHeaders,
-    };
-  }
-
-  private get documentsRequestHeaders() {
-    return {
-      ...this.authorizationHeader,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    };
-  }
-
-  private get authorizationHeader() {
-    return {
-      Authorization: `Bearer ${this.apikey}`,
-    };
-  }
-
   private async createFileContainer() {
     const fileContainerURL = new URL(`${this.baseAPIURL}/files`);
     const res = await axios.post(
@@ -347,23 +320,6 @@ export class PushSource {
       this.documentsAxiosConfig
     );
     return res.data as FileContainerResponse;
-  }
-
-  private async uploadContentToFileContainer(
-    fileContainer: FileContainerResponse,
-    batch: BatchUpdateDocuments
-  ) {
-    const uploadURL = new URL(fileContainer.uploadUri);
-    return await axios.put(
-      uploadURL.toString(),
-      {
-        addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
-          docBuilder.marshal()
-        ),
-        delete: batch.delete,
-      },
-      this.getFileContainerAxiosConfig(fileContainer)
-    );
   }
 
   private pushFileContainerContent(
