@@ -239,7 +239,7 @@ export class PushSource {
    * @param deleteChildren
    * @returns
    */
-  public async deleteDocument(
+  public deleteDocument(
     sourceID: string,
     documentId: string,
     deleteChildren = false
