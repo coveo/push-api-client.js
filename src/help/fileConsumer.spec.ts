@@ -29,19 +29,15 @@ describe('FileConsumer', () => {
 
     it('should call the success callback', async () => {
       const mockedHandleSuccess = jest.fn();
-      const {onBatchUpload, done} = fileConsumer.consume(entries);
-
-      onBatchUpload(mockedHandleSuccess);
-      await done();
+      fileConsumer.onSuccess(mockedHandleSuccess);
+      await fileConsumer.consume(entries);
       expect(mockedHandleSuccess).toHaveBeenCalled();
     });
 
     it('should not call the error callback', async () => {
       const mockedHandleError = jest.fn();
-      const {onBatchError, done} = fileConsumer.consume(entries);
-
-      onBatchError(mockedHandleError);
-      await done();
+      fileConsumer.onError(mockedHandleError);
+      await fileConsumer.consume(entries);
       expect(mockedHandleError).not.toHaveBeenCalled();
     });
 
@@ -60,10 +56,8 @@ describe('FileConsumer', () => {
         }
       };
 
-      const {onBatchUpload, done} = fileConsumer.consume(entries);
-
-      onBatchUpload(handleBatchUpload);
-      await done();
+      fileConsumer.onSuccess(handleBatchUpload);
+      await fileConsumer.consume(entries);
     });
   });
 
@@ -80,10 +74,9 @@ describe('FileConsumer', () => {
 
     it('should call the error callback', async () => {
       const mockedHandleError = jest.fn();
-      const {onBatchError, done} = fileConsumer.consume(entries);
+      fileConsumer.onError(mockedHandleError);
+      await fileConsumer.consume(entries);
 
-      onBatchError(mockedHandleError);
-      await done();
       expect(mockedHandleError).toHaveBeenCalled();
     });
 
@@ -92,9 +85,8 @@ describe('FileConsumer', () => {
         expect(err).toEqual({status: 412, statusText: 'BAD_REQUEST'});
       };
 
-      const {onBatchError, done} = fileConsumer.consume(entries);
-      onBatchError(handleBatchError);
-      await done();
+      fileConsumer.onError(handleBatchError);
+      await fileConsumer.consume(entries);
     });
   });
 });

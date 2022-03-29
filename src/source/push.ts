@@ -32,9 +32,10 @@ import {
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {axiosRequestHeaders} from '../help/axiosUtils';
-import {uploadBatch, uploadFiles} from './documentUploader';
+import {uploadBatch} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
+import {BatchUploadDocumentsFromFiles} from './batchUploadDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -44,7 +45,7 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
 export class PushSource {
-  private platformClient: PlatformClient;
+  public platformClient: PlatformClient;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
@@ -90,9 +91,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public createSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentity: SecurityIdentityModel
-  ) {}
+    securityProviderId: string,
+    securityIdentity: SecurityIdentityModel
+  ) {
+    return this.identity.createSecurityIdentity(
+      securityProviderId,
+      securityIdentity
+    );
+  }
 
   /**
    * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
@@ -100,9 +106,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
-    _securityProviderId: string,
-    _securityIdentityAlias: SecurityIdentityAliasModel
-  ) {}
+    securityProviderId: string,
+    securityIdentityAlias: SecurityIdentityAliasModel
+  ) {
+    return this.identity.createOrUpdateSecurityIdentityAlias(
+      securityProviderId,
+      securityIdentityAlias
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteSecurityIdentity`
@@ -110,9 +121,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
-    _securityProviderId: string,
-    _securityIdentityToDelete: SecurityIdentityDelete
-  ) {}
+    securityProviderId: string,
+    securityIdentityToDelete: SecurityIdentityDelete
+  ) {
+    return this.identity.deleteSecurityIdentity(
+      securityProviderId,
+      securityIdentityToDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.deleteOldSecurityIdentities`
@@ -120,9 +136,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
-    _securityProviderId: string,
-    _batchDelete: SecurityIdentityDeleteOptions
-  ) {}
+    securityProviderId: string,
+    batchDelete: SecurityIdentityDeleteOptions
+  ) {
+    return this.identity.deleteOldSecurityIdentities(
+      securityProviderId,
+      batchDelete
+    );
+  }
 
   /**
    * @deprecated use `identity.manageSecurityIdentities`
@@ -130,9 +151,14 @@ export class PushSource {
    * See {@link Source.identity}
    */
   public manageSecurityIdentities(
-    _securityProviderId: string,
-    _batchConfig: SecurityIdentityBatchConfig
-  ) {}
+    securityProviderId: string,
+    batchConfig: SecurityIdentityBatchConfig
+  ) {
+    return this.identity.manageSecurityIdentities(
+      securityProviderId,
+      batchConfig
+    );
+  }
 
   public get identity() {
     return new SecurityIdentity(this.platformClient);
@@ -193,12 +219,12 @@ export class PushSource {
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} options
    */
-  public async batchUpdateDocumentsFromFiles(
+  public batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return uploadFiles(
+    return new BatchUploadDocumentsFromFiles(
       this.platformClient,
       this.fileContainerStrategy(sourceID),
       filesOrDirectories,
@@ -258,7 +284,7 @@ export class PushSource {
     return axiosRequestHeaders(this.apikey);
   }
 
-  private async createFields(analyser: FieldAnalyser) {
+  public async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
     if (inconsistencies.size > 0) {
