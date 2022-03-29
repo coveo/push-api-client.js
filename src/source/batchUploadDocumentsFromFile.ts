@@ -1,3 +1,5 @@
+import PlatformClient from '@coveord/platform-client';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {FileConsumer} from '../help/fileConsumer';
 import {
@@ -7,16 +9,17 @@ import {
   FieldAnalyser,
   SuccessfulUploadCallback,
 } from '../index';
+import {createFields as create} from '../fieldAnalyser/fieldUtils';
+import type {UploadStrategy} from '../uploadStrategy';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
-import type {PushSource} from './push';
 
-export class BatchUpdateDocumentsFromFilesReturn {
+export class BatchUploadDocumentsFromFiles {
   private internalPromise: () => Promise<void>;
-  private batchConsumer: FileConsumer;
+  private consumer: FileConsumer;
 
   constructor(
-    pushSource: PushSource,
-    sourceId: string,
+    platformClient: PlatformClient,
+    strategy: UploadStrategy,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
@@ -29,33 +32,38 @@ export class BatchUpdateDocumentsFromFilesReturn {
       ...options,
     };
 
-    this.batchConsumer = new FileConsumer(
-      (batch: BatchUpdateDocuments) => pushSource.uploadBatch(sourceId, batch),
+    this.consumer = new FileConsumer(
+      (batch: BatchUpdateDocuments) => strategy.uploadBatch(batch),
       {maxConcurrent}
     );
 
     this.internalPromise = (async () => {
       const files = getAllJsonFilesFromEntries(filesOrDirectories);
       if (createFields) {
-        const analyser = new FieldAnalyser(pushSource.platformClient);
+        const analyser = new FieldAnalyser(platformClient);
         for (const filePath of files.values()) {
           const docBuilders =
             parseAndGetDocumentBuilderFromJSONDocument(filePath);
           await analyser.add(docBuilders);
         }
-        await pushSource.createFields(analyser);
+        const {fields, inconsistencies} = analyser.report();
+
+        if (inconsistencies.size > 0) {
+          throw new FieldTypeInconsistencyError(inconsistencies);
+        }
+        await create(platformClient, fields);
       }
-      await this.batchConsumer.consume(files);
+      await this.consumer.consume(files);
     }).bind(this);
   }
 
   public onBatchUpload(cb: SuccessfulUploadCallback) {
-    this.batchConsumer.onSuccess(cb);
+    this.consumer.onSuccess(cb);
     return this;
   }
 
   public onBatchError(cb: FailedUploadCallback) {
-    this.batchConsumer.onError(cb);
+    this.consumer.onError(cb);
     return this;
   }
 
