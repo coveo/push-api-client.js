@@ -162,13 +162,13 @@ describe('CatalogSource - Push', () => {
     });
 
     it('should upload documents from local file', async () => {
-      const {done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .batch();
 
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -193,35 +193,39 @@ describe('CatalogSource - Push', () => {
 
     it('should throw an error if the path is invalid', () => {
       expect(() =>
-        source.batchUpdateDocumentsFromFiles(
-          'the_id',
-          ['path/to/invalid/document'],
-          {createFields: false}
-        )
+        source
+          .batchUpdateDocumentsFromFiles(
+            'the_id',
+            ['path/to/invalid/document'],
+            {createFields: false}
+          )
+          .batch()
       ).rejects.toThrow(
         "no such file or directory, lstat 'path/to/invalid/document'"
       );
     });
 
     it('should call the callback without error when uploading documents', async () => {
-      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-      onBatchError(mockedErrorCallback);
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
       expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
     it('should only push JSON files', async () => {
-      const {onBatchUpload, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-      onBatchUpload(mockedSuccessCallback);
-      await done();
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchUpload(mockedSuccessCallback)
+        .batch();
 
       expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
@@ -231,15 +235,15 @@ describe('CatalogSource - Push', () => {
     it('should call the errorCallback on a failure from the API', async () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
 
-      const {onBatchError, done} = await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-
-      onBatchError(mockedErrorCallback);
-      await done();
       expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
           message: 'Error Message',

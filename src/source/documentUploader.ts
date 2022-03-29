@@ -22,5 +22,6 @@ export async function uploadBatch(
 
     await create(platformClient, fields);
   }
-  return strategy.uploadBatch(batch);
+  await strategy.upload(batch);
+  return strategy.postUpload();
 }

@@ -1,8 +1,7 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
-import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
+import {BatchUpdateDocuments} from '../interfaces';
 import {UploadStrategy} from './strategy';
-import {FileConsumer} from '../help/fileConsumer';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {StreamUrlBuilder} from '../help/urlUtils';
 
@@ -20,60 +19,41 @@ export interface StreamResponse {
  * @implements {UploadStrategy}
  */
 export class StreamChunkStrategy implements UploadStrategy {
+  private _openedStream: StreamResponse | null = null;
   public constructor(
     private urlBuilder: StreamUrlBuilder,
     private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
-  public async uploadFiles(
-    files: string[],
-    processingConfig: Required<ConcurrentProcessing>
-  ) {
-    const {streamId} = await this.openStream();
-    const upload = (batch: BatchUpdateDocuments) =>
-      this.upload(streamId, batch);
-    const batchConsumer = new FileConsumer(upload, processingConfig);
-    const {onBatchError, onBatchUpload, done} = batchConsumer.consume(files);
-
-    const endPromise = async () => {
-      await done();
-      await this.closeStream(streamId);
-    };
-
-    const doneDone = endPromise();
-
-    return {
-      onBatchError,
-      onBatchUpload,
-      done: () => doneDone,
-    };
-  }
-
-  public async uploadBatch(batch: BatchUpdateDocuments) {
-    const {streamId} = await this.openStream();
-    await this.upload(streamId, batch);
-    return this.closeStream(streamId);
-  }
-
-  private async upload(streamId: string, batch: BatchUpdateDocuments) {
-    const chunk = await this.requestStreamChunk(streamId);
+  public async upload(batch: BatchUpdateDocuments) {
+    const chunk = await this.requestStreamChunk();
     return uploadContentToFileContainer(chunk, batch);
   }
 
-  private async openStream() {
-    const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
-    const res = await axios.post<StreamResponse>(
-      openStreamUrl.toString(),
-      {},
-      this.documentsAxiosConfig
-    );
-
-    return res.data;
+  public postUpload() {
+    return this.closeOpenedStream();
   }
 
-  private async closeStream(streamId: string) {
+  public async openStreamIfNotAlreadyOpen() {
+    if (this._openedStream === null) {
+      const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
+      const res = await axios.post<StreamResponse>(
+        openStreamUrl.toString(),
+        {},
+        this.documentsAxiosConfig
+      );
+
+      this._openedStream = res.data;
+    }
+    return this._openedStream;
+  }
+
+  public async closeOpenedStream() {
+    if (this._openedStream === null) {
+      return;
+    }
     const openStreamUrl = new URL(
-      `${this.urlBuilder.baseStreamURL}/${streamId}/close`
+      `${this.urlBuilder.baseStreamURL}/${this._openedStream.streamId}/close`
     );
 
     const res = await axios.post(
@@ -81,11 +61,12 @@ export class StreamChunkStrategy implements UploadStrategy {
       {},
       this.documentsAxiosConfig
     );
-
+    this._openedStream = null;
     return res.data;
   }
 
-  private async requestStreamChunk(streamId: string) {
+  private async requestStreamChunk() {
+    const {streamId} = await this.openStreamIfNotAlreadyOpen();
     const openStreamUrl = new URL(
       `${this.urlBuilder.baseStreamURL}/${streamId}/chunk`
     );

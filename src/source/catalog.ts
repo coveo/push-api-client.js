@@ -13,19 +13,16 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
-import {
-  StreamChunkStrategy,
-  FileContainerStrategy,
-  UploadStrategy,
-} from '../uploadStrategy';
+import {StreamChunkStrategy, FileContainerStrategy} from '../uploadStrategy';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {axiosRequestHeaders} from '../help/axiosUtils';
-import {uploadBatch, uploadFiles} from './documentUploader';
+import {uploadBatch} from './documentUploader';
 import {StreamUrlBuilder} from '../help/urlUtils';
+import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 /**
  * Manage a catalog source.
@@ -87,17 +84,13 @@ export class CatalogSource {
    * @param {BatchUpdateDocumentsOptions} [{createFields: createFields = true}={}]
    * @returns
    */
-  public async batchUpdateDocuments(
+  public batchUpdateDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    return uploadBatch(
-      this.platformClient,
-      this.fileContainerStrategy(sourceId),
-      batch,
-      createFields
-    );
+    const strategy = this.fileContainerStrategy(sourceId);
+    return uploadBatch(this.platformClient, strategy, batch, createFields);
   }
 
   /**
@@ -112,26 +105,22 @@ export class CatalogSource {
     batch: BatchUpdateDocuments,
     {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
   ) {
-    return uploadBatch(
-      this.platformClient,
-      this.streamChunkStrategy(sourceId),
-      batch,
-      createFields
-    );
+    const strategy = this.streamChunkStrategy(sourceId);
+    await uploadBatch(this.platformClient, strategy, batch, createFields);
   }
 
   /**
-   * Manage batches of items in a catalog source from a list of JSON files. See [Manage Batches of Items in a Push Source](https://docs.coveo.com/en/90)
+   * Manage batches of items in a catalog source from a list of JSON files. See [Full Document Update Source](https://docs.coveo.com/en/l62e0540)
    * @param {string} sourceId The unique identifier of the target Push source
    * @param {string[]} filesOrDirectories A list of JSON files or directories (containing JSON files) from which to extract documents.
    * @param {BatchUpdateDocumentsFromFiles} options
    */
-  public async batchUpdateDocumentsFromFiles(
+  public batchUpdateDocumentsFromFiles(
     sourceId: string,
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return uploadFiles(
+    return new BatchUploadDocumentsFromFilesReturn(
       this.platformClient,
       this.fileContainerStrategy(sourceId),
       filesOrDirectories,
@@ -151,7 +140,7 @@ export class CatalogSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return uploadFiles(
+    return new BatchUploadDocumentsFromFilesReturn(
       this.platformClient,
       this.streamChunkStrategy(sourceId),
       filesOrDirectories,
@@ -163,13 +152,13 @@ export class CatalogSource {
     return new StreamUrlBuilder(sourceId, this.organizationid, this.options);
   }
 
-  private fileContainerStrategy(sourceId: string): UploadStrategy {
+  private fileContainerStrategy(sourceId: string): FileContainerStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 
-  private streamChunkStrategy(sourceId: string): UploadStrategy {
+  private streamChunkStrategy(sourceId: string): StreamChunkStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
     const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
     return new StreamChunkStrategy(urlBuilder, documentsAxiosConfig);

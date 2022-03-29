@@ -7,8 +7,8 @@ import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
 import {CatalogSource} from './catalog';
-import {FieldAnalyser, SuccessfulUploadCallback} from '..';
-import {FailedUploadCallback} from '../help/fileConsumer';
+import {FieldAnalyser} from '..';
+import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -107,9 +107,6 @@ const basicStreamExpectations = () => {
 
 describe('CatalogSource - Stream', () => {
   let source: CatalogSource;
-  let onBatchError: (callback: FailedUploadCallback) => void;
-  let onBatchUpload: (callback: SuccessfulUploadCallback) => void;
-  let done: () => Promise<void>;
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
@@ -122,15 +119,13 @@ describe('CatalogSource - Stream', () => {
   describe('when streaming data from a batch', () => {
     beforeEach(async () => {
       mockAxiosForStreamCalls();
-      const res = await source.batchStreamDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
-
-      onBatchError = res.onBatchError;
-      onBatchUpload = res.onBatchUpload;
-      done = res.done;
+      await source
+        .batchStreamDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .batch();
     });
 
     afterAll(() => {
@@ -163,65 +158,90 @@ describe('CatalogSource - Stream', () => {
   });
 
   describe('when streaming data from local files', () => {
+    // let batchReturn: BatchUploadDocumentsFromFilesReturn;
     beforeEach(async () => {
       mockAxiosForStreamCalls();
-      await source.batchStreamDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        {createFields: false}
-      );
     });
 
     afterAll(() => {
       mockAxios.post.mockReset();
     });
 
-    basicStreamExpectations();
+    describe('API call expectations', () => {
+      beforeEach(async () => {
+        mockAxiosForStreamCalls();
+        await source
+          .batchStreamDocumentsFromFiles(
+            'the_id',
+            [join(pathToStub, 'mixdocuments')],
+            {createFields: false}
+          )
+          .batch();
+      });
+      basicStreamExpectations();
 
-    it('should upload documents from local file', async () => {
-      expect(mockAxios.put).toHaveBeenCalledWith(
-        'https://fake.upload.url/',
-        expect.objectContaining({
-          addOrUpdate: expect.arrayContaining([
-            expect.objectContaining({
-              documentId: 'https://www.themoviedb.org/movie/268',
-            }),
-            expect.objectContaining({
-              documentId: 'https://www.themoviedb.org/movie/999',
-            }),
-          ]),
-          delete: expect.arrayContaining([]),
-        }),
-        {
-          headers: {
-            foo: 'bar',
-          },
-        }
-      );
+      it('should upload documents from local file', async () => {
+        expect(mockAxios.put).toHaveBeenCalledWith(
+          'https://fake.upload.url/',
+          expect.objectContaining({
+            addOrUpdate: expect.arrayContaining([
+              expect.objectContaining({
+                documentId: 'https://www.themoviedb.org/movie/268',
+              }),
+              expect.objectContaining({
+                documentId: 'https://www.themoviedb.org/movie/999',
+              }),
+            ]),
+            delete: expect.arrayContaining([]),
+          }),
+          {
+            headers: {
+              foo: 'bar',
+            },
+          }
+        );
+      });
     });
 
     it('should call the callback without error when uploading documents', async () => {
-      onBatchError(mockedErrorCallback);
-      await done();
+      await source
+        .batchStreamDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
       expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
-    // TODO: unskip
-    it.skip('should only push JSON files', async () => {
-      onBatchUpload(mockedSuccessCallback);
-      await done();
+    it('should only push JSON files', async () => {
+      await source
+        .batchStreamDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchUpload(mockedSuccessCallback)
+        .batch();
 
       expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
     });
 
-    it.skip('should call the errorCallback on a failure from the API', async () => {
+    it('should call the errorCallback on a failure from the API', async () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
 
-      onBatchError(mockedErrorCallback);
-      await done();
+      await source
+        .batchStreamDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
       expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
           message: 'Error Message',
@@ -232,11 +252,13 @@ describe('CatalogSource - Stream', () => {
 
     it('should throw an error if the path is invalid', () => {
       expect(() =>
-        source.batchStreamDocumentsFromFiles(
-          'the_id',
-          ['path/to/invalid/document'],
-          {createFields: false}
-        )
+        source
+          .batchStreamDocumentsFromFiles(
+            'the_id',
+            ['path/to/invalid/document'],
+            {createFields: false}
+          )
+          .batch()
       ).rejects.toThrow(
         "no such file or directory, lstat 'path/to/invalid/document'"
       );

@@ -13,7 +13,7 @@ import {createFields as create} from '../fieldAnalyser/fieldUtils';
 import type {UploadStrategy} from '../uploadStrategy';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
-export class BatchUploadDocumentsFromFiles {
+export class BatchUploadDocumentsFromFilesReturn {
   private internalPromise: () => Promise<void>;
   private consumer: FileConsumer;
 
@@ -33,7 +33,7 @@ export class BatchUploadDocumentsFromFiles {
     };
 
     this.consumer = new FileConsumer(
-      (batch: BatchUpdateDocuments) => strategy.uploadBatch(batch),
+      (batch: BatchUpdateDocuments) => strategy.upload(batch),
       {maxConcurrent}
     );
 
@@ -54,6 +54,7 @@ export class BatchUploadDocumentsFromFiles {
         await create(platformClient, fields);
       }
       await this.consumer.consume(files);
+      await strategy.postUpload();
     }).bind(this);
   }
 
