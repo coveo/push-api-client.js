@@ -1,8 +1,7 @@
 import axios, {AxiosRequestConfig} from 'axios';
-import {BatchUpdateDocuments, ConcurrentProcessing} from '../interfaces';
+import {BatchUpdateDocuments} from '../interfaces';
 import {UploadStrategy} from './strategy';
 import {uploadContentToFileContainer} from '../help/fileContainer';
-import {FileConsumer} from '../help/fileConsumer';
 import {URLBuilder} from '../help/urlUtils';
 export interface FileContainerResponse {
   uploadUri: string;
@@ -21,15 +20,6 @@ export class FileContainerStrategy implements UploadStrategy {
     private urlBuilder: URLBuilder,
     private documentsAxiosConfig: AxiosRequestConfig
   ) {}
-
-  public async uploadFiles(
-    files: string[],
-    processingConfig: Required<ConcurrentProcessing>
-  ) {
-    const upload = (batch: BatchUpdateDocuments) => this.uploadBatch(batch);
-    const batchConsumer = new FileConsumer(upload, processingConfig);
-    return batchConsumer.consume(files);
-  }
 
   public async uploadBatch(batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
