@@ -20,7 +20,10 @@ export interface UploadBatchCallbackData {
 
 export interface BatchUpdateDocumentsOptions {
   /**
-   * Whether to create fields required in the index based on the document batch metadata.
+   * Whether to create the missing fields required in the index based on the document batch metadata.
+   *
+   * Make sure your API key is granted the privilege to EDIT fields before using this option.
+   * See https://docs.coveo.com/en/1707#fields-domain
    */
   createFields?: boolean;
 }

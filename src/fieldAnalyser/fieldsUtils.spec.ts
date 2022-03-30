@@ -6,6 +6,7 @@ import {createFields, listAllFieldsFromOrg} from './fieldUtils';
 const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockedCreateField = jest.fn();
 const mockedListFields = jest.fn();
+const mockEvaluate = jest.fn();
 
 const dummyPlatformClient = (): PlatformClient => {
   return new PlatformClient({accessToken: 'xxx'});
@@ -15,6 +16,7 @@ const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
       ({
+        privilegeEvaluator: {evaluate: mockEvaluate},
         field: {
           createFields: mockedCreateField,
           list: mockedListFields,
@@ -31,6 +33,7 @@ describe('fieldUtils', () => {
 
   beforeEach(async () => {
     client = dummyPlatformClient();
+    mockEvaluate.mockResolvedValue({approved: true});
   });
 
   describe('when listing fields', () => {
