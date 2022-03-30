@@ -1,19 +1,24 @@
 /* eslint-disable node/no-unpublished-import */
 jest.mock('@coveord/platform-client');
 jest.mock('axios');
-jest.mock('./fieldAnalyser/fieldAnalyser');
+jest.mock('../fieldAnalyser/fieldAnalyser');
 import PlatformClient, {
   FieldTypes,
   SourceVisibility,
 } from '@coveord/platform-client';
-import {BatchUpdateDocuments, Source} from './source';
-import {DocumentBuilder} from './documentBuilder';
+import {PushSource} from './push';
+import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
-import {FieldAnalyser, PlatformEnvironment, Region} from '.';
-import {Inconsistencies} from './fieldAnalyser/inconsistencies';
-import {FieldTypeInconsistencyError} from './errors/fieldErrors';
+import {
+  BatchUpdateDocuments,
+  FieldAnalyser,
+  PlatformEnvironment,
+  Region,
+} from '..';
+import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -22,6 +27,8 @@ const mockCreateSource = jest.fn();
 const mockCreateField = jest.fn();
 const mockAnalyserAdd = jest.fn();
 const mockAnalyserReport = jest.fn();
+const mockedSuccessCallback = jest.fn();
+const mockedErrorCallback = jest.fn();
 const pathToStub = join(cwd(), 'src', '__stub__');
 
 const doAxiosMockPost = () => {
@@ -62,15 +69,15 @@ const doMockFieldAnalyser = () => {
   );
 };
 
-describe('Source', () => {
-  let source: Source;
+describe('PushSource', () => {
+  let source: PushSource;
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
   });
 
   beforeEach(() => {
-    source = new Source('the_key', 'the_org');
+    source = new PushSource('the_key', 'the_org');
   });
 
   const expectedDocumentsHeaders = {
@@ -107,7 +114,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right region', async () => {
-    const australianSource = new Source('the_key', 'the_org', {
+    const australianSource = new PushSource('the_key', 'the_org', {
       region: Region.AU,
     });
     await australianSource.addOrUpdateDocument(
@@ -124,7 +131,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right environment', async () => {
-    await new Source('the_key', 'the_org', {
+    await new PushSource('the_key', 'the_org', {
       environment: PlatformEnvironment.Dev,
     }).addOrUpdateDocument(
       'the_id',
@@ -140,7 +147,7 @@ describe('Source', () => {
   });
 
   it('should call axios on add document with right region and environment', async () => {
-    await new Source('the_key', 'the_org', {
+    await new PushSource('the_key', 'the_org', {
       environment: PlatformEnvironment.QA,
       region: Region.EU,
     }).addOrUpdateDocument(
@@ -264,8 +271,6 @@ describe('Source', () => {
   });
 
   describe('when doing batch update from local files', () => {
-    const mockedCallback = jest.fn();
-
     afterAll(() => {
       mockAxios.post.mockReset();
     });
@@ -275,12 +280,13 @@ describe('Source', () => {
     });
 
     it('should upload documents from local file', async () => {
-      await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
-        {createFields: false}
-      );
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .batch();
 
       expect(mockAxios.put).toHaveBeenCalledWith(
         'https://fake.upload.url/',
@@ -305,37 +311,40 @@ describe('Source', () => {
 
     it('should throw an error if the path is invalid', () => {
       expect(() =>
-        source.batchUpdateDocumentsFromFiles(
-          'the_id',
-          ['path/to/invalid/document'],
-          mockedCallback,
-          {createFields: false}
-        )
+        source
+          .batchUpdateDocumentsFromFiles(
+            'the_id',
+            ['path/to/invalid/document'],
+            {createFields: false}
+          )
+          .batch()
       ).rejects.toThrow(
         "no such file or directory, lstat 'path/to/invalid/document'"
       );
     });
 
     it('should call the callback without error when uploading documents', async () => {
-      await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
-        {createFields: false}
-      );
-      expect(mockedCallback).toHaveBeenCalledWith(null, expect.anything());
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
+      expect(mockedErrorCallback).not.toHaveBeenCalled();
     });
 
     it('should only push JSON files', async () => {
-      await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
-        {createFields: false}
-      );
-
-      expect(mockedCallback).toHaveBeenCalledWith(
-        null,
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchUpload(mockedSuccessCallback)
+        .batch();
+      expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
     });
@@ -344,13 +353,16 @@ describe('Source', () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
 
-      await source.batchUpdateDocumentsFromFiles(
-        'the_id',
-        [join(pathToStub, 'mixdocuments')],
-        mockedCallback,
-        {createFields: false}
-      );
-      expect(mockedCallback).toHaveBeenCalledWith(
+      await source
+        .batchUpdateDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'mixdocuments')],
+          {createFields: false}
+        )
+        .onBatchError(mockedErrorCallback)
+        .batch();
+
+      expect(mockedErrorCallback).toHaveBeenCalledWith(
         {
           message: 'Error Message',
         },
@@ -360,7 +372,7 @@ describe('Source', () => {
   });
 
   describe('when enabling auto field creation', () => {
-    let source: Source;
+    let source: PushSource;
     let batch: BatchUpdateDocuments;
 
     beforeAll(() => {
@@ -375,7 +387,7 @@ describe('Source', () => {
 
     beforeEach(() => {
       doAxiosMockPost();
-      source = new Source('the_key', 'the_org');
+      source = new PushSource('the_key', 'the_org');
     });
 
     describe('when there are no inconsistencies', () => {

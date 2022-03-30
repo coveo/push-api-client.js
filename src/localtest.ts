@@ -2,14 +2,14 @@
 import 'dotenv/config';
 import {DocumentBuilder} from './documentBuilder';
 import {UserSecurityIdentityBuilder} from './securityIdentityBuilder';
+import {BatchUpdateDocuments} from '.';
+import {PushSource} from './source/push';
 const API_KEY = process.env.API_KEY as string;
 const ORG_ID = process.env.ORG_ID as string;
 const SOURCE_ID = process.env.SOURCE_ID as string;
 
-import {BatchUpdateDocuments, Source} from './source';
-
 async function main() {
-  const source = new Source(API_KEY, ORG_ID);
+  const source = new PushSource(API_KEY, ORG_ID);
   await source.setSourceStatus(SOURCE_ID, 'REFRESH');
   const docBuilder = new DocumentBuilder(
     'https://perdu.com',

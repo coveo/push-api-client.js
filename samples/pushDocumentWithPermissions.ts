@@ -1,11 +1,11 @@
 import {
-  Source,
+  PushSource,
   DocumentBuilder,
   UserSecurityIdentityBuilder,
 } from '@coveo/push-api-client';
 
 async function main() {
-  const source = new Source('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
 
   const allowedUsers = new UserSecurityIdentityBuilder([
     'bob@sample.com',

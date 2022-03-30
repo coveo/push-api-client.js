@@ -12,66 +12,29 @@ import {
   SourceVisibility,
 } from '@coveord/platform-client';
 export {SourceVisibility} from '@coveord/platform-client';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-import {DocumentBuilder} from './documentBuilder';
+import axios, {AxiosRequestConfig} from 'axios';
+import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
-import {consumeGenerator} from './help/generator';
-import {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';
-import {basename} from 'path';
-import {getAllJsonFilesFromEntries} from './help/file';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
   platformUrl,
   PlatformUrlOptions,
-} from './environment';
-import {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from './errors/fieldErrors';
-import {createFields} from './fieldAnalyser/fieldUtils';
+} from '../environment';
+import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {createFields} from '../fieldAnalyser/fieldUtils';
+import {SecurityIdentity} from './securityIdenty';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsOptions,
+  BatchUpdateDocumentsFromFiles,
+} from '../interfaces';
+import {BatchUpdateDocumentsFromFilesReturn} from './batchUpdateDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
-
-export interface BatchUpdateDocuments {
-  addOrUpdate: DocumentBuilder[];
-  delete: {documentId: string; deleteChildren: boolean}[];
-}
-
-/**
- *
- * @param {string[]} files Files from which the documentBuilders were generated
- * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
- * @param {AxiosResponse} res Axios response
- */
-export interface UploadBatchCallbackData {
-  files: string[];
-  batch: DocumentBuilder[];
-  res?: AxiosResponse;
-}
-
-export type UploadBatchCallback = (
-  err: unknown | null,
-  data: UploadBatchCallbackData
-) => void;
-
-export interface BatchUpdateDocumentsOptions {
-  /**
-   * Whether to create fields required in the index based on the document batch metadata.
-   */
-  createFields?: boolean;
-}
-
-export interface BatchUpdateDocumentsFromFiles
-  extends BatchUpdateDocumentsOptions {
-  /**
-   * The maximum number of requests to send concurrently to the Coveo platform.
-   * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
-   *
-   * The default value is set to 10.
-   */
-  maxConcurrent?: number;
-}
 
 interface FileContainerResponse {
   uploadUri: string;
@@ -84,14 +47,13 @@ interface FileContainerResponse {
  *
  * Allows you to create a new push source, manage security identities and documents in a Coveo organization.
  */
-export class Source {
-  private platformClient: PlatformClient;
-  private options: PlatformUrlOptions;
-  private static defaultOptions: PlatformUrlOptions = {
+export class PushSource {
+  public platformClient: PlatformClient;
+  private options: Required<PlatformUrlOptions>;
+  private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
   };
-  private static maxContentLength = 5 * 1024 * 1024;
   /**
    *
    * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -100,9 +62,9 @@ export class Source {
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: Partial<PlatformUrlOptions>
+    options?: PlatformUrlOptions
   ) {
-    this.options = {...Source.defaultOptions, ...options};
+    this.options = {...PushSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),
@@ -127,80 +89,82 @@ export class Source {
   }
 
   /**
-   * Create or update a security identity. See [Adding a Single Security Identity](https://docs.coveo.com/en/167) and [Security Identity Models](https://docs.coveo.com/en/139).
-   * @param securityProviderId
-   * @param securityIdentity
-   * @returns
+   * @deprecated use `identity.createSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public createSecurityIdentity(
     securityProviderId: string,
     securityIdentity: SecurityIdentityModel
   ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentity(
+    return this.identity.createSecurityIdentity(
       securityProviderId,
       securityIdentity
     );
   }
 
   /**
-   * Create or update a security identity alias. See [Adding a Single Alias](https://docs.coveo.com/en/142) and [User Alias Definition Examples](https://docs.coveo.com/en/46).
-   * @param securityProviderId
-   * @param securityIdentityAlias
-   * @returns
+   * @deprecated use `identity.createOrUpdateSecurityIdentityAlias`
+   *
+   * See {@link Source.identity}
    */
   public createOrUpdateSecurityIdentityAlias(
     securityProviderId: string,
     securityIdentityAlias: SecurityIdentityAliasModel
   ) {
-    return this.platformClient.pushApi.createOrUpdateSecurityIdentityAlias(
+    return this.identity.createOrUpdateSecurityIdentityAlias(
       securityProviderId,
       securityIdentityAlias
     );
   }
 
   /**
-   * Delete a security identity. See [Disabling a Single Security Identity](https://docs.coveo.com/en/84).
-   * @param securityProviderId
-   * @param securityIdentityToDelete
-   * @returns
+   * @deprecated use `identity.deleteSecurityIdentity`
+   *
+   * See {@link Source.identity}
    */
   public deleteSecurityIdentity(
     securityProviderId: string,
     securityIdentityToDelete: SecurityIdentityDelete
   ) {
-    return this.platformClient.pushApi.deleteSecurityIdentity(
+    return this.identity.deleteSecurityIdentity(
       securityProviderId,
       securityIdentityToDelete
     );
   }
 
   /**
-   * Delete old security identities. See [Disabling Old Security Identities](https://docs.coveo.com/en/33).
-   * @param securityProviderId
-   * @param batchDelete
-   * @returns
+   * @deprecated use `identity.deleteOldSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public deleteOldSecurityIdentities(
     securityProviderId: string,
     batchDelete: SecurityIdentityDeleteOptions
   ) {
-    return this.platformClient.pushApi.deleteOldSecurityIdentities(
+    return this.identity.deleteOldSecurityIdentities(
       securityProviderId,
       batchDelete
     );
   }
 
   /**
-   * Manage batches of security identities. See [Manage Batches of Security Identities](https://docs.coveo.com/en/55).
+   * @deprecated use `identity.manageSecurityIdentities`
+   *
+   * See {@link Source.identity}
    */
   public manageSecurityIdentities(
     securityProviderId: string,
     batchConfig: SecurityIdentityBatchConfig
   ) {
-    return this.platformClient.pushApi.manageSecurityIdentities(
+    return this.identity.manageSecurityIdentities(
       securityProviderId,
       batchConfig
     );
+  }
+
+  public get identity() {
+    return new SecurityIdentity(this.platformClient);
   }
 
   /**
@@ -261,67 +225,17 @@ export class Source {
    * @param {UploadBatchCallback} callback Callback executed when a batch of documents is either successfully uploaded or when an error occurs during the upload
    * @param {BatchUpdateDocumentsFromFiles} options
    */
-  public async batchUpdateDocumentsFromFiles(
+  public batchUpdateDocumentsFromFiles(
     sourceID: string,
     filesOrDirectories: string[],
-    callback: UploadBatchCallback,
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {maxConcurrent, createFields: createFields} = {
-      ...defaultOptions,
-      ...options,
-    };
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    const fileNames = files.map((path) => basename(path));
-    const {chunksToUpload, close} = this.splitByChunkAndUpload(
+    return new BatchUpdateDocumentsFromFilesReturn(
+      this,
       sourceID,
-      fileNames,
-      callback
+      filesOrDirectories,
+      options
     );
-
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        await analyser.add(docBuilders);
-      }
-      await this.createFields(analyser);
-    }
-
-    // parallelize uploads within the same file
-    const docBuilderGenerator = function* (docBuilders: DocumentBuilder[]) {
-      for (const upload of chunksToUpload(docBuilders)) {
-        yield upload();
-      }
-    };
-
-    // parallelize uploads across multiple files
-    const fileGenerator = function* () {
-      for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
-        yield* docBuilderGenerator(docBuilders);
-      }
-    };
-
-    await consumeGenerator(fileGenerator.bind(this), maxConcurrent);
-    await close();
   }
 
   /**
@@ -372,6 +286,12 @@ export class Source {
     return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
   }
 
+  public async uploadBatch(sourceID: string, batch: BatchUpdateDocuments) {
+    const fileContainer = await this.createFileContainer();
+    await this.uploadContentToFileContainer(fileContainer, batch);
+    return this.pushFileContainerContent(sourceID, fileContainer);
+  }
+
   private get baseAPIURL() {
     return `${platformUrl(this.options)}/${this.organizationid}`;
   }
@@ -386,7 +306,7 @@ export class Source {
     };
   }
 
-  private async createFields(analyser: FieldAnalyser) {
+  public async createFields(analyser: FieldAnalyser) {
     const {fields, inconsistencies} = analyser.report();
 
     if (inconsistencies.size > 0) {
@@ -453,76 +373,5 @@ export class Source {
     );
     pushURL.searchParams.append('fileId', fileContainer.fileId);
     return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
-  }
-
-  private splitByChunkAndUpload(
-    sourceID: string,
-    fileNames: string[],
-    callback: UploadBatchCallback,
-    accumulator = this.accumulator
-  ) {
-    const chunksToUpload = (documentBuilders: DocumentBuilder[]) => {
-      const batchesToUpload: Array<() => Promise<void>> = [];
-
-      for (const docBuilder of documentBuilders) {
-        const sizeOfDoc = Buffer.byteLength(
-          JSON.stringify(docBuilder.marshal())
-        );
-
-        if (accumulator.size + sizeOfDoc >= Source.maxContentLength) {
-          const chunks = accumulator.chunks;
-          if (chunks.length > 0) {
-            batchesToUpload.push(() =>
-              this.uploadBatch(sourceID, chunks, fileNames, callback)
-            );
-          }
-          accumulator.chunks = [docBuilder];
-          accumulator.size = sizeOfDoc;
-        } else {
-          accumulator.size += sizeOfDoc;
-          accumulator.chunks.push(docBuilder);
-        }
-      }
-      return batchesToUpload;
-    };
-    const close = async () => {
-      await this.uploadBatch(sourceID, accumulator.chunks, fileNames, callback);
-    };
-    return {chunksToUpload, close};
-  }
-
-  private async uploadBatch(
-    sourceID: string,
-    batch: DocumentBuilder[],
-    fileNames: string[],
-    callback: UploadBatchCallback
-  ) {
-    try {
-      const res = await this.batchUpdateDocuments(
-        sourceID,
-        {
-          addOrUpdate: batch,
-          delete: [],
-        },
-        {createFields: false}
-      );
-      callback(null, {
-        files: fileNames,
-        batch,
-        res,
-      });
-    } catch (e: unknown) {
-      callback(e, {
-        files: fileNames,
-        batch,
-      });
-    }
-  }
-
-  private get accumulator(): {size: number; chunks: DocumentBuilder[]} {
-    return {
-      size: 0,
-      chunks: [],
-    };
   }
 }
