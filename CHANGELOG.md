@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/coveo/push-api-client.js/compare/v1.7.0...v2.0.0) (2022-03-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **push:** encapsulate security identity (#109)
+https://coveord.atlassian.net/browse/CDX-874
+* **push:** rename `Source` class to `PushSource` (#110)
+https://coveord.atlassian.net/browse/CDX-876
+* **push:** update `batchUpdateDocumentsFromFiles` return type (#113)
+https://coveord.atlassian.net/browse/CDX-877
+
+* **push:** consolidate breaking changes and deprecations ([#120](https://github.com/coveo/push-api-client.js/issues/120)) ([5d1e82e](https://github.com/coveo/push-api-client.js/commit/5d1e82eb95b1b7bc3d226f71ade4b7303a107d50))
+
 ## [1.7.0](https://github.com/coveo/push-api-client.js/compare/v1.6.9...v1.7.0) (2022-03-28)
 
 
