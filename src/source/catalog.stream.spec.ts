@@ -14,6 +14,7 @@ const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
 const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockCreateSource = jest.fn();
 const mockCreateField = jest.fn();
+const mockEvaluate = jest.fn();
 const mockAnalyserAdd = jest.fn();
 const mockAnalyserReport = jest.fn();
 const mockedSuccessCallback = jest.fn();
@@ -46,6 +47,7 @@ const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
       ({
+        privilegeEvaluator: {evaluate: mockEvaluate},
         source: {
           create: mockCreateSource,
         },
@@ -119,6 +121,7 @@ describe('CatalogSource - Stream', () => {
   });
 
   beforeEach(() => {
+    mockEvaluate.mockResolvedValue({approved: true});
     source = new CatalogSource('the_key', 'the_org');
   });
 
