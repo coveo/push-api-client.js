@@ -9,10 +9,10 @@ Coveo Push API client
 ## Usage
 
 ```js
-import {Source, DocumentBuilder} from '@coveo/push-api-client';
+import {PushSource, DocumentBuilder} from '@coveo/push-api-client';
 
 async function main() {
-  const source = new Source('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
 
   const myDocument = new DocumentBuilder(
     'https://my.document.uri',

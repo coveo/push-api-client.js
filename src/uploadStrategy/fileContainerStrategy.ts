@@ -21,7 +21,7 @@ export class FileContainerStrategy implements UploadStrategy {
     private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
-  public async uploadBatch(batch: BatchUpdateDocuments) {
+  public async upload(batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
     await uploadContentToFileContainer(fileContainer, batch);
     return this.pushFileContainerContent(fileContainer);

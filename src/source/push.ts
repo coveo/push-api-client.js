@@ -35,7 +35,7 @@ import {axiosRequestHeaders} from '../help/axiosUtils';
 import {uploadBatch} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
-import {BatchUploadDocumentsFromFiles} from './batchUploadDocumentsFromFile';
+import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -224,7 +224,7 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return new BatchUploadDocumentsFromFiles(
+    return new BatchUploadDocumentsFromFilesReturn(
       this.platformClient,
       this.fileContainerStrategy(sourceID),
       filesOrDirectories,

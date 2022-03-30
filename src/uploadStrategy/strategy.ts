@@ -7,5 +7,12 @@ export interface UploadStrategy {
    *
    * @param {BatchUpdateDocuments} batch
    */
-  uploadBatch: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>;
+  upload: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>;
+
+  /**
+   * Async operation to run once the batch upload is complete
+   *
+   * @memberof UploadStrategy
+   */
+  postUpload?: () => Promise<void>;
 }
