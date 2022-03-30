@@ -24,7 +24,7 @@ export async function uploadBatch(
     await create(platformClient, fields);
   }
   const res = await strategy.upload(batch);
-  await strategy.postUpload();
+  await strategy.postUpload?.();
 
   return res;
 }

@@ -54,7 +54,7 @@ export class BatchUploadDocumentsFromFilesReturn {
         await create(platformClient, fields);
       }
       await this.consumer.consume(files);
-      await strategy.postUpload();
+      await strategy.postUpload?.();
     }).bind(this);
   }
 

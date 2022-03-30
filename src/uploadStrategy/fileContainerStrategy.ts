@@ -27,8 +27,6 @@ export class FileContainerStrategy implements UploadStrategy {
     return this.pushFileContainerContent(fileContainer);
   }
 
-  public async postUpload() {}
-
   private async createFileContainer() {
     const fileContainerURL = this.urlBuilder.fileContainerUrl.toString();
     const res = await axios.post<FileContainerResponse>(

@@ -14,5 +14,5 @@ export interface UploadStrategy {
    *
    * @memberof UploadStrategy
    */
-  postUpload: () => Promise<void>;
+  postUpload?: () => Promise<void>;
 }
