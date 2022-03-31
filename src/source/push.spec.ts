@@ -24,6 +24,7 @@ const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
 const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockCreateSource = jest.fn();
+const mockEvaluate = jest.fn();
 const mockCreateField = jest.fn();
 const mockAnalyserAdd = jest.fn();
 const mockAnalyserReport = jest.fn();
@@ -50,6 +51,7 @@ const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
       ({
+        privilegeEvaluator: {evaluate: mockEvaluate},
         source: {
           create: mockCreateSource,
         },
@@ -78,6 +80,7 @@ describe('PushSource', () => {
 
   beforeEach(() => {
     source = new PushSource('the_key', 'the_org');
+    mockEvaluate.mockResolvedValue({approved: true});
   });
 
   const expectedDocumentsHeaders = {

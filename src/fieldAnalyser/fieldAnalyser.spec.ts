@@ -40,6 +40,7 @@ describe('FieldAnalyser', () => {
   let analyser: FieldAnalyser;
   const mockedPlatformClient = jest.mocked(PlatformClient);
   const mockedListFields = jest.fn();
+  const mockEvaluate = jest.fn();
 
   const mockListFieldsWithValidPermanentId = () => {
     mockedListFields
@@ -75,6 +76,7 @@ describe('FieldAnalyser', () => {
     mockedPlatformClient.mockImplementation(
       () =>
         ({
+          privilegeEvaluator: {evaluate: mockEvaluate},
           field: {list: mockedListFields},
         } as unknown as PlatformClient)
     );
@@ -85,8 +87,21 @@ describe('FieldAnalyser', () => {
   });
 
   beforeEach(() => {
+    mockEvaluate.mockResolvedValue({approved: true});
     mockedListFields.mockReset();
     analyser = new FieldAnalyser(dummyPlatformClient());
+  });
+
+  describe('when client is not allowed to create fields', () => {
+    beforeEach(async () => {
+      mockEvaluate.mockReset();
+      mockListFieldsWithValidPermanentId();
+    });
+
+    it('should throw an error', async () => {
+      mockEvaluate.mockResolvedValue({approved: false});
+      await expect(analyser.add([docWithExistingFields])).rejects.toThrow();
+    });
   });
 
   describe('when fields from the batch already exist in the org', () => {
