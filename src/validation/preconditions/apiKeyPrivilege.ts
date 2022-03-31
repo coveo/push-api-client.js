@@ -6,6 +6,7 @@ import type {
 import PlatformClient from '@coveord/platform-client';
 import {PrivilegeError} from '../../errors/privilegeError';
 
+// Code copy pasted from https://github.com/coveo/cli/blob/master/packages/cli/src/lib/decorators/preconditions/apiKeyPrivilege.ts#L15
 export async function ensureNecessaryCoveoPrivileges(
   client: PlatformClient,
   ...privileges: PlatformPrivilege[]
