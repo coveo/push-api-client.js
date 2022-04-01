@@ -1,6 +1,7 @@
 export * from './document';
 export {Source} from './source/source';
 export {PushSource} from './source/push';
+export {CatalogSource} from './source/catalog';
 export {
   SuccessfulUploadCallback,
   FailedUploadCallback,
