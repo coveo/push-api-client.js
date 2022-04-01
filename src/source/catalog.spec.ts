@@ -3,22 +3,18 @@ jest.mock('@coveord/platform-client');
 jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
 import PlatformClient, {
-  FieldTypes,
   SourceVisibility,
+  FieldTypes,
 } from '@coveord/platform-client';
-import {PushSource} from './push';
 import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
-import {
-  BatchUpdateDocuments,
-  FieldAnalyser,
-  PlatformEnvironment,
-  Region,
-} from '..';
 import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {BatchUpdateDocuments} from '../interfaces';
+import {CatalogSource} from './catalog';
+import {FieldAnalyser} from '..';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -32,16 +28,26 @@ const mockedSuccessCallback = jest.fn();
 const mockedErrorCallback = jest.fn();
 const pathToStub = join(cwd(), 'src', '__stub__');
 
+const expectedDocumentsHeaders = {
+  headers: {
+    Accept: 'application/json',
+    Authorization: 'Bearer the_key',
+    'Content-Type': 'application/json',
+  },
+};
+
+const doAxiosMockFileContainerResponse = () => ({
+  data: {
+    uploadUri: 'https://fake.upload.url',
+    fileId: 'file_id',
+    requiredHeaders: {foo: 'bar'},
+  },
+});
+
 const doAxiosMockPost = () => {
   mockAxios.post.mockImplementationOnce((url: string) => {
     if (url.match(/files/)) {
-      return Promise.resolve({
-        data: {
-          uploadUri: 'https://fake.upload.url',
-          fileId: 'file_id',
-          requiredHeaders: {foo: 'bar'},
-        },
-      });
+      return Promise.resolve(doAxiosMockFileContainerResponse());
     }
     return Promise.resolve();
   });
@@ -71,163 +77,39 @@ const doMockFieldAnalyser = () => {
   );
 };
 
-describe('PushSource', () => {
-  let source: PushSource;
+describe('CatalogSource - Push', () => {
+  let source: CatalogSource;
+  let batch: BatchUpdateDocuments;
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
   });
 
   beforeEach(() => {
-    source = new PushSource('the_key', 'the_org');
     mockEvaluate.mockResolvedValue({approved: true});
+    source = new CatalogSource('the_key', 'the_org');
+    batch = {
+      addOrUpdate: [
+        new DocumentBuilder('the_uri_1', 'the_title_1'),
+        new DocumentBuilder('the_uri_2', 'the_title_2'),
+      ],
+      delete: [{documentId: 'the_uri_3', deleteChildren: true}],
+    };
   });
-
-  const expectedDocumentsHeaders = {
-    headers: {
-      Accept: 'application/json',
-      Authorization: 'Bearer the_key',
-      'Content-Type': 'application/json',
-    },
-  };
 
   it('should call platform client on creation', () => {
     source.create('the_name', SourceVisibility.SHARED);
 
     expect(mockCreateSource).toHaveBeenCalledWith({
       name: 'the_name',
-      pushEnabled: true,
-      sourceType: 'PUSH',
+      streamEnabled: true,
+      sourceType: 'CATALOG',
       sourceVisibility: 'SHARED',
     });
   });
 
-  it('should call axios on add document', async () => {
-    await source.addOrUpdateDocument(
-      'the_id',
-      new DocumentBuilder('the_uri', 'the_title'),
-      {createFields: false}
-    );
-
-    expect(mockAxios.put).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
-      expect.objectContaining({title: 'the_title'}),
-      expectedDocumentsHeaders
-    );
-  });
-
-  it('should call axios on add document with right region', async () => {
-    const australianSource = new PushSource('the_key', 'the_org', {
-      region: Region.AU,
-    });
-    await australianSource.addOrUpdateDocument(
-      'the_id',
-      new DocumentBuilder('the_uri', 'the_title'),
-      {createFields: false}
-    );
-
-    expect(mockAxios.put).toHaveBeenCalledWith(
-      'https://api-au.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
-      expect.objectContaining({title: 'the_title'}),
-      expectedDocumentsHeaders
-    );
-  });
-
-  it('should call axios on add document with right environment', async () => {
-    await new PushSource('the_key', 'the_org', {
-      environment: PlatformEnvironment.Dev,
-    }).addOrUpdateDocument(
-      'the_id',
-      new DocumentBuilder('the_uri', 'the_title'),
-      {createFields: false}
-    );
-
-    expect(mockAxios.put).toHaveBeenCalledWith(
-      'https://apidev.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
-      expect.objectContaining({title: 'the_title'}),
-      expectedDocumentsHeaders
-    );
-  });
-
-  it('should call axios on add document with right region and environment', async () => {
-    await new PushSource('the_key', 'the_org', {
-      environment: PlatformEnvironment.QA,
-      region: Region.EU,
-    }).addOrUpdateDocument(
-      'the_id',
-      new DocumentBuilder('the_uri', 'the_title'),
-      {createFields: false}
-    );
-
-    expect(mockAxios.put).toHaveBeenCalledWith(
-      'https://apiqa-eu.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
-      expect.objectContaining({title: 'the_title'}),
-      expectedDocumentsHeaders
-    );
-  });
-
-  it('should call axios on delete', () => {
-    source.deleteDocument('the_id', 'the_uri', true);
-    expect(mockAxios.delete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
-      expectedDocumentsHeaders
-    );
-  });
-
-  it('should call axios on status update', () => {
-    source.setSourceStatus('the_id', 'INCREMENTAL');
-    expect(axios.post).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/status?statusType=INCREMENTAL',
-      {},
-      expectedDocumentsHeaders
-    );
-  });
-
-  describe('calls axios when doing delete olderthan', () => {
-    const expectCorrectOrderingId = (id: number | string) => {
-      expect(mockAxios.delete).toHaveBeenCalledWith(
-        `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`,
-        expectedDocumentsHeaders
-      );
-    };
-
-    it('with a date', () => {
-      const now = new Date();
-      source.deleteDocumentsOlderThan('the_id', now);
-      expectCorrectOrderingId(now.valueOf());
-    });
-
-    it('with a date string', () => {
-      source.deleteDocumentsOlderThan('the_id', '2001/01/01');
-      expectCorrectOrderingId(new Date('2001/01/01').valueOf());
-    });
-
-    it('with a timestamp', () => {
-      const nowInTimestamp = new Date().valueOf();
-      source.deleteDocumentsOlderThan('the_id', nowInTimestamp);
-      expectCorrectOrderingId(nowInTimestamp);
-    });
-  });
-
-  it('should call axios on delete', () => {
-    source.deleteDocument('the_id', 'the_uri', true);
-    expect(mockAxios.delete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
-      expectedDocumentsHeaders
-    );
-  });
-
   describe('when doing batch update', () => {
-    let batch: BatchUpdateDocuments;
     beforeEach(() => {
-      batch = {
-        addOrUpdate: [
-          new DocumentBuilder('the_uri_1', 'the_title_1'),
-          new DocumentBuilder('the_uri_2', 'the_title_2'),
-        ],
-        delete: [{documentId: 'the_uri_3', deleteChildren: true}],
-      };
-
       doAxiosMockPost();
     });
 
@@ -266,7 +148,7 @@ describe('PushSource', () => {
         createFields: false,
       });
       expect(mockAxios.put).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/batch?fileId=file_id',
+        'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/update?fileId=file_id',
         {},
         expectedDocumentsHeaders
       );
@@ -347,6 +229,7 @@ describe('PushSource', () => {
         )
         .onBatchUpload(mockedSuccessCallback)
         .batch();
+
       expect(mockedSuccessCallback).toHaveBeenCalledWith(
         expect.objectContaining({files: ['valid.json']})
       );
@@ -355,7 +238,6 @@ describe('PushSource', () => {
     it('should call the errorCallback on a failure from the API', async () => {
       mockAxios.post.mockReset();
       mockAxios.post.mockRejectedValue({message: 'Error Message'});
-
       await source
         .batchUpdateDocumentsFromFiles(
           'the_id',
@@ -375,34 +257,14 @@ describe('PushSource', () => {
   });
 
   describe('when enabling auto field creation', () => {
-    let source: PushSource;
-    let batch: BatchUpdateDocuments;
-
-    beforeAll(() => {
-      batch = {
-        addOrUpdate: [
-          new DocumentBuilder('the_uri_1', 'the_title_1'),
-          new DocumentBuilder('the_uri_2', 'the_title_2'),
-        ],
-        delete: [],
-      };
-    });
-
     beforeEach(() => {
       doAxiosMockPost();
-      source = new PushSource('the_key', 'the_org');
     });
 
     describe('when there are no inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
         mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
-      });
-
-      it('should analyse document builder', async () => {
-        const docBuilder = new DocumentBuilder('the_uri', 'the_title');
-        await source.addOrUpdateDocument('the_id', docBuilder);
-        expect(mockAnalyserAdd).toHaveBeenCalledWith([docBuilder]);
       });
 
       it('should analyse document builder batch', async () => {
