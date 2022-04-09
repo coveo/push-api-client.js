@@ -4,7 +4,11 @@ import {listAllFieldsFromOrg} from './fieldUtils';
 import {FieldStore} from './fieldStore';
 import {Inconsistencies} from './inconsistencies';
 import {InvalidPermanentId} from '../errors/fieldErrors';
-import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
+import {
+  getGuessedTypeFromValue,
+  getMostEnglobingType,
+  isMultiValueFacet,
+} from './typeUtils';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
 
@@ -76,11 +80,15 @@ export class FieldAnalyser {
   }
 
   private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
-    const alreadyGuessedType = this.missingFields.get(metadataKey);
+    const alreadyGuessedType = this.missingFields.get(metadataKey)?.type;
     const firstTypeGuess = getGuessedTypeFromValue(metadataValue);
+    const multiValueFacet = isMultiValueFacet(metadataValue);
 
     if (!alreadyGuessedType) {
-      this.missingFields.set(metadataKey, firstTypeGuess);
+      this.missingFields.set(metadataKey, {
+        type: firstTypeGuess,
+        multiValueFacet,
+      });
       return;
     }
 
@@ -90,7 +98,10 @@ export class FieldAnalyser {
     );
 
     if (secondTypeGuess) {
-      this.missingFields.set(metadataKey, secondTypeGuess);
+      this.missingFields.set(metadataKey, {
+        type: secondTypeGuess,
+        multiValueFacet,
+      });
     } else {
       this.inconsistencies.add(metadataKey, [
         alreadyGuessedType,
@@ -116,7 +127,7 @@ export class FieldAnalyser {
         throw new InvalidPermanentId(permanentid);
       }
     } else {
-      fieldStore.set('permanentid', FieldTypes.STRING);
+      fieldStore.set('permanentid', {type: FieldTypes.STRING});
     }
   }
 }

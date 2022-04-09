@@ -1,6 +1,6 @@
-import {FieldModel, FieldTypes} from '@coveord/platform-client';
+import {FieldModel} from '@coveord/platform-client';
 
-export class FieldStore extends Map<string, FieldTypes> {
+export class FieldStore extends Map<string, FieldModel> {
   public concat(fieldBuilder: FieldStore) {
     fieldBuilder.forEach((type, name) => {
       this.set(name, type);
@@ -9,11 +9,8 @@ export class FieldStore extends Map<string, FieldTypes> {
 
   public marshal(): FieldModel[] {
     const fieldModels: FieldModel[] = [];
-    this.forEach((fieldType, fieldName) => {
-      fieldModels.push({
-        name: fieldName,
-        type: fieldType,
-      });
+    this.forEach((model) => {
+      fieldModels.push(model);
     });
 
     return fieldModels;
