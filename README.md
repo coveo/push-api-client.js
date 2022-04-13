@@ -6,6 +6,13 @@ Coveo Push API client
 
 `npm i @coveo/push-api-client`
 
+## Features
+* Upload data to both Push and Catalog sources
+* Pre-push document validation
+* Automatic custom field creation
+* Full catalog upload and incremental document update
+* Optimized for large payload uploads
+
 ## Usage
 
 ```js
@@ -23,6 +30,19 @@ async function main() {
 }
 
 main();
+```
+
+You can also upload your data into a catalog source
+```js
+async function main() {
+  const source = new CatalogSource('my_api_key', 'my_coveo_organization_id');
+  await source
+    .batchStreamDocumentsFromFiles('my_source_id', ['path/to/file_or_folder'])
+    .batch();
+}
+
+main();
+
 ```
 
 See more examples in the `./samples` folder.
