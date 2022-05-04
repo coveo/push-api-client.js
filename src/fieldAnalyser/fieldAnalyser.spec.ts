@@ -157,6 +157,30 @@ describe('FieldAnalyser', () => {
         },
       ]);
     });
+
+    it('should always take the most englobing numeric type regardless of the transition direction', async () => {
+      const docBuilders = [
+        buildDocument({
+          from_long_to_double: 10,
+          from_double_to_long: 20.1,
+        }),
+        buildDocument({
+          from_long_to_double: 10.1,
+          from_double_to_long: 20,
+        }),
+      ];
+      const {fields} = (await analyser.add(docBuilders)).report();
+      expect(fields).toStrictEqual([
+        {
+          name: 'from_long_to_double',
+          type: 'DOUBLE',
+        },
+        {
+          name: 'from_double_to_long',
+          type: 'DOUBLE',
+        },
+      ]);
+    });
   });
 
   describe('when the batch contains inconsistent metadata', () => {

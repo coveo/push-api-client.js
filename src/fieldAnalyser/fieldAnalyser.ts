@@ -4,7 +4,7 @@ import {listAllFieldsFromOrg} from './fieldUtils';
 import {FieldStore} from './fieldStore';
 import {Inconsistencies} from './inconsistencies';
 import {InvalidPermanentId} from '../errors/fieldErrors';
-import {getGuessedTypeFromValue, isValidTypeTransition} from './typeUtils';
+import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
 
@@ -77,17 +77,24 @@ export class FieldAnalyser {
 
   private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {
     const alreadyGuessedType = this.missingFields.get(metadataKey);
-    const newGuessedType = getGuessedTypeFromValue(metadataValue);
+    const firstTypeGuess = getGuessedTypeFromValue(metadataValue);
 
-    if (
-      !alreadyGuessedType ||
-      isValidTypeTransition(alreadyGuessedType, newGuessedType)
-    ) {
-      this.missingFields.set(metadataKey, newGuessedType);
+    if (!alreadyGuessedType) {
+      this.missingFields.set(metadataKey, firstTypeGuess);
+      return;
+    }
+
+    const secondTypeGuess = getMostEnglobingType(
+      alreadyGuessedType,
+      firstTypeGuess
+    );
+
+    if (secondTypeGuess) {
+      this.missingFields.set(metadataKey, secondTypeGuess);
     } else {
       this.inconsistencies.add(metadataKey, [
         alreadyGuessedType,
-        newGuessedType,
+        firstTypeGuess,
       ]);
     }
   }
