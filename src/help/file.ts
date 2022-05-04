@@ -9,6 +9,8 @@ export const getAllJsonFilesFromEntries = (
   filesOrDirectories: string[],
   fileNames: string[] = []
 ): string[] => {
+  const uniqueFileNames: string[] = [];
+
   filesOrDirectories.flatMap((entry) => {
     if (lstatSync(entry).isDirectory()) {
       recursiveDirectoryRead(entry, fileNames);
@@ -17,7 +19,13 @@ export const getAllJsonFilesFromEntries = (
     }
   });
 
-  return fileNames.filter(isJsonFile);
+  for (const file of fileNames) {
+    if (!uniqueFileNames.includes(file) && isJsonFile(file)) {
+      uniqueFileNames.push(file);
+    }
+  }
+
+  return uniqueFileNames;
 };
 
 const recursiveDirectoryRead = (folder: string, accumulator: string[] = []) => {
