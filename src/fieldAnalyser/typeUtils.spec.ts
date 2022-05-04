@@ -61,9 +61,12 @@ describe('typeUtils', () => {
         to: FieldTypes.LONG_64,
         expectation: FieldTypes.DOUBLE,
       },
-    ])('should return true', ({from, to, expectation}) => {
-      expect(getMostEnglobingType(from, to)).toBe(expectation);
-    });
+    ])(
+      'From $from to $to should return $expectation',
+      ({from, to, expectation}) => {
+        expect(getMostEnglobingType(from, to)).toBe(expectation);
+      }
+    );
   });
 
   describe('when the transition is not authorized', () => {
@@ -76,7 +79,7 @@ describe('typeUtils', () => {
         from: FieldTypes.STRING,
         to: FieldTypes.LONG,
       },
-    ])('should return true', ({from, to}) => {
+    ])('From $from to $to should return $expectation', ({from, to}) => {
       expect(getMostEnglobingType(from, to)).toBe(null);
     });
   });
