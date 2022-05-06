@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.14](https://github.com/coveo/push-api-client.js/compare/v2.1.13...v2.1.14) (2022-05-06)
+
+
+### Bug Fixes
+
+* add a unique filter ([#138](https://github.com/coveo/push-api-client.js/issues/138)) ([439d828](https://github.com/coveo/push-api-client.js/commit/439d828d40525de129078c430adcef3f15d470d1))
+
 ### [2.1.13](https://github.com/coveo/push-api-client.js/compare/v2.1.12...v2.1.13) (2022-05-04)
 
 
