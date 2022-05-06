@@ -87,10 +87,10 @@ export class CatalogSource {
   public batchUpdateDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     const strategy = this.fileContainerStrategy(sourceId);
-    return uploadBatch(this.platformClient, strategy, batch, createFields);
+    return uploadBatch(this.platformClient, strategy, batch, options);
   }
 
   /**
@@ -103,10 +103,10 @@ export class CatalogSource {
   public async batchStreamDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     const strategy = this.streamChunkStrategy(sourceId);
-    await uploadBatch(this.platformClient, strategy, batch, createFields);
+    await uploadBatch(this.platformClient, strategy, batch, options);
   }
 
   /**

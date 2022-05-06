@@ -26,6 +26,12 @@ export interface BatchUpdateDocumentsOptions {
    * See https://docs.coveo.com/en/1707#fields-domain
    */
   createFields?: boolean;
+  /**
+   * TODO: find a better name
+   * ex: throwForInvalidFieldNames
+   */
+  formatInvalidFields?: boolean;
+  // TODO: In a breaking change, move every autofield creation related options into a separate interface to avoid confusion
 }
 
 export interface ConcurrentProcessing {

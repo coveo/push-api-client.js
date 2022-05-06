@@ -7,11 +7,9 @@ import {InvalidPermanentId} from '../errors/fieldErrors';
 import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
-
-export type FieldAnalyserReport = {
-  fields: FieldModel[];
-  inconsistencies: Inconsistencies;
-};
+import {FieldAnalyserReport} from './fieldAnalyserReport';
+import {getAllJsonFilesFromEntries} from '../help/file';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
 /**
  * Analyse documents to detect type inconsistencies and missing fields in your index.
@@ -28,7 +26,7 @@ export class FieldAnalyser {
   }
 
   /**
-   * Adds a batch of document builders to the analyser
+   * Adds a batch of document builders to the analyser to extract all the missing fields that need to be created in the organization.
    * This method can be called as many time as needed as it will take into consideration document builders previously added.
    *
    * @param {DocumentBuilder[]} batch
@@ -55,24 +53,35 @@ export class FieldAnalyser {
   }
 
   /**
+   *
+   * Adds a list of files to the analyser to extract all the missing fields that need to be created in the organization.
+   * This method can be called as many time as needed as it will take into consideration files previously added.
+   *
+   * @param {string[]} filesOrDirectories
+   * @return {*}
+   */
+  public async addFromFiles(filesOrDirectories: string[]) {
+    const files = getAllJsonFilesFromEntries(filesOrDirectories);
+    for (const filePath of files.values()) {
+      const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(filePath);
+      await this.add(docBuilders);
+    }
+    return this;
+  }
+
+  /**
    * Returns the analyser report containing the fields to create as well as the type inconsistencies in the documents
    *
    * @return {*}  {FieldAnalyserReport}
    */
   public report(): FieldAnalyserReport {
     this.ensurePermanentId(this.missingFields);
-    this.removeInconsistentFields();
 
-    return {
-      fields: this.missingFields.marshal(),
-      inconsistencies: this.inconsistencies,
-    };
-  }
-
-  private removeInconsistentFields() {
-    for (const fieldname of this.inconsistencies.keys()) {
-      this.missingFields.delete(fieldname);
-    }
+    return new FieldAnalyserReport(
+      this.platformClient,
+      this.missingFields,
+      this.inconsistencies
+    );
   }
 
   private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {

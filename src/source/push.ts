@@ -23,8 +23,6 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
-import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
 import {
   BatchUpdateDocuments,
@@ -174,12 +172,12 @@ export class PushSource {
   public async addOrUpdateDocument(
     sourceID: string,
     docBuilder: DocumentBuilder,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
-    if (createFields) {
+    if (options?.createFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       await analyser.add([docBuilder]);
-      await this.createFields(analyser);
+      await analyser.report().createMissingFields();
     }
 
     const doc = docBuilder.build();
@@ -201,13 +199,13 @@ export class PushSource {
   public async batchUpdateDocuments(
     sourceID: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     return uploadBatch(
       this.platformClient,
       this.fileContainerStrategy(sourceID),
       batch,
-      createFields
+      options
     );
   }
 
@@ -284,13 +282,13 @@ export class PushSource {
     return axiosRequestHeaders(this.apikey);
   }
 
+  /**
+   * @deprecated use the `FieldAnalyser` class to manage missing fields
+   *
+   * See {@link FieldAnalyser.report}
+   */
   public async createFields(analyser: FieldAnalyser) {
-    const {fields, inconsistencies} = analyser.report();
-
-    if (inconsistencies.size > 0) {
-      throw new FieldTypeInconsistencyError(inconsistencies);
-    }
-    await createFields(this.platformClient, fields);
+    await analyser.report().createMissingFields();
   }
 
   private urlBuilder(sourceId: string) {

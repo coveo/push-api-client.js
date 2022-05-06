@@ -37,3 +37,12 @@ export class InvalidPermanentId extends PushApiClientBaseError {
     `);
   }
 }
+export class UnsupportedFieldError extends PushApiClientBaseError {
+  public name = 'Unsupported field Error';
+  public constructor(public readonly unsupportedFields: Map<string, string>) {
+    super(`
+    TODO:
+    
+    `);
+  }
+}
