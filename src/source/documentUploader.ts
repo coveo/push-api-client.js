@@ -1,6 +1,7 @@
 import PlatformClient from '@coveord/platform-client';
 import {AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {BatchUpdateDocuments, BatchUpdateDocumentsOptions} from '../interfaces';
 import {UploadStrategy} from '../uploadStrategy';
 
@@ -19,7 +20,8 @@ export async function uploadBatch(
   if (opt.createFields) {
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add(batch.addOrUpdate);
-    await analyser.report().createMissingFields(opt);
+    const report = analyser.report();
+    await createFieldsFromReport(platformClient, report, options);
   }
   const res = await strategy.upload(batch);
   await strategy.postUpload?.();

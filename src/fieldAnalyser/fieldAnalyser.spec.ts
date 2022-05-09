@@ -3,8 +3,7 @@ jest.mock('@coveord/platform-client');
 import PlatformClient, {FieldTypes} from '@coveord/platform-client';
 import {DocumentBuilder, Metadata} from '..';
 import {InvalidPermanentId} from '../errors/fieldErrors';
-import {FieldAnalyser} from './fieldAnalyser';
-import {FieldAnalyserReport} from './fieldAnalyserReport';
+import {FieldAnalyser, FieldAnalyserReport} from './fieldAnalyser';
 
 const buildDocument = (metadata?: Metadata) => {
   const doc = new DocumentBuilder('https://my.document.uri', 'some title');

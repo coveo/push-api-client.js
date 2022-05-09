@@ -1,9 +1,15 @@
 import PlatformClient, {FieldModel} from '@coveord/platform-client';
+import {
+  FieldTypeInconsistencyError,
+  UnsupportedFieldError,
+} from '../errors/fieldErrors';
+import {BatchUpdateDocumentsOptions} from '../interfaces';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {
   readFieldsPrivilege,
   writeFieldsPrivilege,
 } from '../validation/preconditions/platformPrivilege';
+import type {FieldAnalyserReport} from './fieldAnalyser';
 
 export const listAllFieldsFromOrg = async (
   client: PlatformClient,
@@ -34,5 +40,23 @@ export const createFields = async (
   for (let i = 0; i < fields.length; i += fieldBatch) {
     const batch = fields.slice(i, fieldBatch + i);
     await client.field.createFields(batch);
+  }
+};
+
+export const createFieldsFromReport = async (
+  client: PlatformClient,
+  report: FieldAnalyserReport,
+  options?: Pick<BatchUpdateDocumentsOptions, 'formatInvalidFields'>
+) => {
+  {
+    if (report.inconsistencies.size > 0) {
+      throw new FieldTypeInconsistencyError(report.inconsistencies);
+    }
+    if (!options?.formatInvalidFields && report.formattedFields.length > 0) {
+      throw new UnsupportedFieldError(
+        report.formattedFields.map((tuple) => tuple[1])
+      );
+    }
+    await createFields(client, report.fields);
   }
 };

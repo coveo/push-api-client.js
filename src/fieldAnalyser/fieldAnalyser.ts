@@ -7,9 +7,14 @@ import {InvalidPermanentId} from '../errors/fieldErrors';
 import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
-import {FieldAnalyserReport} from './fieldAnalyserReport';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
+
+export type FieldAnalyserReport = {
+  fields: FieldModel[];
+  formattedFields: [string, string][];
+  inconsistencies: Inconsistencies;
+};
 
 /**
  * Analyse documents to detect type inconsistencies and missing fields in your index.
@@ -76,12 +81,19 @@ export class FieldAnalyser {
    */
   public report(): FieldAnalyserReport {
     this.ensurePermanentId(this.missingFields);
+    this.removeInconsistentFields();
 
-    return new FieldAnalyserReport(
-      this.platformClient,
-      this.missingFields,
-      this.inconsistencies
-    );
+    return {
+      fields: this.missingFields.marshal(),
+      formattedFields: this.missingFields.formatted,
+      inconsistencies: this.inconsistencies,
+    };
+  }
+
+  private removeInconsistentFields() {
+    for (const fieldname of this.inconsistencies.keys()) {
+      this.missingFields.delete(fieldname);
+    }
   }
 
   private storeMetadata(metadataKey: string, metadataValue: MetadataValue) {

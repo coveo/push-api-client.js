@@ -1,4 +1,5 @@
 import PlatformClient from '@coveord/platform-client';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {FileConsumer} from '../help/fileConsumer';
 import {
@@ -39,7 +40,8 @@ export class BatchUploadDocumentsFromFilesReturn {
       if (createFields) {
         const analyser = new FieldAnalyser(platformClient);
         await analyser.addFromFiles(filesOrDirectories);
-        await analyser.report().createMissingFields(options);
+        const report = analyser.report();
+        await createFieldsFromReport(platformClient, report, options);
       }
 
       await this.consumer.consume(files);

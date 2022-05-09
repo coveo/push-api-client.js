@@ -34,6 +34,7 @@ import {uploadBatch} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
 import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -177,7 +178,8 @@ export class PushSource {
     if (options?.createFields) {
       const analyser = new FieldAnalyser(this.platformClient);
       await analyser.add([docBuilder]);
-      await analyser.report().createMissingFields();
+      const report = analyser.report();
+      await createFieldsFromReport(this.platformClient, report, options);
     }
 
     const doc = docBuilder.build();
@@ -282,13 +284,13 @@ export class PushSource {
     return axiosRequestHeaders(this.apikey);
   }
 
-  /**
-   * @deprecated use the `FieldAnalyser` class to manage missing fields
-   *
-   * See {@link FieldAnalyser.report}
-   */
-  public async createFields(analyser: FieldAnalyser) {
-    await analyser.report().createMissingFields();
+  public async createFields(
+    analyser: FieldAnalyser,
+    options?: Pick<BatchUpdateDocumentsOptions, 'formatInvalidFields'>
+  ) {
+    // TODO: update source mappings
+    const report = analyser.report();
+    await createFieldsFromReport(this.platformClient, report, options);
   }
 
   private urlBuilder(sourceId: string) {

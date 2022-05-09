@@ -1,7 +1,29 @@
 import {FieldModel, FieldTypes} from '@coveord/platform-client';
+import {FieldCollisionError} from '../errors/fieldErrors';
+
+export class FormattedFieldStore extends Map<string, string> {
+  public set(key: string, value: string) {
+    super.set(key, value);
+    this.ensureValueUniqueness(key, value);
+    return this;
+  }
+
+  private ensureValueUniqueness(key: string, formattedKey: string) {
+    for (const [k, v] of this.entries()) {
+      if (k !== key && v === formattedKey) {
+        throw new FieldCollisionError(key, k, formattedKey);
+      }
+    }
+  }
+}
 
 export class FieldStore extends Map<string, FieldTypes> {
-  private _invalidFields: Map<string, string> = new Map();
+  private _formatted: FormattedFieldStore;
+
+  public constructor() {
+    super();
+    this._formatted = new FormattedFieldStore();
+  }
 
   public concat(fieldBuilder: FieldStore) {
     fieldBuilder.forEach((type, name) => {
@@ -24,14 +46,13 @@ export class FieldStore extends Map<string, FieldTypes> {
   public set(key: string, value: FieldTypes) {
     super.set(key, value);
     if (!this.isFieldNameValid(key)) {
-      this._invalidFields.set(key, this.formatIntoValidFieldName(key));
+      this._formatted.set(key, this.formatIntoValidFieldName(key));
     }
     return this;
   }
 
-  // TODO: not sure that is the cleanest way to store this
-  public get invalidFields() {
-    return this._invalidFields;
+  public get formatted() {
+    return Array.from(this._formatted.entries());
   }
 
   private isFieldNameValid(fieldName: string): boolean {
@@ -41,7 +62,7 @@ export class FieldStore extends Map<string, FieldTypes> {
 
   private formatIntoValidFieldName(fieldName: string): string {
     fieldName = fieldName
-      // Extract alpha numeric only
+      // Replace non-alpha numeric with underscores
       .replace(/[^a-z0-9]/gi, '_')
       // Remove any leading number or underscore
       .replace(/^[0-9_]+/g, '')
@@ -50,7 +71,6 @@ export class FieldStore extends Map<string, FieldTypes> {
       // Remove any trailing underscore
       .replace(/_$/g, '');
 
-    // TODO: detect collision
     return fieldName.toLowerCase();
   }
 }
