@@ -194,8 +194,8 @@ describe('CatalogSource - Push', () => {
       );
     });
 
-    it('should throw an error if the path is invalid', () => {
-      expect(() =>
+    it('should throw an error if the path is invalid', async () => {
+      await expect(() =>
         source
           .batchUpdateDocumentsFromFiles(
             'the_id',
@@ -264,7 +264,11 @@ describe('CatalogSource - Push', () => {
     describe('when there are no inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [],
+          inconsistencies,
+          normalizedFields: [],
+        });
       });
 
       it('should analyse document builder batch', async () => {
@@ -279,10 +283,14 @@ describe('CatalogSource - Push', () => {
           FieldTypes.STRING,
           FieldTypes.DOUBLE,
         ]);
-        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [],
+          inconsistencies,
+          normalizedFields: [],
+        });
       });
-      it('should throw', () => {
-        expect(() =>
+      it('should throw', async () => {
+        await expect(() =>
           source.batchUpdateDocuments('the_id', batch)
         ).rejects.toThrow(FieldTypeInconsistencyError);
       });
@@ -297,6 +305,7 @@ describe('CatalogSource - Push', () => {
             {name: 'numericalfield', type: FieldTypes.DOUBLE},
           ],
           inconsistencies,
+          normalizedFields: [],
         });
       });
       it('should create fields', async () => {
@@ -311,7 +320,11 @@ describe('CatalogSource - Push', () => {
     describe('when document batches do not contain missing fields', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [],
+          inconsistencies,
+          normalizedFields: [],
+        });
       });
 
       it('should not create fields', async () => {
