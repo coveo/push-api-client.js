@@ -3,7 +3,6 @@ import {
   FieldTypeInconsistencyError,
   UnsupportedFieldError,
 } from '../errors/fieldErrors';
-import {BatchUpdateDocumentsOptions} from '../interfaces';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {
   readFieldsPrivilege,
@@ -46,13 +45,13 @@ export const createFields = async (
 export const createFieldsFromReport = async (
   client: PlatformClient,
   report: FieldAnalyserReport,
-  options?: Pick<BatchUpdateDocumentsOptions, 'normalizeFields'>
+  normalizeFields = false
 ) => {
   {
     if (report.inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(report.inconsistencies);
     }
-    if (!options?.normalizeFields && report.normalizedFields.length > 0) {
+    if (normalizeFields && report.normalizedFields.length > 0) {
       throw new UnsupportedFieldError(
         report.normalizedFields.map((tuple) => tuple[1])
       );

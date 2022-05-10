@@ -1,14 +1,55 @@
 import PlatformClient from '@coveord/platform-client';
-import {AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
+import {DocumentBuilder} from '../documentBuilder';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
-import {BatchUpdateDocuments, BatchUpdateDocumentsOptions} from '../interfaces';
+import {
+  BatchUpdateDocuments,
+  BatchUpdateDocumentsFromFiles,
+  BatchUpdateDocumentsOptions,
+} from '../interfaces';
 import {UploadStrategy} from '../uploadStrategy';
+import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
-const defaultUploadBatchOptions: Required<BatchUpdateDocumentsOptions> = {
+const defaultBatchOptions: Required<BatchUpdateDocumentsOptions> = {
   createFields: true,
   normalizeFields: false,
 };
+
+const defaultBatchFromFileOptions: Required<BatchUpdateDocumentsFromFiles> = {
+  ...defaultBatchOptions,
+  maxConcurrent: 10,
+};
+
+export async function uploadDocument(
+  platformClient: PlatformClient,
+  docBuilder: DocumentBuilder,
+  addURL: URL,
+  documentsAxiosConfig: AxiosRequestConfig,
+  options?: BatchUpdateDocumentsFromFiles
+) {
+  const {
+    createFields,
+    normalizeFields,
+  }: Required<BatchUpdateDocumentsFromFiles> = {
+    ...defaultBatchFromFileOptions,
+    ...options,
+  };
+  if (createFields) {
+    const analyser = new FieldAnalyser(platformClient);
+    await analyser.add([docBuilder]);
+    const report = analyser.report();
+    await createFieldsFromReport(platformClient, report, normalizeFields);
+  }
+
+  const doc = docBuilder.build();
+  addURL.searchParams.append('documentId', doc.uri);
+  return axios.put(
+    addURL.toString(),
+    docBuilder.marshal(),
+    documentsAxiosConfig
+  );
+}
 
 export async function uploadBatch(
   platformClient: PlatformClient,
@@ -16,15 +57,36 @@ export async function uploadBatch(
   batch: BatchUpdateDocuments,
   options?: BatchUpdateDocumentsOptions
 ): Promise<AxiosResponse> {
-  const opt = {...defaultUploadBatchOptions, ...options};
-  if (opt.createFields) {
+  const {createFields, normalizeFields}: BatchUpdateDocumentsOptions = {
+    ...defaultBatchOptions,
+    ...options,
+  };
+  if (createFields) {
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add(batch.addOrUpdate);
     const report = analyser.report();
-    await createFieldsFromReport(platformClient, report, options);
+    await createFieldsFromReport(platformClient, report, normalizeFields);
   }
   const res = await strategy.upload(batch);
   await strategy.postUpload?.();
 
   return res;
+}
+
+export function uploadBatchFromFile(
+  platformClient: PlatformClient,
+  strategy: UploadStrategy,
+  filesOrDirectories: string[],
+  options?: BatchUpdateDocumentsFromFiles
+) {
+  const opts: Required<BatchUpdateDocumentsFromFiles> = {
+    ...defaultBatchFromFileOptions,
+    ...options,
+  };
+  return new BatchUploadDocumentsFromFilesReturn(
+    platformClient,
+    strategy,
+    filesOrDirectories,
+    opts
+  );
 }

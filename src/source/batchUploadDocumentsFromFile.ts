@@ -19,29 +19,24 @@ export class BatchUploadDocumentsFromFilesReturn {
     platformClient: PlatformClient,
     strategy: UploadStrategy,
     filesOrDirectories: string[],
-    options?: BatchUpdateDocumentsFromFiles
+    options: Required<BatchUpdateDocumentsFromFiles>
   ) {
-    const defaultOptions = {
-      maxConcurrent: 10,
-      createFields: true,
-    };
-    const {maxConcurrent, createFields} = {
-      ...defaultOptions,
-      ...options,
-    };
-
     this.consumer = new FileConsumer(
       (batch: BatchUpdateDocuments) => strategy.upload(batch),
-      {maxConcurrent}
+      options
     );
 
     this.internalPromise = (async () => {
       const files = getAllJsonFilesFromEntries(filesOrDirectories);
-      if (createFields) {
+      if (options?.createFields) {
         const analyser = new FieldAnalyser(platformClient);
         await analyser.addFromFiles(filesOrDirectories);
         const report = analyser.report();
-        await createFieldsFromReport(platformClient, report, options);
+        await createFieldsFromReport(
+          platformClient,
+          report,
+          options.normalizeFields
+        );
       }
 
       await this.consumer.consume(files);
