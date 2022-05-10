@@ -7,7 +7,7 @@ import {UploadStrategy} from '../uploadStrategy';
 
 const defaultUploadBatchOptions: Required<BatchUpdateDocumentsOptions> = {
   createFields: true,
-  formatInvalidFields: false,
+  normalizeFields: false,
 };
 
 export async function uploadBatch(

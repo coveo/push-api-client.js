@@ -12,7 +12,7 @@ import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFil
 
 export type FieldAnalyserReport = {
   fields: FieldModel[];
-  formattedFields: [string, string][];
+  normalizedFields: [string, string][];
   inconsistencies: Inconsistencies;
 };
 
@@ -85,7 +85,7 @@ export class FieldAnalyser {
 
     return {
       fields: this.missingFields.marshal(),
-      formattedFields: this.missingFields.formatted,
+      normalizedFields: this.missingFields.normalized,
       inconsistencies: this.inconsistencies,
     };
   }

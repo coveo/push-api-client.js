@@ -1,28 +1,28 @@
 import {FieldModel, FieldTypes} from '@coveord/platform-client';
-import {FieldCollisionError} from '../errors/fieldErrors';
+import {FieldNormalizationCollisionError} from '../errors/fieldErrors';
 
-export class FormattedFieldStore extends Map<string, string> {
+export class NormalizedFieldStore extends Map<string, string> {
   public set(key: string, value: string) {
     super.set(key, value);
     this.ensureValueUniqueness(key, value);
     return this;
   }
 
-  private ensureValueUniqueness(key: string, formattedKey: string) {
+  private ensureValueUniqueness(key: string, normalizedKey: string) {
     for (const [k, v] of this.entries()) {
-      if (k !== key && v === formattedKey) {
-        throw new FieldCollisionError(key, k, formattedKey);
+      if (k !== key && v === normalizedKey) {
+        throw new FieldNormalizationCollisionError(key, k, normalizedKey);
       }
     }
   }
 }
 
 export class FieldStore extends Map<string, FieldTypes> {
-  private _formatted: FormattedFieldStore;
+  private _normalized: NormalizedFieldStore;
 
   public constructor() {
     super();
-    this._formatted = new FormattedFieldStore();
+    this._normalized = new NormalizedFieldStore();
   }
 
   public concat(fieldBuilder: FieldStore) {
@@ -35,7 +35,7 @@ export class FieldStore extends Map<string, FieldTypes> {
     const fieldModels: FieldModel[] = [];
     this.forEach((fieldType, fieldName) => {
       fieldModels.push({
-        name: this.formatIntoValidFieldName(fieldName),
+        name: this.normalize(fieldName),
         type: fieldType,
       });
     });
@@ -46,13 +46,13 @@ export class FieldStore extends Map<string, FieldTypes> {
   public set(key: string, value: FieldTypes) {
     super.set(key, value);
     if (!this.isFieldNameValid(key)) {
-      this._formatted.set(key, this.formatIntoValidFieldName(key));
+      this._normalized.set(key, this.normalize(key));
     }
     return this;
   }
 
-  public get formatted() {
-    return Array.from(this._formatted.entries());
+  public get normalized() {
+    return Array.from(this._normalized.entries());
   }
 
   private isFieldNameValid(fieldName: string): boolean {
@@ -60,7 +60,7 @@ export class FieldStore extends Map<string, FieldTypes> {
     return allowedChar.test(fieldName);
   }
 
-  private formatIntoValidFieldName(fieldName: string): string {
+  private normalize(fieldName: string): string {
     fieldName = fieldName
       // Replace non-alpha numeric with underscores
       .replace(/[^a-z0-9]/gi, '_')

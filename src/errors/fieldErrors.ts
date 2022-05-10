@@ -51,3 +51,13 @@ Field names can only contain lowercase letters (a-z), numbers (0-9), and undersc
     `);
   }
 }
+
+export class FieldNormalizationCollisionError extends PushApiClientBaseError {
+  public name = 'Field Name Collision Error';
+  public constructor(fieldA: string, fieldB: string, normalizedField: string) {
+    super(`
+Both fields ${fieldA} and ${fieldB} cannot be normalized to the same field ${normalizedField}.
+Ensure they are different enough to prevent future normalization collisions.
+    `);
+  }
+}

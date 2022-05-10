@@ -46,15 +46,15 @@ export const createFields = async (
 export const createFieldsFromReport = async (
   client: PlatformClient,
   report: FieldAnalyserReport,
-  options?: Pick<BatchUpdateDocumentsOptions, 'formatInvalidFields'>
+  options?: Pick<BatchUpdateDocumentsOptions, 'normalizeFields'>
 ) => {
   {
     if (report.inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(report.inconsistencies);
     }
-    if (!options?.formatInvalidFields && report.formattedFields.length > 0) {
+    if (!options?.normalizeFields && report.normalizedFields.length > 0) {
       throw new UnsupportedFieldError(
-        report.formattedFields.map((tuple) => tuple[1])
+        report.normalizedFields.map((tuple) => tuple[1])
       );
     }
     await createFields(client, report.fields);

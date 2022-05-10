@@ -286,7 +286,7 @@ export class PushSource {
 
   public async createFields(
     analyser: FieldAnalyser,
-    options?: Pick<BatchUpdateDocumentsOptions, 'formatInvalidFields'>
+    options?: Pick<BatchUpdateDocumentsOptions, 'normalizeFields'>
   ) {
     // TODO: update source mappings
     const report = analyser.report();

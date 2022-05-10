@@ -1,5 +1,5 @@
 import {FieldTypes} from '@coveord/platform-client';
-import {FieldCollisionError} from '../errors/fieldErrors';
+import {FieldNormalizationCollisionError} from '../errors/fieldErrors';
 import {FieldStore} from './fieldStore';
 
 describe('FieldStore', () => {
@@ -64,7 +64,7 @@ describe('FieldStore', () => {
     },
   ])('should $title', ({initialField, expectation}) => {
     store.set(initialField, FieldTypes.STRING);
-    const formattedField = store.formatted[0][1];
+    const formattedField = store.normalized[0][1];
     expect(formattedField).toEqual(expectation);
   });
 
@@ -76,7 +76,7 @@ describe('FieldStore', () => {
           .set('Some-field', FieldTypes.STRING)
           .set('some:field', FieldTypes.STRING);
       };
-      expect(addToStore).toThrow(FieldCollisionError);
+      expect(addToStore).toThrow(FieldNormalizationCollisionError);
     });
   });
 });

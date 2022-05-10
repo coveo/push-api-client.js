@@ -24,14 +24,26 @@ export interface BatchUpdateDocumentsOptions {
    *
    * Make sure your API key is granted the privilege to EDIT fields before using this option.
    * See https://docs.coveo.com/en/1707#fields-domain
+   *
+   * @default true
    */
   createFields?: boolean;
   /**
-   * TODO: find a better name
-   * ex: throwForInvalidFieldNames
+   * Allow the fields to be added to the source mappings when the `createFields` option is `true`.
+   * Setting this option to `false` might prevent future Resource Snashots to find children fields of a source.
+   *
+   * @default true
    */
-  formatInvalidFields?: boolean;
-  // TODO: In a breaking change, move every autofield creation related options into a separate interface to avoid confusion
+  // TODO:??? Provide an option to update source mapping with custom fields
+  // addFieldsToSourceMappings?: boolean;
+  /**
+   * Allow fields with unsupported names to be automatically normalized.
+   * Setting this option to `true` will create the normalized fields in your Coveo organization.
+   * Otherwise, an error will be thrown as soon as an unsupported field is detected.
+   *
+   * @default false
+   */
+  normalizeFields?: boolean;
 }
 
 export interface ConcurrentProcessing {
