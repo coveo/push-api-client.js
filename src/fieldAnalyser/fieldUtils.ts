@@ -51,10 +51,8 @@ export const createFieldsFromReport = async (
     if (report.inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(report.inconsistencies);
     }
-    if (normalizeFields && report.normalizedFields.length > 0) {
-      throw new UnsupportedFieldError(
-        report.normalizedFields.map((tuple) => tuple[1])
-      );
+    if (!normalizeFields && report.normalizedFields.length > 0) {
+      throw new UnsupportedFieldError(report.normalizedFields);
     }
     await createFields(client, report.fields);
   }

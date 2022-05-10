@@ -39,11 +39,11 @@ See docs.coveo.com/en/1913 fore more info.
 }
 export class UnsupportedFieldError extends PushApiClientBaseError {
   public name = 'Unsupported field Error';
-  public constructor(public readonly unsupportedFields: string[]) {
+  public constructor(public readonly unsupportedFields: [string, string][]) {
     super(`
 The following field names are invalid:
 ${unsupportedFields.reduce(
-  (prev: string, curr: string) => (prev += `  • ${curr}\n`),
+  (prev: string, curr: [string, string]) => (prev += `  • ${curr[0]}\n`),
   ''
 )}
 

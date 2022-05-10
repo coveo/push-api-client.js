@@ -470,5 +470,36 @@ describe('PushSource', () => {
         expect(mockCreateField).not.toHaveBeenCalled();
       });
     });
+
+    describe('when field names should be normalized', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies();
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [{name: 'normalized_field', type: FieldTypes.STRING}],
+          inconsistencies,
+          normalizedFields: [['Normalized Field', 'normalized_field']],
+        });
+      });
+
+      describe('when field normalization is enabled', () => {
+        it('should create normalized fields', async () => {
+          await source.batchUpdateDocuments('the_id', batch, {
+            normalizeFields: true,
+          });
+          expect(mockCreateField).toHaveBeenCalledWith([
+            {name: 'normalized_field', type: FieldTypes.STRING},
+          ]);
+        });
+      });
+
+      describe('when field normalization is disabled', () => {
+        it('should throw an error', (done) => {
+          source.batchUpdateDocuments('the_id', batch).catch((error) => {
+            expect((error as Error).message).toContain('• Normalized Field');
+            done();
+          });
+        }, 1000);
+      });
+    });
   });
 });
