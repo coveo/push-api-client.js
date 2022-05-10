@@ -28,7 +28,7 @@ export class BatchUploadDocumentsFromFilesReturn {
 
     this.internalPromise = (async () => {
       const files = getAllJsonFilesFromEntries(filesOrDirectories);
-      if (options?.createFields) {
+      if (options.createFields) {
         const analyser = new FieldAnalyser(platformClient);
         await analyser.addFromFiles(filesOrDirectories);
         const report = analyser.report();

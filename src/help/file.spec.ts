@@ -33,6 +33,21 @@ describe('file', () => {
     ]);
   });
 
+  it('should return an array of unique files', () => {
+    const folders = [join(pathToStub, 'mixdocuments')];
+    const files = [
+      join(pathToStub, 'jsondocuments', 'batman.json'),
+      join(pathToStub, 'jsondocuments', 'batman.json'),
+      join(pathToStub, 'mixdocuments', 'valid.json'),
+    ];
+    const entries = [...files, ...folders];
+    const validJsonFiles = getAllJsonFilesFromEntries(entries);
+    expect(validJsonFiles).toEqual([
+      join(pathToStub, 'jsondocuments', 'batman.json'),
+      join(pathToStub, 'mixdocuments', 'valid.json'),
+    ]);
+  });
+
   it('should recursively read all JSON files in a directory', () => {
     const folders = [
       join(pathToStub, 'multiplelevelfolder'),
