@@ -1,8 +1,5 @@
 import PlatformClient, {FieldModel} from '@coveord/platform-client';
-import {
-  FieldTypeInconsistencyError,
-  UnsupportedFieldError,
-} from '../errors/fieldErrors';
+import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {
   readFieldsPrivilege,
@@ -44,16 +41,17 @@ export const createFields = async (
 
 export const createFieldsFromReport = async (
   client: PlatformClient,
-  report: FieldAnalyserReport,
-  normalizeFields = false
+  report: FieldAnalyserReport
 ) => {
   {
     if (report.inconsistencies.size > 0) {
       throw new FieldTypeInconsistencyError(report.inconsistencies);
     }
-    if (!normalizeFields && report.normalizedFields.length > 0) {
-      throw new UnsupportedFieldError(report.normalizedFields);
-    }
     await createFields(client, report.fields);
   }
+};
+
+export const isFieldNameValid = (fieldName: string): boolean => {
+  const allowedChar = new RegExp('^[a-z]+[a-z0-9_]*$');
+  return allowedChar.test(fieldName.toLowerCase());
 };

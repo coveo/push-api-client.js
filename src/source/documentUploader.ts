@@ -9,15 +9,15 @@ import {
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {UploadStrategy} from '../uploadStrategy';
+import {BuiltInTransformers} from '../validation/transformation/builtInTransformers';
 import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 const defaultBatchOptions: Required<BatchUpdateDocumentsOptions> = {
   createFields: true,
-  normalizeFields: false,
 };
-
 const defaultBatchFromFileOptions: Required<BatchUpdateDocumentsFromFiles> = {
   ...defaultBatchOptions,
+  fieldNameTransformer: BuiltInTransformers.identity,
   maxConcurrent: 10,
 };
 
@@ -26,12 +26,9 @@ export async function uploadDocument(
   docBuilder: DocumentBuilder,
   addURL: URL,
   documentsAxiosConfig: AxiosRequestConfig,
-  options?: BatchUpdateDocumentsFromFiles
+  options?: BatchUpdateDocumentsOptions
 ) {
-  const {
-    createFields,
-    normalizeFields,
-  }: Required<BatchUpdateDocumentsFromFiles> = {
+  const {createFields}: Required<BatchUpdateDocumentsOptions> = {
     ...defaultBatchFromFileOptions,
     ...options,
   };
@@ -39,7 +36,7 @@ export async function uploadDocument(
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add([docBuilder]);
     const report = analyser.report();
-    await createFieldsFromReport(platformClient, report, normalizeFields);
+    await createFieldsFromReport(platformClient, report);
   }
 
   const doc = docBuilder.build();
@@ -57,7 +54,7 @@ export async function uploadBatch(
   batch: BatchUpdateDocuments,
   options?: BatchUpdateDocumentsOptions
 ): Promise<AxiosResponse> {
-  const {createFields, normalizeFields}: BatchUpdateDocumentsOptions = {
+  const {createFields}: BatchUpdateDocumentsOptions = {
     ...defaultBatchOptions,
     ...options,
   };
@@ -65,7 +62,7 @@ export async function uploadBatch(
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add(batch.addOrUpdate);
     const report = analyser.report();
-    await createFieldsFromReport(platformClient, report, normalizeFields);
+    await createFieldsFromReport(platformClient, report);
   }
   const res = await strategy.upload(batch);
   await strategy.postUpload?.();

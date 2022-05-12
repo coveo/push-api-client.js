@@ -10,6 +10,7 @@ import {
   SuccessfulUploadCallback,
 } from '../index';
 import type {UploadStrategy} from '../uploadStrategy';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
 export class BatchUploadDocumentsFromFilesReturn {
   private internalPromise: () => Promise<void>;
@@ -30,16 +31,19 @@ export class BatchUploadDocumentsFromFilesReturn {
       const files = getAllJsonFilesFromEntries(filesOrDirectories);
       if (options.createFields) {
         const analyser = new FieldAnalyser(platformClient);
-        await analyser.addFromFiles(filesOrDirectories);
+        for (const filePath of files.values()) {
+          const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(
+            filePath,
+            options
+          );
+          await analyser.add(docBuilders);
+        }
+
         const report = analyser.report();
-        await createFieldsFromReport(
-          platformClient,
-          report,
-          options.normalizeFields
-        );
+        await createFieldsFromReport(platformClient, report);
       }
 
-      await this.consumer.consume(files);
+      await this.consumer.consume(files, options);
       await strategy.postUpload?.();
     }).bind(this);
   }

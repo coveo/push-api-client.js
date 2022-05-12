@@ -399,7 +399,6 @@ describe('PushSource', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
 
@@ -424,7 +423,6 @@ describe('PushSource', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
       it('should throw', async () => {
@@ -443,7 +441,6 @@ describe('PushSource', () => {
             {name: 'numericalfield', type: FieldTypes.DOUBLE},
           ],
           inconsistencies,
-          normalizedFields: [],
         });
       });
       it('should create fields', async () => {
@@ -461,7 +458,6 @@ describe('PushSource', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
 
@@ -471,34 +467,22 @@ describe('PushSource', () => {
       });
     });
 
-    describe('when field names should be normalized', () => {
+    describe('when field names should be transformed', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
         mockAnalyserReport.mockReturnValueOnce({
-          fields: [{name: 'normalized_field', type: FieldTypes.STRING}],
+          fields: [{name: 'transformed_field', type: FieldTypes.STRING}],
           inconsistencies,
-          normalizedFields: [['Normalized Field', 'normalized_field']],
         });
       });
 
       describe('when field normalization is enabled', () => {
-        it('should create normalized fields', async () => {
-          await source.batchUpdateDocuments('the_id', batch, {
-            normalizeFields: true,
-          });
+        it('should create transformed fields', async () => {
+          await source.batchUpdateDocuments('the_id', batch);
           expect(mockCreateField).toHaveBeenCalledWith([
-            {name: 'normalized_field', type: FieldTypes.STRING},
+            {name: 'transformed_field', type: FieldTypes.STRING},
           ]);
         });
-      });
-
-      describe('when field normalization is disabled', () => {
-        it('should throw an error', (done) => {
-          source.batchUpdateDocuments('the_id', batch).catch((error) => {
-            expect((error as Error).message).toContain('• Normalized Field');
-            done();
-          });
-        }, 1000);
       });
     });
   });

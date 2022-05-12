@@ -39,25 +39,16 @@ See docs.coveo.com/en/1913 fore more info.
 }
 export class UnsupportedFieldError extends PushApiClientBaseError {
   public name = 'Unsupported field Error';
-  public constructor(public readonly unsupportedFields: [string, string][]) {
+  public readonly unsupportedFields: string[];
+  public constructor(...unsupportedFields: string[]) {
     super(`
 The following field names are invalid:
 ${unsupportedFields.reduce(
-  (prev: string, curr: [string, string]) => (prev += `  • ${curr[0]}\n`),
+  (prev: string, curr: string) => (prev += `  • ${curr}\n`),
   ''
 )}
-
 Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. The field name must be at least one character long and must start with a lowercase letter.
     `);
-  }
-}
-
-export class FieldNormalizationCollisionError extends PushApiClientBaseError {
-  public name = 'Field Name Collision Error';
-  public constructor(fieldA: string, fieldB: string, normalizedField: string) {
-    super(`
-Both fields ${fieldA} and ${fieldB} cannot be normalized to the same field ${normalizedField}.
-Ensure they are different enough to prevent future normalization collisions.
-    `);
+    this.unsupportedFields = unsupportedFields;
   }
 }

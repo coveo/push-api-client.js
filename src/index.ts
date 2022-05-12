@@ -16,3 +16,5 @@ export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
 export {PlatformEnvironment, Region, PlatformUrlOptions} from './environment';
 export {SourceVisibility} from '@coveord/platform-client';
+export {Transformer} from './validation/transformation/transformer';
+export {BuiltInTransformers} from './validation/transformation/builtInTransformers';

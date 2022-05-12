@@ -267,7 +267,6 @@ describe('CatalogSource - Push', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
 
@@ -286,7 +285,6 @@ describe('CatalogSource - Push', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
       it('should throw', async () => {
@@ -305,7 +303,6 @@ describe('CatalogSource - Push', () => {
             {name: 'numericalfield', type: FieldTypes.DOUBLE},
           ],
           inconsistencies,
-          normalizedFields: [],
         });
       });
       it('should create fields', async () => {
@@ -323,7 +320,6 @@ describe('CatalogSource - Push', () => {
         mockAnalyserReport.mockReturnValueOnce({
           fields: [],
           inconsistencies,
-          normalizedFields: [],
         });
       });
 

@@ -280,16 +280,9 @@ export class PushSource {
     return axiosRequestHeaders(this.apikey);
   }
 
-  public async createFields(
-    analyser: FieldAnalyser,
-    options?: BatchUpdateDocumentsOptions
-  ) {
+  public async createFields(analyser: FieldAnalyser) {
     const report = analyser.report();
-    await createFieldsFromReport(
-      this.platformClient,
-      report,
-      options?.normalizeFields
-    );
+    await createFieldsFromReport(this.platformClient, report);
   }
 
   private urlBuilder(sourceId: string) {

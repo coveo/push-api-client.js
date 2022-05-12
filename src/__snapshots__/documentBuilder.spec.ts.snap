@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DocumentBuilder should throw error for invalid metadata values 1`] = `
+"
+The following field names are invalid:
+  • f-o=o
+  • <buzz>
+
+Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. The field name must be at least one character long and must start with a lowercase letter.
+    "
+`;

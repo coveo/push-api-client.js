@@ -3,6 +3,7 @@ import {
   GroupSecurityIdentityBuilder,
   UserSecurityIdentityBuilder,
 } from './securityIdentityBuilder';
+import {BuiltInTransformers} from './validation/transformation/builtInTransformers';
 
 describe('DocumentBuilder', () => {
   let docBuilder: DocumentBuilder;
@@ -47,6 +48,43 @@ describe('DocumentBuilder', () => {
     expect(
       docBuilder.withMetadata({foo: 'bar', buzz: ['bazz', 'bozz']}).marshal()
     ).toMatchObject({foo: 'bar', buzz: ['bazz', 'bozz']});
+  });
+
+  it('should throw error for invalid single metadata value', () => {
+    expect(() => {
+      docBuilder.withMetadataValue('f-o=o', 'bar').marshal();
+    }).toThrowError('f-o=o');
+  });
+
+  it('should throw error for invalid metadata values', () => {
+    expect(() => {
+      docBuilder
+        .withMetadata({'f-o=o': 'bar', '<buzz>': ['bazz', 'bozz']})
+        .marshal();
+    }).toThrowErrorMatchingSnapshot();
+  });
+
+  describe.each([
+    {
+      title: 'default',
+      transformer: BuiltInTransformers.toLowerCase,
+      expectedKey: 'foo',
+    },
+    {
+      title: 'underscore',
+      transformer: BuiltInTransformers.toSnakeCase,
+      expectedKey: 'f_o_o',
+    },
+  ])('when using the $title transformer', ({transformer, expectedKey}) => {
+    it(`should format to ${expectedKey}`, () => {
+      expect(
+        new DocumentBuilder('uri', 'title')
+          .withMetadataValue('f-o=o', 'bar', transformer)
+          .marshal()
+      ).toMatchObject({
+        [expectedKey]: 'bar',
+      });
+    });
   });
 
   it('should marshal single metadata value', () => {

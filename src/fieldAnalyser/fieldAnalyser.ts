@@ -7,12 +7,9 @@ import {InvalidPermanentId} from '../errors/fieldErrors';
 import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
-import {getAllJsonFilesFromEntries} from '../help/file';
-import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
 export type FieldAnalyserReport = {
   fields: FieldModel[];
-  normalizedFields: [string, string][];
   inconsistencies: Inconsistencies;
 };
 
@@ -58,23 +55,6 @@ export class FieldAnalyser {
   }
 
   /**
-   *
-   * Adds a list of files to the analyser to extract all the missing fields that need to be created in the organization.
-   * This method can be called as many time as needed as it will take into consideration files previously added.
-   *
-   * @param {string[]} filesOrDirectories
-   * @return {*}
-   */
-  public async addFromFiles(filesOrDirectories: string[]) {
-    const files = getAllJsonFilesFromEntries(filesOrDirectories);
-    for (const filePath of files.values()) {
-      const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(filePath);
-      await this.add(docBuilders);
-    }
-    return this;
-  }
-
-  /**
    * Returns the analyser report containing the fields to create as well as the type inconsistencies in the documents
    *
    * @return {*}  {FieldAnalyserReport}
@@ -85,7 +65,6 @@ export class FieldAnalyser {
 
     return {
       fields: this.missingFields.marshal(),
-      normalizedFields: this.missingFields.normalized,
       inconsistencies: this.inconsistencies,
     };
   }

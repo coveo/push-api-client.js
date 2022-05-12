@@ -1,5 +1,8 @@
 import type {AxiosResponse} from 'axios';
 import type {DocumentBuilder} from './documentBuilder';
+import type {Transformer} from './validation/transformation/transformer';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type {BuiltInTransformers} from './validation/transformation/builtInTransformers';
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
@@ -35,17 +38,20 @@ export interface BatchUpdateDocumentsOptions {
    * @default true
    */
   // TODO:??? Provide an option to update source mapping with custom fields
-  // addFieldsToSourceMappings?: boolean;
-  /**
-   * Allow fields with unsupported names to be automatically normalized.
-   * Setting this option to `true` will create the normalized fields in your Coveo organization.
-   * Otherwise, an error will be thrown as soon as an unsupported field is detected.
-   *
-   * @default false
-   */
-  normalizeFields?: boolean;
 }
 
+export interface ParseDocumentOptions {
+  /**
+   * The {@link Transformer} to apply to the fields found in the parsed documents.
+   * If not specified, no transformation will be applied to the field names.
+   * A Transformer is useful to prevent getting errors whenever some of field names contain special characters or any other element not supported by the Platform.
+   *
+   * For a list of built-in transformers, use {@link BuiltInTransformers}.
+   *
+   * @default BuiltInTransformers.identity
+   */
+  fieldNameTransformer?: Transformer;
+}
 export interface ConcurrentProcessing {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
@@ -57,4 +63,5 @@ export interface ConcurrentProcessing {
 }
 
 export type BatchUpdateDocumentsFromFiles = BatchUpdateDocumentsOptions &
-  ConcurrentProcessing;
+  ConcurrentProcessing &
+  ParseDocumentOptions;
