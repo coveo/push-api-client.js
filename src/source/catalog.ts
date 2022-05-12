@@ -20,9 +20,8 @@ import {
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {axiosRequestHeaders} from '../help/axiosUtils';
-import {uploadBatch} from './documentUploader';
+import {uploadBatch, uploadBatchFromFile} from './documentUploader';
 import {StreamUrlBuilder} from '../help/urlUtils';
-import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 /**
  * Manage a catalog source.
@@ -81,16 +80,16 @@ export class CatalogSource {
    * See [Full Document Update](https://docs.coveo.com/en/l62e0540)
    * @param sourceId
    * @param batch
-   * @param {BatchUpdateDocumentsOptions} [{createFields: createFields = true}={}]
+   * @param {BatchUpdateDocumentsOptions}
    * @returns
    */
   public batchUpdateDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     const strategy = this.fileContainerStrategy(sourceId);
-    return uploadBatch(this.platformClient, strategy, batch, createFields);
+    return uploadBatch(this.platformClient, strategy, batch, options);
   }
 
   /**
@@ -98,15 +97,15 @@ export class CatalogSource {
    * See [How to Stream Your Catalog Data to Your Source](https://docs.coveo.com/en/lb4a0344)
    * @param {string} sourceId
    * @param {BatchUpdateDocuments} batch
-   * @param {BatchUpdateDocumentsOptions} [{createFields: createFields = true}={}]
+   * @param {BatchUpdateDocumentsOptions}
    */
   public async batchStreamDocuments(
     sourceId: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     const strategy = this.streamChunkStrategy(sourceId);
-    await uploadBatch(this.platformClient, strategy, batch, createFields);
+    await uploadBatch(this.platformClient, strategy, batch, options);
   }
 
   /**
@@ -120,7 +119,7 @@ export class CatalogSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return new BatchUploadDocumentsFromFilesReturn(
+    return uploadBatchFromFile(
       this.platformClient,
       this.fileContainerStrategy(sourceId),
       filesOrDirectories,
@@ -140,7 +139,7 @@ export class CatalogSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return new BatchUploadDocumentsFromFilesReturn(
+    return uploadBatchFromFile(
       this.platformClient,
       this.streamChunkStrategy(sourceId),
       filesOrDirectories,

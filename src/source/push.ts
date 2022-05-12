@@ -32,10 +32,13 @@ import {
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {axiosRequestHeaders} from '../help/axiosUtils';
-import {uploadBatch} from './documentUploader';
+import {
+  uploadBatch,
+  uploadBatchFromFile,
+  uploadDocument,
+} from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
-import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -168,27 +171,21 @@ export class PushSource {
    * Adds or updates an individual item in a push source. See [Adding a Single Item in a Push Source](https://docs.coveo.com/en/133).
    * @param sourceID
    * @param docBuilder
-   * @param {BatchUpdateDocumentsOptions} [{createFields = true}={}]
+   * @param {BatchUpdateDocumentsOptions}
    * @returns
    */
-  public async addOrUpdateDocument(
+  public addOrUpdateDocument(
     sourceID: string,
     docBuilder: DocumentBuilder,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
-    if (createFields) {
-      const analyser = new FieldAnalyser(this.platformClient);
-      await analyser.add([docBuilder]);
-      await this.createFields(analyser);
-    }
-
-    const doc = docBuilder.build();
     const addURL = new URL(`${this.urlBuilder(sourceID).baseURL}/documents`);
-    addURL.searchParams.append('documentId', doc.uri);
-    return axios.put(
-      addURL.toString(),
-      docBuilder.marshal(),
-      this.documentsAxiosConfig
+    return uploadDocument(
+      this.platformClient,
+      docBuilder,
+      addURL,
+      this.documentsAxiosConfig,
+      options
     );
   }
 
@@ -198,16 +195,16 @@ export class PushSource {
    * @param batch
    * @returns
    */
-  public async batchUpdateDocuments(
+  public batchUpdateDocuments(
     sourceID: string,
     batch: BatchUpdateDocuments,
-    {createFields: createFields = true}: BatchUpdateDocumentsOptions = {}
+    options?: BatchUpdateDocumentsOptions
   ) {
     return uploadBatch(
       this.platformClient,
       this.fileContainerStrategy(sourceID),
       batch,
-      createFields
+      options
     );
   }
 
@@ -224,7 +221,7 @@ export class PushSource {
     filesOrDirectories: string[],
     options?: BatchUpdateDocumentsFromFiles
   ) {
-    return new BatchUploadDocumentsFromFilesReturn(
+    return uploadBatchFromFile(
       this.platformClient,
       this.fileContainerStrategy(sourceID),
       filesOrDirectories,

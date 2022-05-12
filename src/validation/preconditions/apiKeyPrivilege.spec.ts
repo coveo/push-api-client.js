@@ -51,10 +51,6 @@ describe('ApiKeyPrivileges', () => {
         type: 'EDIT',
       },
     ])('should evaluate the "$type FIELD" privilege', async ({type}) => {
-      process.stdout.write('*********************\n');
-      process.stdout.write(`${type}\n`);
-      process.stdout.write('*********************\n');
-
       await ensureNecessaryCoveoPrivileges(client, writeFieldsPrivilege);
       expect(mockEvaluate).toHaveBeenCalledWith({
         requestedPrivilege: {
