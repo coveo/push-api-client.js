@@ -1,4 +1,8 @@
-import {PushSource, DocumentBuilder} from '@coveo/push-api-client';
+import {
+  PushSource,
+  DocumentBuilder,
+  BatchUpdateDocuments,
+} from '@coveo/push-api-client';
 import {readFileSync} from 'node:fs';
 import {join, parse} from 'node:path';
 import {gzipSync} from 'node:zlib';
@@ -19,8 +23,9 @@ async function main() {
       .withFileExtension(parse(fileName).ext)
   );
 
-  const myBatchOfDocuments = {
+  const myBatchOfDocuments: BatchUpdateDocuments = {
     addOrUpdate: myDocuments,
+    delete: [],
   };
   await source.batchUpdateDocuments('MY_SOURCE_ID', myBatchOfDocuments);
   source.setSourceStatus('MY_SOURCE_ID', 'IDLE');
