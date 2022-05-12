@@ -264,10 +264,7 @@ describe('CatalogSource - Push', () => {
     describe('when there are no inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
 
       it('should analyse document builder batch', async () => {
@@ -282,10 +279,7 @@ describe('CatalogSource - Push', () => {
           FieldTypes.STRING,
           FieldTypes.DOUBLE,
         ]);
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
       it('should throw', async () => {
         await expect(() =>
@@ -317,10 +311,7 @@ describe('CatalogSource - Push', () => {
     describe('when document batches do not contain missing fields', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
 
       it('should not create fields', async () => {

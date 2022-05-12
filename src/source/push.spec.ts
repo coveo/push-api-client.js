@@ -396,10 +396,7 @@ describe('PushSource', () => {
     describe('when there are no inconsistencies', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
 
       it('should analyse document builder', async () => {
@@ -420,10 +417,7 @@ describe('PushSource', () => {
           FieldTypes.STRING,
           FieldTypes.DOUBLE,
         ]);
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
       it('should throw', async () => {
         await expect(() =>
@@ -455,10 +449,7 @@ describe('PushSource', () => {
     describe('when document batches do not contain missing fields', () => {
       beforeEach(() => {
         const inconsistencies = new Inconsistencies();
-        mockAnalyserReport.mockReturnValueOnce({
-          fields: [],
-          inconsistencies,
-        });
+        mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
 
       it('should not create fields', async () => {

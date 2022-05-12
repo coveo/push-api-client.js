@@ -31,13 +31,6 @@ export interface BatchUpdateDocumentsOptions {
    * @default true
    */
   createFields?: boolean;
-  /**
-   * Allow the fields to be added to the source mappings when the `createFields` option is `true`.
-   * Setting this option to `false` might prevent future Resource Snashots to find children fields of a source.
-   *
-   * @default true
-   */
-  // TODO:??? Provide an option to update source mapping with custom fields
 }
 
 export interface ParseDocumentOptions {

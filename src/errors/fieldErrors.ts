@@ -28,12 +28,12 @@ export class InvalidPermanentId extends PushApiClientBaseError {
   public name = 'Invalid permanentId field Error';
   public constructor(field: FieldModel) {
     super(`
-The permanentid field detected in the index is not correctly configured.
-Expected field type: STRING
-Current field type: ${field.type}
+    The permanentid field detected in the index is not correctly configured.
+    Expected field type: STRING
+    Current field type: ${field.type}
 
-You can delete and recreate the permanentid field as a STRING field.
-See docs.coveo.com/en/1913 fore more info.
+    You can delete and recreate the permanentid field as a STRING field.
+    See docs.coveo.com/en/1913 fore more info.
     `);
   }
 }
