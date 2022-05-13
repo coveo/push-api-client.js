@@ -5,7 +5,6 @@ import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 import {isFieldNameValid} from './fieldAnalyser/fieldUtils';
 import {UnsupportedFieldError} from './errors/fieldErrors';
 import {BuiltInTransformers} from './validation/transformation/builtInTransformers';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type {Transformer} from './validation/transformation/transformer';
 /**
  * Utility class to build a {@link Document}.
@@ -142,7 +141,7 @@ export class DocumentBuilder {
   public withMetadataValue(
     key: string,
     value: MetadataValue,
-    keyTransformer = BuiltInTransformers.identity
+    keyTransformer: Transformer = BuiltInTransformers.identity
   ) {
     key = keyTransformer.transform(key);
     const reservedKeyNames = [
