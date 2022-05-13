@@ -180,7 +180,7 @@ export class DocumentBuilder {
    */
   public withMetadata(
     metadata: Metadata,
-    metadataKeyTransformer = BuiltInTransformers.identity
+    metadataKeyTransformer: Transformer = BuiltInTransformers.identity
   ) {
     const invalidKeys: string[] = [];
 

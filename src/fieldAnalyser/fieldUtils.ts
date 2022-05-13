@@ -7,6 +7,8 @@ import {
 } from '../validation/preconditions/platformPrivilege';
 import type {FieldAnalyserReport} from './fieldAnalyser';
 
+const allowedCharRegExp = new RegExp('^[a-z]+[a-z0-9_]*$');
+
 export const listAllFieldsFromOrg = async (
   client: PlatformClient,
   page = 0,
@@ -52,6 +54,5 @@ export const createFieldsFromReport = async (
 };
 
 export const isFieldNameValid = (fieldName: string): boolean => {
-  const allowedChar = new RegExp('^[a-z]+[a-z0-9_]*$');
-  return allowedChar.test(fieldName.toLowerCase());
+  return allowedCharRegExp.test(fieldName.toLowerCase());
 };

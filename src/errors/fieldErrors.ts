@@ -47,7 +47,7 @@ ${unsupportedFields.reduce(
   (prev: string, curr: string) => (prev += `  • ${curr}\n`),
   ''
 )}
-Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. The field name must be at least one character long and must start with a lowercase letter.
+Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
     `);
     this.unsupportedFields = unsupportedFields;
   }
