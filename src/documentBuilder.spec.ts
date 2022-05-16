@@ -3,7 +3,7 @@ import {
   GroupSecurityIdentityBuilder,
   UserSecurityIdentityBuilder,
 } from './securityIdentityBuilder';
-import {BuiltInTransformers} from './validation/transformation/builtInTransformers';
+import {BuiltInTransformers} from './validation/transformers/transformer';
 
 describe('DocumentBuilder', () => {
   let docBuilder: DocumentBuilder;

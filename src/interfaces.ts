@@ -1,8 +1,10 @@
 import type {AxiosResponse} from 'axios';
 import type {DocumentBuilder} from './documentBuilder';
-import type {Transformer} from './validation/transformation/transformer';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type {BuiltInTransformers} from './validation/transformation/builtInTransformers';
+import type {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  BuiltInTransformers,
+  Transformer,
+} from './validation/transformers/transformer';
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
@@ -45,6 +47,7 @@ export interface ParseDocumentOptions {
    */
   fieldNameTransformer?: Transformer;
 }
+
 export interface ConcurrentProcessing {
   /**
    * The maximum number of requests to send concurrently to the Coveo platform.
