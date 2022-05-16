@@ -1,4 +1,5 @@
 export * from './document';
+export * from './errors';
 export {Source} from './source/source';
 export {PushSource} from './source/push';
 export {CatalogSource} from './source/catalog';
