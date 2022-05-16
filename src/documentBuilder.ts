@@ -4,8 +4,10 @@ import {CompressionType, Document, Metadata, MetadataValue} from './document';
 import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 import {isFieldNameValid} from './fieldAnalyser/fieldUtils';
 import {UnsupportedFieldError} from './errors/fieldErrors';
-import {BuiltInTransformers} from './validation/transformation/builtInTransformers';
-import type {Transformer} from './validation/transformation/transformer';
+import {
+  BuiltInTransformers,
+  Transformer,
+} from './validation/transformers/transformer';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -143,7 +145,7 @@ export class DocumentBuilder {
     value: MetadataValue,
     keyTransformer: Transformer = BuiltInTransformers.identity
   ) {
-    key = keyTransformer.transform(key);
+    key = keyTransformer(key);
     const reservedKeyNames = [
       'compressedBinaryData',
       'compressedBinaryDataFileId',

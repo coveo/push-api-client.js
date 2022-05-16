@@ -9,7 +9,7 @@ import {
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {UploadStrategy} from '../uploadStrategy';
-import {BuiltInTransformers} from '../validation/transformation/builtInTransformers';
+import {BuiltInTransformers} from '../validation/transformers/transformer';
 import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 const defaultBatchOptions: Required<BatchUpdateDocumentsOptions> = {
