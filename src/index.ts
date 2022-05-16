@@ -1,5 +1,5 @@
 export * from './document';
-export * from './errors';
+export * as errors from './errors';
 export * from './validation/transformers/transformer';
 export {Source} from './source/source';
 export {PushSource} from './source/push';
