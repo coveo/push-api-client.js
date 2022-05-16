@@ -1,4 +1,4 @@
-import {Transformer} from './transformer';
+export type Transformer = (str: string) => string;
 
 class InternalBuiltInTransformers {
   /**
@@ -9,15 +9,14 @@ class InternalBuiltInTransformers {
    * - `Field-With=Special+Characters` => `fieldwithspecialcharacters`
    * - `01-Numeric-Field-#01` => `numericfield01`
    */
-  public get toLowerCase() {
-    return new Transformer((field: string) =>
+  public get toLowerCase(): Transformer {
+    return (field: string) =>
       field
         .toLowerCase()
         // Remove non-alpha numeric
         .replace(/[^a-z0-9]/gi, '')
         // Remove any leading number
-        .replace(/^[0-9]+/g, '')
-    );
+        .replace(/^[0-9]+/g, '');
   }
   /**
    * A transformer that removes leading numbers and replaces every non-alphanumeric characters with underscores
@@ -27,8 +26,8 @@ class InternalBuiltInTransformers {
    * - `Field-With=Special+Characters` => `field_with_special_characters`
    * - `01-Numeric-Field-#01` => `numeric_field_01`
    */
-  public get toSnakeCase() {
-    return new Transformer((field: string) =>
+  public get toSnakeCase(): Transformer {
+    return (field: string) =>
       field
         .toLowerCase()
         // Replace non-alpha numeric with underscores
@@ -38,8 +37,7 @@ class InternalBuiltInTransformers {
         // Remove consecutive underscores
         .replace(/_{2,}/g, '_')
         // Remove any trailing underscore
-        .replace(/_$/g, '')
-    );
+        .replace(/_$/g, '');
   }
   /**
    * A transformer that does nothing but return the string supplied to it.
@@ -50,8 +48,8 @@ class InternalBuiltInTransformers {
    * - `foo` => `foo`
    * - `bar` => `bar`
    */
-  public get identity() {
-    return new Transformer((field: string) => field);
+  public get identity(): Transformer {
+    return (field: string) => field;
   }
 }
 
