@@ -1,10 +1,9 @@
 import type {AxiosResponse} from 'axios';
 import type {DocumentBuilder} from './documentBuilder';
-import type {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  BuiltInTransformers,
-  Transformer,
-} from './validation/transformers/transformer';
+import type {Transformer} from './validation/transformers/transformer';
+// Used for Documentation.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type {BuiltInTransformers} from './validation/transformers/transformer';
 
 export interface BatchUpdateDocuments {
   addOrUpdate: DocumentBuilder[];
@@ -52,7 +51,7 @@ export interface ConcurrentProcessing {
    * The maximum number of requests to send concurrently to the Coveo platform.
    * Increasing this value will increase the speed at which documents are pushed but will also consume more memory.
    *
-   * The default value is set to 10.
+   * @default 10
    */
   maxConcurrent?: number;
 }
