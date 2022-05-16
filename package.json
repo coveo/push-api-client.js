@@ -3,6 +3,28 @@
   "version": "2.1.19",
   "description": "Push API client",
   "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/definitions/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/definitions/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./errors": {
+      "import": {
+        "types": "./dist/definitions/errors/index.d.ts",
+        "default": "./dist/errors/index.js"
+      },
+      "require": {
+        "types": "./dist/definitions/errors/index.d.ts",
+        "default": "./dist/errors/index.js"
+      }
+    }
+  },
   "files": [
     "dist"
   ],
