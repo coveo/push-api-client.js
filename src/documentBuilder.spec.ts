@@ -64,6 +64,18 @@ describe('DocumentBuilder', () => {
     }).toThrowErrorMatchingSnapshot();
   });
 
+  it('should throw error for invalid metadata values even after transformation', () => {
+    const poorTransformer = (text: string) => text.replace(/[\W_]+/g, '*');
+    expect(() => {
+      docBuilder
+        .withMetadata(
+          {'f-o=o': 'bar', '<buzz>': ['bazz', 'bozz']},
+          poorTransformer
+        )
+        .marshal();
+    }).toThrowErrorMatchingSnapshot();
+  });
+
   describe.each([
     {
       title: 'default',
