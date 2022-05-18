@@ -3,6 +3,7 @@ import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
 import {DocumentBuilder} from '../documentBuilder';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
+import {noop} from '../help/function';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
@@ -19,6 +20,7 @@ const defaultBatchFromFileOptions: Required<BatchUpdateDocumentsFromFiles> = {
   ...defaultBatchOptions,
   fieldNameTransformer: BuiltInTransformers.identity,
   maxConcurrent: 10,
+  callback: noop,
 };
 
 export async function uploadDocument(

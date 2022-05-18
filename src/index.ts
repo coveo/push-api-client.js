@@ -18,3 +18,6 @@ export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
 export {PlatformEnvironment, Region, PlatformUrlOptions} from './environment';
 export {SourceVisibility} from '@coveord/platform-client';
+
+// exports for commerce recipe (phase-0)
+export {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';

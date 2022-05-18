@@ -27,17 +27,27 @@ import {ParseDocumentOptions} from '../interfaces';
 export const parseAndGetDocumentBuilderFromJSONDocument = (
   documentPath: PathLike,
   options?: ParseDocumentOptions
-) => {
+): DocumentBuilder[] => {
   ensureFileIntegrity(documentPath);
 
   const fileContent = safeJSONParse(documentPath);
 
+  const executeCallback = (docBuilder: DocumentBuilder) => {
+    if (options?.callback) {
+      options?.callback(docBuilder, documentPath);
+    }
+  };
+
   if (Array.isArray(fileContent)) {
-    return fileContent.map((doc) =>
-      processDocument(doc, documentPath, options)
-    );
+    return fileContent.map((doc) => {
+      const docBuilder = processDocument(doc, documentPath, options);
+      executeCallback(docBuilder);
+      return docBuilder;
+    });
   } else {
-    return [processDocument(fileContent, documentPath, options)];
+    const docBuilder = processDocument(fileContent, documentPath, options);
+    executeCallback(docBuilder);
+    return [docBuilder];
   }
 };
 
