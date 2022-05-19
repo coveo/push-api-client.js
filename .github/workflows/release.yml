@@ -22,10 +22,10 @@ jobs:
         run: |
           git config --global user.email action@github.com
           git config --global user.name GitHub Action
-      - name: Build
-        run: npm run build
       - name: Test
         run: npm run test
+      - name: Build
+        run: npm run build
       - name: Release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
