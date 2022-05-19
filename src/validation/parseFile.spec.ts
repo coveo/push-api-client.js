@@ -66,4 +66,9 @@ describe('parseFile', () => {
       )
     );
   });
+
+  it('should fail on unsupported metadata key', () => {
+    const file = join(pathToStub, 'jsondocuments', 'invalidFields.json');
+    expect(parse(file)).toThrowErrorMatchingSnapshot();
+  });
 });

@@ -28,7 +28,7 @@ export class FieldAnalyser {
   }
 
   /**
-   * Adds a batch of document builders to the analyser
+   * Adds a batch of document builders to the analyser to extract all the missing fields that need to be created in the organization.
    * This method can be called as many time as needed as it will take into consideration document builders previously added.
    *
    * @param {DocumentBuilder[]} batch

@@ -2,7 +2,12 @@ import dayjs = require('dayjs');
 import {createHash} from 'crypto';
 import {CompressionType, Document, Metadata, MetadataValue} from './document';
 import {SecurityIdentityBuilder} from './securityIdentityBuilder';
-
+import {isFieldNameValid} from './fieldAnalyser/fieldUtils';
+import {UnsupportedFieldError} from './errors/fieldErrors';
+import {
+  BuiltInTransformers,
+  Transformer,
+} from './validation/transformers/transformer';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -127,11 +132,20 @@ export class DocumentBuilder {
 
   /**
    * Add a single metadata key and value pair on the document. See {@link Document.metadata}
-   * @param key
-   * @param value
+   * @param {string} key
+   * @param {MetadataValue} value
+   * @param {Transformer} [metadataKeyTransformer=BuiltInTransformers.identity] The {@link Transformer} to apply to the metadata key.
+   * If not specified, no transformation will be applied to the metadata key.
+   *
+   * For a list of built-in transformers, use {@link BuiltInTransformers}.
    * @returns
    */
-  public withMetadataValue(key: string, value: MetadataValue) {
+  public withMetadataValue(
+    key: string,
+    value: MetadataValue,
+    keyTransformer: Transformer = BuiltInTransformers.identity
+  ) {
+    const transformedKey = keyTransformer(key);
     const reservedKeyNames = [
       'compressedBinaryData',
       'compressedBinaryDataFileId',
@@ -144,24 +158,49 @@ export class DocumentBuilder {
     ];
     if (
       reservedKeyNames.some(
-        (reservedKey) => reservedKey.toLowerCase() === key.toLowerCase()
+        (reservedKey) =>
+          reservedKey.toLowerCase() === transformedKey.toLowerCase()
       )
     ) {
-      throw `Cannot use ${key} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
+      throw `Cannot use ${transformedKey} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
+    }
+    if (!isFieldNameValid(transformedKey)) {
+      throw new UnsupportedFieldError([key, transformedKey]);
     }
 
-    this.doc.metadata![key] = value;
+    this.doc.metadata![transformedKey] = value;
     return this;
   }
 
   /**
    * Set metadata on the document. See {@link Document.metadata}
-   * @param metadata
+   * @param {Metadata} metadata
+   * @param {Transformer} [metadataKeyTransformer=BuiltInTransformers.identity] The {@link Transformer} to apply to all the document metadata keys.
+   * If not specified, no transformation will be applied to the metadata keys.
+   *
+   * For a list of built-in transformers, use {@link BuiltInTransformers}.
    * @returns
    */
-  public withMetadata(metadata: Metadata) {
+  public withMetadata(
+    metadata: Metadata,
+    metadataKeyTransformer: Transformer = BuiltInTransformers.identity
+  ) {
+    const invalidKeys: [string, string][] = [];
+
     for (const [k, v] of Object.entries(metadata)) {
-      this.withMetadataValue(k, v);
+      try {
+        this.withMetadataValue(k, v, metadataKeyTransformer);
+      } catch (error) {
+        if (error instanceof UnsupportedFieldError) {
+          invalidKeys.push(...error.unsupportedFields);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (invalidKeys.length > 0) {
+      throw new UnsupportedFieldError(...invalidKeys);
     }
     return this;
   }

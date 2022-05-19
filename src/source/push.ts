@@ -23,8 +23,6 @@ import {
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
-import {createFields} from '../fieldAnalyser/fieldUtils';
 import {SecurityIdentity} from './securityIdenty';
 import {
   BatchUpdateDocuments,
@@ -39,6 +37,7 @@ import {
 } from './documentUploader';
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -282,12 +281,8 @@ export class PushSource {
   }
 
   public async createFields(analyser: FieldAnalyser) {
-    const {fields, inconsistencies} = analyser.report();
-
-    if (inconsistencies.size > 0) {
-      throw new FieldTypeInconsistencyError(inconsistencies);
-    }
-    await createFields(this.platformClient, fields);
+    const report = analyser.report();
+    await createFieldsFromReport(this.platformClient, report);
   }
 
   private urlBuilder(sourceId: string) {

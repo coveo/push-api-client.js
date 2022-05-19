@@ -3,6 +3,7 @@ import {
   BatchUpdateDocuments,
   UploadBatchCallbackData,
   ConcurrentProcessing,
+  ParseDocumentOptions,
 } from '../interfaces';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
@@ -33,7 +34,7 @@ export class FileConsumer {
     private processingConfig: Required<ConcurrentProcessing>
   ) {}
 
-  public async consume(files: string[]) {
+  public async consume(files: string[], options?: ParseDocumentOptions) {
     const fileNames = files.map((path) => basename(path));
     const {chunksToUpload, close} = this.splitByChunkAndUpload(fileNames);
 
@@ -46,8 +47,10 @@ export class FileConsumer {
     // parallelize uploads across multiple files
     const fileGenerator = function* () {
       for (const filePath of files.values()) {
-        const docBuilders =
-          parseAndGetDocumentBuilderFromJSONDocument(filePath);
+        const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(
+          filePath,
+          options
+        );
         yield* docBuilderGenerator(docBuilders);
       }
     };

@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parseFile should fail on unsupported metadata key 1`] = `
+"
+The following field names are still invalid after transformation:
+  • <empty field name> --> <empty field name>
+  • 0invalid-field --> 0invalid-field
+  • poster-a --> poster-a
+
+Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
+    "
+`;

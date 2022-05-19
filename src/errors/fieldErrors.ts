@@ -37,3 +37,26 @@ export class InvalidPermanentId extends PushApiClientBaseError {
     `);
   }
 }
+export class UnsupportedFieldError extends PushApiClientBaseError {
+  public name = 'Unsupported field Error';
+  public static emptyFieldNameReplacer = '<empty field name>';
+  public readonly unsupportedFields: [string, string][];
+  public constructor(...unsupportedFields: [string, string][]) {
+    super();
+    this.unsupportedFields = unsupportedFields;
+    this.message = `
+The following field names are still invalid after transformation:
+${this.formattedFieldList}
+Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
+    `;
+  }
+
+  private get formattedFieldList() {
+    const replacer = UnsupportedFieldError.emptyFieldNameReplacer;
+    return this.unsupportedFields.reduce(
+      (prev: string, curr: [string, string]) =>
+        (prev += `  • ${curr[0] || replacer} --> ${curr[1] || replacer}\n`),
+      ''
+    );
+  }
+}

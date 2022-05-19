@@ -2,22 +2,22 @@ import PlatformClient from '@coveord/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
 import {DocumentBuilder} from '../documentBuilder';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
-import {createFields as create} from '../fieldAnalyser/fieldUtils';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {
   BatchUpdateDocuments,
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
 import {UploadStrategy} from '../uploadStrategy';
+import {BuiltInTransformers} from '../validation/transformers/transformer';
 import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 const defaultBatchOptions: Required<BatchUpdateDocumentsOptions> = {
   createFields: true,
 };
-
 const defaultBatchFromFileOptions: Required<BatchUpdateDocumentsFromFiles> = {
   ...defaultBatchOptions,
+  fieldNameTransformer: BuiltInTransformers.identity,
   maxConcurrent: 10,
 };
 
@@ -26,21 +26,17 @@ export async function uploadDocument(
   docBuilder: DocumentBuilder,
   addURL: URL,
   documentsAxiosConfig: AxiosRequestConfig,
-  options?: BatchUpdateDocumentsFromFiles
+  options?: BatchUpdateDocumentsOptions
 ) {
-  const {createFields}: Required<BatchUpdateDocumentsFromFiles> = {
+  const {createFields}: Required<BatchUpdateDocumentsOptions> = {
     ...defaultBatchFromFileOptions,
     ...options,
   };
   if (createFields) {
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add([docBuilder]);
-    const {fields, inconsistencies} = analyser.report();
-    if (inconsistencies.size > 0) {
-      throw new FieldTypeInconsistencyError(inconsistencies);
-    }
-
-    await create(platformClient, fields);
+    const report = analyser.report();
+    await createFieldsFromReport(platformClient, report);
   }
 
   const doc = docBuilder.build();
@@ -65,13 +61,8 @@ export async function uploadBatch(
   if (createFields) {
     const analyser = new FieldAnalyser(platformClient);
     await analyser.add(batch.addOrUpdate);
-    const {fields, inconsistencies} = analyser.report();
-
-    if (inconsistencies.size > 0) {
-      throw new FieldTypeInconsistencyError(inconsistencies);
-    }
-
-    await create(platformClient, fields);
+    const report = analyser.report();
+    await createFieldsFromReport(platformClient, report);
   }
   const res = await strategy.upload(batch);
   await strategy.postUpload?.();

@@ -21,18 +21,23 @@ import {
   NotAJsonFileError,
 } from '../errors/validatorErrors';
 import {RequiredKeyValidator} from './requiredKeyValidator';
+import {Metadata} from '../document';
+import {ParseDocumentOptions} from '../interfaces';
 
 export const parseAndGetDocumentBuilderFromJSONDocument = (
-  documentPath: PathLike
+  documentPath: PathLike,
+  options?: ParseDocumentOptions
 ) => {
   ensureFileIntegrity(documentPath);
 
   const fileContent = safeJSONParse(documentPath);
 
   if (Array.isArray(fileContent)) {
-    return fileContent.map((doc) => processDocument(doc, documentPath));
+    return fileContent.map((doc) =>
+      processDocument(doc, documentPath, options)
+    );
   } else {
-    return [processDocument(fileContent, documentPath)];
+    return [processDocument(fileContent, documentPath, options)];
   }
 };
 
@@ -49,7 +54,8 @@ const safeJSONParse = (documentPath: PathLike) => {
 
 const processDocument = (
   fileContent: Record<string, PrimitivesValues>,
-  documentPath: PathLike
+  documentPath: PathLike,
+  options?: ParseDocumentOptions
 ) => {
   const caseInsensitiveDoc = new CaseInsensitiveDocument(fileContent);
 
@@ -64,7 +70,7 @@ const processDocument = (
       documentBuilder,
       documentPath
     );
-    processMetadata(caseInsensitiveDoc, documentBuilder);
+    processMetadata(caseInsensitiveDoc, documentBuilder, options);
   } catch (error) {
     if (typeof error === 'string') {
       throw new InvalidDocument(documentPath, error);
@@ -225,14 +231,14 @@ const processSecurityIdentities = (
 
 const processMetadata = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
-  documentBuilder: DocumentBuilder
+  documentBuilder: DocumentBuilder,
+  options?: ParseDocumentOptions
 ) => {
+  const metadata: Metadata = {};
   Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
-    documentBuilder.withMetadataValue(
-      k,
-      v! as Extract<PrimitivesValues, MetadataValue>
-    );
+    metadata[k] = v! as Extract<PrimitivesValues, MetadataValue>;
   });
+  documentBuilder.withMetadata(metadata, options?.fieldNameTransformer);
 };
 
 const ensureFileIntegrity = (documentPath: PathLike) => {

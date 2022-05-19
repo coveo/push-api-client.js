@@ -312,8 +312,8 @@ describe('PushSource', () => {
       );
     });
 
-    it('should throw an error if the path is invalid', () => {
-      expect(() =>
+    it('should throw an error if the path is invalid', async () => {
+      await expect(() =>
         source
           .batchUpdateDocumentsFromFiles(
             'the_id',
@@ -419,8 +419,8 @@ describe('PushSource', () => {
         ]);
         mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
       });
-      it('should throw', () => {
-        expect(() =>
+      it('should throw', async () => {
+        await expect(() =>
           source.batchUpdateDocuments('the_id', batch)
         ).rejects.toThrow(FieldTypeInconsistencyError);
       });
@@ -455,6 +455,25 @@ describe('PushSource', () => {
       it('should not create fields', async () => {
         source.batchUpdateDocuments('the_id', batch);
         expect(mockCreateField).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when field names should be transformed', () => {
+      beforeEach(() => {
+        const inconsistencies = new Inconsistencies();
+        mockAnalyserReport.mockReturnValueOnce({
+          fields: [{name: 'transformed_field', type: FieldTypes.STRING}],
+          inconsistencies,
+        });
+      });
+
+      describe('when field normalization is enabled', () => {
+        it('should create transformed fields', async () => {
+          await source.batchUpdateDocuments('the_id', batch);
+          expect(mockCreateField).toHaveBeenCalledWith([
+            {name: 'transformed_field', type: FieldTypes.STRING},
+          ]);
+        });
       });
     });
   });

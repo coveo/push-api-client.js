@@ -1,5 +1,5 @@
 import PlatformClient from '@coveord/platform-client';
-import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
+import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {FileConsumer} from '../help/fileConsumer';
 import {
@@ -9,7 +9,6 @@ import {
   FieldAnalyser,
   SuccessfulUploadCallback,
 } from '../index';
-import {createFields as create} from '../fieldAnalyser/fieldUtils';
 import type {UploadStrategy} from '../uploadStrategy';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
@@ -33,18 +32,18 @@ export class BatchUploadDocumentsFromFilesReturn {
       if (options.createFields) {
         const analyser = new FieldAnalyser(platformClient);
         for (const filePath of files.values()) {
-          const docBuilders =
-            parseAndGetDocumentBuilderFromJSONDocument(filePath);
+          const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(
+            filePath,
+            options
+          );
           await analyser.add(docBuilders);
         }
-        const {fields, inconsistencies} = analyser.report();
 
-        if (inconsistencies.size > 0) {
-          throw new FieldTypeInconsistencyError(inconsistencies);
-        }
-        await create(platformClient, fields);
+        const report = analyser.report();
+        await createFieldsFromReport(platformClient, report);
       }
-      await this.consumer.consume(files);
+
+      await this.consumer.consume(files, options);
       await strategy.postUpload?.();
     }).bind(this);
   }
