@@ -1,6 +1,6 @@
 export * from './document';
-export * as errors from './errors';
 export * from './validation/transformers/transformer';
+export * as errors from './errors';
 export {Source} from './source/source';
 export {PushSource} from './source/push';
 export {CatalogSource} from './source/catalog';

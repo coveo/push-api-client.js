@@ -145,7 +145,7 @@ export class DocumentBuilder {
     value: MetadataValue,
     keyTransformer: Transformer = BuiltInTransformers.identity
   ) {
-    key = keyTransformer(key);
+    const transformedKey = keyTransformer(key);
     const reservedKeyNames = [
       'compressedBinaryData',
       'compressedBinaryDataFileId',
@@ -158,16 +158,17 @@ export class DocumentBuilder {
     ];
     if (
       reservedKeyNames.some(
-        (reservedKey) => reservedKey.toLowerCase() === key.toLowerCase()
+        (reservedKey) =>
+          reservedKey.toLowerCase() === transformedKey.toLowerCase()
       )
     ) {
-      throw `Cannot use ${key} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
+      throw `Cannot use ${transformedKey} as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names`;
     }
-    if (!isFieldNameValid(key)) {
-      throw new UnsupportedFieldError(key);
+    if (!isFieldNameValid(transformedKey)) {
+      throw new UnsupportedFieldError([key, transformedKey]);
     }
 
-    this.doc.metadata![key] = value;
+    this.doc.metadata![transformedKey] = value;
     return this;
   }
 
@@ -184,7 +185,7 @@ export class DocumentBuilder {
     metadata: Metadata,
     metadataKeyTransformer: Transformer = BuiltInTransformers.identity
   ) {
-    const invalidKeys: string[] = [];
+    const invalidKeys: [string, string][] = [];
 
     for (const [k, v] of Object.entries(metadata)) {
       try {

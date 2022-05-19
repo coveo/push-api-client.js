@@ -2,9 +2,20 @@
 
 exports[`DocumentBuilder should throw error for invalid metadata values 1`] = `
 "
-The following field names are invalid:
-  • f-o=o
-  • <buzz>
+The following field names are still invalid after transformation:
+  • f-o=o --> f-o=o
+  • <buzz> --> <buzz>
+
+Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
+    "
+`;
+
+
+exports[`DocumentBuilder should throw error for invalid metadata values even after transformation 1`] = `
+"
+The following field names are still invalid after transformation:
+  • f-o=o --> f*o*o
+  • <buzz> --> *buzz*
 
 Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
     "
