@@ -6,4 +6,5 @@ module.exports = {
   clearMocks: true,
   silent: true,
   testTimeout: 60e3,
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 };
