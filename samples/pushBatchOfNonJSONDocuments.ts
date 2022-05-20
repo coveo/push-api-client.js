@@ -6,7 +6,15 @@ import {
 import {readFileSync} from 'node:fs';
 import {join, parse} from 'node:path';
 import {gzipSync} from 'node:zlib';
-
+/*
+ * By default, the maximal size of a file is 2Mb. To increase it, uncomment the following comment block,
+ * and set the value of `maxBodyLength` to the value of your choice. If none of your files exceed the 2Mb
+ * mark, then you have nothing to do.
+ */
+/* 
+ * import axios from 'axios';
+ * axios.defaults.maxBodyLength = 1e99 // or the value of your choice.
+ */
 async function main() {
   const source = new PushSource('MY_API_KEY', 'MY_ORG_ID');
   source.setSourceStatus('MY_SOURCE_ID', 'REFRESH');
