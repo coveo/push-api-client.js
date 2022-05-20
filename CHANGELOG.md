@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/coveo/push-api-client.js/compare/v2.1.21...v2.2.0) (2022-05-20)
+
+
+### Features
+
+* handle unsupported field names ([#139](https://github.com/coveo/push-api-client.js/issues/139)) ([6e67aed](https://github.com/coveo/push-api-client.js/commit/6e67aed75e7ab58fdc782f101057c14941f713a2))
+
 ### [2.1.21](https://github.com/coveo/push-api-client.js/compare/v2.1.20...v2.1.21) (2022-05-16)
 
 ### [2.1.20](https://github.com/coveo/push-api-client.js/compare/v2.1.19...v2.1.20) (2022-05-13)
