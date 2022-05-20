@@ -1,4 +1,5 @@
 import type {AxiosResponse} from 'axios';
+import {PathLike} from 'fs';
 import type {DocumentBuilder} from './documentBuilder';
 import type {Transformer} from './validation/transformers/transformer';
 // Used for Documentation.
@@ -45,6 +46,10 @@ export interface ParseDocumentOptions {
    * @default BuiltInTransformers.identity
    */
   fieldNameTransformer?: Transformer;
+  /**
+   * Callback to execute everytime a new {@link DocumentBuilder} is created
+   */
+  callback?: (docBuilder: DocumentBuilder, documentPath: PathLike) => void;
 }
 export interface ConcurrentProcessing {
   /**
