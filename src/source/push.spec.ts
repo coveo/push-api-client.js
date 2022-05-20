@@ -262,7 +262,7 @@ describe('PushSource', () => {
             expect.objectContaining({documentId: 'the_uri_3'}),
           ]),
         }),
-        {headers: {foo: 'bar'}}
+        {headers: {foo: 'bar'}, maxBodyLength: 256e3}
       );
     });
 
@@ -313,6 +313,7 @@ describe('PushSource', () => {
           headers: {
             foo: 'bar',
           },
+          maxBodyLength: 256e3,
         }
       );
     });

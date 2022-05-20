@@ -27,7 +27,7 @@ export const uploadContentToFileContainer = async (
     .catch((err) => {
       if (isMaxBodyLengthExceededError(err)) {
         err.message +=
-          '\nTry setting and/or increasing `axios.defaults.maxBodyLength`.';
+          '\nFile size are limited to 256 MB.\nSee <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.';
       }
       throw err;
     });
@@ -38,6 +38,7 @@ export const getFileContainerAxiosConfig = (
 ): AxiosRequestConfig => {
   return {
     headers: fileContainer.requiredHeaders,
+    maxBodyLength: 256e3,
   };
 };
 

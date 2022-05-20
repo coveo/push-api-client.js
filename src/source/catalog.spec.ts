@@ -144,7 +144,7 @@ describe('CatalogSource - Push', () => {
             expect.objectContaining({documentId: 'the_uri_3'}),
           ]),
         }),
-        {headers: {foo: 'bar'}}
+        {headers: {foo: 'bar'}, maxBodyLength: 256e3}
       );
     });
 
@@ -195,6 +195,7 @@ describe('CatalogSource - Push', () => {
           headers: {
             foo: 'bar',
           },
+          maxBodyLength: 256e3,
         }
       );
     });
