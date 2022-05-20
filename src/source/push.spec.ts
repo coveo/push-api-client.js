@@ -47,6 +47,10 @@ const doAxiosMockPost = () => {
   });
 };
 
+const doMockAxiosPut = () => {
+  mockAxios.put.mockImplementation(() => Promise.resolve());
+};
+
 const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
@@ -76,6 +80,7 @@ describe('PushSource', () => {
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
+    doMockAxiosPut();
   });
 
   beforeEach(() => {

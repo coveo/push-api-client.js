@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`#uploadContentToFileContainer when an MaxBodyLengthExceededError is thrown should give some info on how to fix it 1`] = `
+"some initial message
+Try setting and/or increasing \`axios.defaults.maxBodyLength\`."
+`;
