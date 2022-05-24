@@ -43,6 +43,10 @@ const doAxiosMockOpenStream = () => ({
   },
 });
 
+const doMockAxiosPut = () => {
+  mockAxios.put.mockImplementation(() => Promise.resolve());
+};
+
 const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
@@ -118,6 +122,7 @@ describe('CatalogSource - Stream', () => {
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
+    doMockAxiosPut();
   });
 
   beforeEach(() => {
@@ -161,6 +166,7 @@ describe('CatalogSource - Stream', () => {
           headers: {
             foo: 'bar',
           },
+          maxBodyLength: 5e3,
         }
       );
     });
@@ -206,6 +212,7 @@ describe('CatalogSource - Stream', () => {
             headers: {
               foo: 'bar',
             },
+            maxBodyLength: 5e3,
           }
         );
       });

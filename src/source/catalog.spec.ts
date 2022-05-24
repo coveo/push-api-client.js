@@ -53,6 +53,10 @@ const doAxiosMockPost = () => {
   });
 };
 
+const doMockAxiosPut = () => {
+  mockAxios.put.mockImplementation(() => Promise.resolve());
+};
+
 const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(
     () =>
@@ -83,6 +87,7 @@ describe('CatalogSource - Push', () => {
   beforeAll(() => {
     doMockPlatformClient();
     doMockFieldAnalyser();
+    doMockAxiosPut();
   });
 
   beforeEach(() => {
@@ -139,7 +144,7 @@ describe('CatalogSource - Push', () => {
             expect.objectContaining({documentId: 'the_uri_3'}),
           ]),
         }),
-        {headers: {foo: 'bar'}}
+        {headers: {foo: 'bar'}, maxBodyLength: 5e3}
       );
     });
 
@@ -190,6 +195,7 @@ describe('CatalogSource - Push', () => {
           headers: {
             foo: 'bar',
           },
+          maxBodyLength: 5e3,
         }
       );
     });

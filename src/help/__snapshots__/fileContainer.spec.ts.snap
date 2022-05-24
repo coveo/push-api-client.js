@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`#uploadContentToFileContainer when an MaxBodyLengthExceededError is thrown should give some info on how to fix it 1`] = `
+"some initial message
+File size is limited to 5 MB.
+See <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>."
+`;
