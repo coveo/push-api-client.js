@@ -45,7 +45,7 @@ describe('#uploadContentToFileContainer', () => {
         headers: {
           foo: 'bar',
         },
-        maxBodyLength: 256e3,
+        maxBodyLength: 5e3,
       }
     );
   });
