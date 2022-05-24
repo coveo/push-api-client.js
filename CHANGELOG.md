@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/coveo/push-api-client.js/compare/v2.3.1...v2.4.0) (2022-05-24)
+
+
+### Features
+
+* **axios:** handle MaxBodyLengthExceededError ([#151](https://github.com/coveo/push-api-client.js/issues/151)) ([9aa55e0](https://github.com/coveo/push-api-client.js/commit/9aa55e0d6976ff0937747994609d4a546b08b864))
+
 ### [2.3.1](https://github.com/coveo/push-api-client.js/compare/v2.3.0...v2.3.1) (2022-05-23)
 
 ## [2.3.0](https://github.com/coveo/push-api-client.js/compare/v2.2.0...v2.3.0) (2022-05-20)
