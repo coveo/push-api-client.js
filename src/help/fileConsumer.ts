@@ -20,7 +20,7 @@ export type FailedUploadCallback = (
  * Util class to help injesting documents through a list of files and uploading generated document batches.
  */
 export class FileConsumer {
-  public static maxContentLength = 5 * 1024 * 1024;
+  private static maxContentLength = 5 * 1024 * 1024;
   private cbSuccess: SuccessfulUploadCallback = () => {};
   private cbFail: FailedUploadCallback = () => {};
 
