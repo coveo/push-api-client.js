@@ -3,7 +3,7 @@ export {Region} from '@coveord/platform-client';
 
 export enum PlatformEnvironment {
   Dev = 'dev',
-  QA = 'qa',
+  Stg = 'stg',
   Hipaa = 'hipaa',
   Prod = 'prod',
 }
@@ -37,8 +37,8 @@ export function castEnvironmentToPlatformClient(
   switch (e) {
     case 'dev':
       return Environment.dev;
-    case 'qa':
-      return Environment.staging;
+    case 'stg':
+      return Environment.stg;
     case 'prod':
       return Environment.prod;
     case 'hipaa':
