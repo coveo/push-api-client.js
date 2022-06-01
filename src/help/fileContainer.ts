@@ -1,6 +1,7 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
 import {BatchUpdateDocuments} from '../interfaces';
+import {FileConsumer} from './fileConsumer';
 
 export interface FileContainerResponse {
   uploadUri: string;
@@ -36,9 +37,10 @@ export const uploadContentToFileContainer = async (
 export const getFileContainerAxiosConfig = (
   fileContainer: FileContainerResponse
 ): AxiosRequestConfig => {
+  const buffer = 1e6; // One megabyte buffer
   return {
     headers: fileContainer.requiredHeaders,
-    maxBodyLength: 5e3,
+    maxBodyLength: FileConsumer.maxContentLength + buffer,
   };
 };
 
