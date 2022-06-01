@@ -156,7 +156,7 @@ describe('PushSource', () => {
 
   it('should call axios on add document with right region and environment', async () => {
     await new PushSource('the_key', 'the_org', {
-      environment: PlatformEnvironment.QA,
+      environment: PlatformEnvironment.Stg,
       region: Region.EU,
     }).addOrUpdateDocument(
       'the_id',
@@ -165,7 +165,7 @@ describe('PushSource', () => {
     );
 
     expect(mockAxios.put).toHaveBeenCalledWith(
-      'https://apiqa-eu.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
+      'https://apistg-eu.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri',
       expect.objectContaining({title: 'the_title'}),
       expectedDocumentsHeaders
     );
