@@ -1,7 +1,6 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
 import {BatchUpdateDocuments} from '../interfaces';
-import {FileConsumer} from './fileConsumer';
 
 export interface FileContainerResponse {
   uploadUri: string;
@@ -28,7 +27,7 @@ export const uploadContentToFileContainer = async (
     .catch((err) => {
       if (isMaxBodyLengthExceededError(err)) {
         err.message +=
-          '\nFile size is limited to 5 MB.\nSee <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.';
+          '\nFile container size limit exceeded.\nSee <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.';
       }
       throw err;
     });
@@ -37,10 +36,9 @@ export const uploadContentToFileContainer = async (
 export const getFileContainerAxiosConfig = (
   fileContainer: FileContainerResponse
 ): AxiosRequestConfig => {
-  const buffer = 1e6; // One megabyte buffer
   return {
     headers: fileContainer.requiredHeaders,
-    maxBodyLength: FileConsumer.maxContentLength + buffer,
+    maxBodyLength: 256e6,
   };
 };
 

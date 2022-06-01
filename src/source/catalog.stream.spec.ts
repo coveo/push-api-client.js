@@ -166,7 +166,7 @@ describe('CatalogSource - Stream', () => {
           headers: {
             foo: 'bar',
           },
-          maxBodyLength: 5e3,
+          maxBodyLength: 256e6,
         }
       );
     });
@@ -212,7 +212,7 @@ describe('CatalogSource - Stream', () => {
             headers: {
               foo: 'bar',
             },
-            maxBodyLength: 5e3,
+            maxBodyLength: 256e6,
           }
         );
       });
