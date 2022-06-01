@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.4.4](https://github.com/coveo/push-api-client.js/compare/v2.4.3...v2.4.4) (2022-06-01)
+
+
+### Bug Fixes
+
+* replace qa by stg ([#157](https://github.com/coveo/push-api-client.js/issues/157)) ([c1ea842](https://github.com/coveo/push-api-client.js/commit/c1ea842a9a6f9ff945f68b625e6ef94ab8c7ace1))
+
 ### [2.4.3](https://github.com/coveo/push-api-client.js/compare/v2.4.2...v2.4.3) (2022-05-30)
 
 ### [2.4.2](https://github.com/coveo/push-api-client.js/compare/v2.4.1...v2.4.2) (2022-05-30)
