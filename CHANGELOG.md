@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.4.5](https://github.com/coveo/push-api-client.js/compare/v2.4.4...v2.4.5) (2022-06-02)
+
+
+### Bug Fixes
+
+* inscrease axios body size ([#158](https://github.com/coveo/push-api-client.js/issues/158)) ([e24daeb](https://github.com/coveo/push-api-client.js/commit/e24daeb79d5dca9145a51e35f1da465bf6aea27b))
+
 ### [2.4.4](https://github.com/coveo/push-api-client.js/compare/v2.4.3...v2.4.4) (2022-06-01)
 
 
