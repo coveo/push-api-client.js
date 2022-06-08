@@ -11,7 +11,7 @@ export interface UploadStrategy {
 
   /**
    * Async operation to run before starting the upload
-   * This can be useful if a task should to run before the parallel uploads
+   * This can be useful if a task should run before the parallel uploads
    *
    * @memberof UploadStrategy
    */
