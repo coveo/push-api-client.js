@@ -8,6 +8,8 @@ import {join} from 'path';
 import {cwd} from 'process';
 import {CatalogSource} from './catalog';
 import {FieldAnalyser} from '..';
+import {generateBatmans} from '../__stub__/largeDocuments/documentGenerator';
+import {rmSync, writeFileSync, mkdirSync} from 'fs';
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
@@ -72,7 +74,7 @@ const doMockFieldAnalyser = () => {
   );
 };
 
-const mockAxiosForStreamCalls = () => {
+const mockSuccessAxiosCalls = () => {
   mockAxios.post.mockImplementation((url: string) => {
     if (url.match(/chunk/)) {
       return Promise.resolve(doAxiosMockFileContainerResponse());
@@ -84,11 +86,19 @@ const mockAxiosForStreamCalls = () => {
   });
 };
 
-const basicStreamExpectations = () => {
-  it('should open a stream', async () => {
-    expect(mockAxios.post).toHaveReturnedTimes(3);
+const mockFailedChunkAxiosCalls = (err: string) => {
+  mockAxios.post.mockImplementation((url: string) => {
+    if (url.match(/chunk/)) {
+      return Promise.reject({message: err});
+    }
+    if (url.match(/stream\/open/)) {
+      return Promise.resolve(doAxiosMockOpenStream());
+    }
+    return Promise.resolve({data: {}});
   });
+};
 
+const basicStreamExpectations = () => {
   it('should open a stream', async () => {
     expect(mockAxios.post).toHaveBeenNthCalledWith(
       1,
@@ -108,8 +118,7 @@ const basicStreamExpectations = () => {
   });
 
   it('should close a stream', async () => {
-    expect(mockAxios.post).toHaveBeenNthCalledWith(
-      3,
+    expect(mockAxios.post).toHaveBeenLastCalledWith(
       'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/stream/the_stream_id/close',
       {},
       expectedDocumentsHeaders
@@ -132,7 +141,7 @@ describe('CatalogSource - Stream', () => {
 
   describe('when streaming data from a batch', () => {
     beforeEach(async () => {
-      mockAxiosForStreamCalls();
+      mockSuccessAxiosCalls();
       await source
         .batchStreamDocumentsFromFiles(
           'the_id',
@@ -172,9 +181,39 @@ describe('CatalogSource - Stream', () => {
     });
   });
 
+  describe('when streaming large amount of data', () => {
+    beforeAll(() => {
+      mkdirSync(join(pathToStub, 'batman_temp_dir'));
+      writeFileSync(
+        join(pathToStub, 'batman_temp_dir', 'mucho_batmans.json'),
+        JSON.stringify(generateBatmans(10e3), null, 2) // Enough batmans so they can be sent in multiple chunks
+      );
+    });
+
+    beforeEach(async () => {
+      mockSuccessAxiosCalls();
+      await source
+        .batchStreamDocumentsFromFiles(
+          'the_id',
+          [join(pathToStub, 'batman_temp_dir', 'mucho_batmans.json')],
+          {createFields: false}
+        )
+        .batch();
+    });
+
+    afterAll(() => {
+      rmSync(join(pathToStub, 'batman_temp_dir'), {
+        recursive: true,
+      });
+      mockAxios.post.mockReset();
+    });
+
+    basicStreamExpectations();
+  });
+
   describe('when streaming data from local files', () => {
     beforeEach(async () => {
-      mockAxiosForStreamCalls();
+      mockSuccessAxiosCalls();
     });
 
     afterAll(() => {
@@ -183,7 +222,7 @@ describe('CatalogSource - Stream', () => {
 
     describe('API call expectations', () => {
       beforeEach(async () => {
-        mockAxiosForStreamCalls();
+        mockSuccessAxiosCalls();
         await source
           .batchStreamDocumentsFromFiles(
             'the_id',
@@ -247,7 +286,7 @@ describe('CatalogSource - Stream', () => {
 
     it('should call the errorCallback on a failure from the API', async () => {
       mockAxios.post.mockReset();
-      mockAxios.post.mockRejectedValue({message: 'Error Message'});
+      mockFailedChunkAxiosCalls('Error Message');
 
       await source
         .batchStreamDocumentsFromFiles(
