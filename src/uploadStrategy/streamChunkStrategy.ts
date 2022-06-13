@@ -30,22 +30,23 @@ export class StreamChunkStrategy implements UploadStrategy {
     return uploadContentToFileContainer(chunk, batch);
   }
 
-  public postUpload() {
-    return this.closeOpenedStream();
+  public async preUpload() {
+    await this.openStream();
   }
 
-  public async openStreamIfNotAlreadyOpen() {
-    if (this._openedStream === null) {
-      const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
-      const res = await axios.post<StreamResponse>(
-        openStreamUrl.toString(),
-        {},
-        this.documentsAxiosConfig
-      );
+  public async postUpload() {
+    await this.closeOpenedStream();
+  }
 
-      this._openedStream = res.data;
-    }
-    return this._openedStream;
+  public async openStream() {
+    const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
+    const res = await axios.post<StreamResponse>(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
+
+    this._openedStream = res.data;
   }
 
   public async closeOpenedStream() {
@@ -65,8 +66,12 @@ export class StreamChunkStrategy implements UploadStrategy {
     return res.data;
   }
 
-  private async requestStreamChunk() {
-    const {streamId} = await this.openStreamIfNotAlreadyOpen();
+  private async requestStreamChunk(): Promise<StreamResponse> {
+    if (this._openedStream === null) {
+      throw 'No open stream found';
+    }
+
+    const {streamId} = this._openedStream;
     const openStreamUrl = new URL(
       `${this.urlBuilder.baseStreamURL}/${streamId}/chunk`
     );
