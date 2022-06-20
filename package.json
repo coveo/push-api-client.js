@@ -9,7 +9,7 @@
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
-    "@coveo/bueno": "^0.34.1",
+    "@coveo/bueno": "^0.38.0",
     "@coveord/platform-client": "^33.0.0",
     "abortcontroller-polyfill": "^1.7.1",
     "axios": "^0.27.0",
@@ -18,25 +18,25 @@
   },
   "devDependencies": {
     "@coveo/push-api-client": "file:.",
-    "@types/jest": "28.1.1",
-    "@types/node": "17.0.42",
-    "@typescript-eslint/eslint-plugin": "5.27.1",
-    "@typescript-eslint/parser": "5.27.1",
+    "@types/jest": "28.1.2",
+    "@types/node": "17.0.45",
+    "@typescript-eslint/eslint-plugin": "5.28.0",
+    "@typescript-eslint/parser": "5.28.0",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.0.1",
-    "eslint": "8.17.0",
+    "eslint": "8.18.0",
     "eslint-config-prettier": "8.5.0",
     "gts": "3.1.0",
     "husky": "8.0.1",
     "jest": "28.1.1",
-    "lint-staged": "13.0.1",
+    "lint-staged": "13.0.2",
     "nodemon": "2.0.16",
-    "prettier": "2.6.2",
+    "prettier": "2.7.1",
     "standard-version": "9.5.0",
-    "ts-jest": "28.0.4",
+    "ts-jest": "28.0.5",
     "ts-node": "10.8.1",
     "typedoc": "0.22.17",
-    "typescript": "4.7.3"
+    "typescript": "4.7.4"
   },
   "husky": {
     "hooks": {
