@@ -9,7 +9,7 @@
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
-    "@coveo/bueno": "^0.39.0",
+    "@coveo/bueno": "^0.40.0",
     "@coveord/platform-client": "^33.0.0",
     "abortcontroller-polyfill": "^1.7.1",
     "axios": "^0.27.0",
@@ -19,9 +19,9 @@
   "devDependencies": {
     "@coveo/push-api-client": "file:.",
     "@types/jest": "28.1.4",
-    "@types/node": "18.0.1",
-    "@typescript-eslint/eslint-plugin": "5.30.4",
-    "@typescript-eslint/parser": "5.30.4",
+    "@types/node": "18.0.3",
+    "@typescript-eslint/eslint-plugin": "5.30.5",
+    "@typescript-eslint/parser": "5.30.5",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.0.1",
     "eslint": "8.19.0",
@@ -30,12 +30,12 @@
     "husky": "8.0.1",
     "jest": "28.1.2",
     "lint-staged": "13.0.3",
-    "nodemon": "2.0.18",
+    "nodemon": "2.0.19",
     "prettier": "2.7.1",
     "standard-version": "9.5.0",
     "ts-jest": "28.0.5",
     "ts-node": "10.8.2",
-    "typedoc": "0.23.5",
+    "typedoc": "0.23.7",
     "typescript": "4.7.4"
   },
   "husky": {
