@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.4.25](https://github.com/coveo/push-api-client.js/compare/v2.4.24...v2.4.25) (2022-07-25)
+
 ### [2.4.24](https://github.com/coveo/push-api-client.js/compare/v2.4.23...v2.4.24) (2022-07-25)
 
 ### [2.4.23](https://github.com/coveo/push-api-client.js/compare/v2.4.22...v2.4.23) (2022-07-25)
