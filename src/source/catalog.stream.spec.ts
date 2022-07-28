@@ -7,7 +7,7 @@ import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';
 import {CatalogSource} from './catalog';
-import {FieldAnalyser} from '..';
+import {DocumentBuilder, FieldAnalyser} from '..';
 import {generateBatmans} from '../__stub__/largeDocuments/documentGenerator';
 import {rmSync, writeFileSync, mkdirSync} from 'fs';
 const mockAxios = axios as jest.Mocked<typeof axios>;
@@ -140,6 +140,26 @@ describe('CatalogSource - Stream', () => {
   });
 
   describe('when streaming data from a batch', () => {
+    beforeEach(async () => {
+      mockSuccessAxiosCalls();
+      await source.batchStreamDocuments(
+        'the_id',
+        {
+          addOrUpdate: [new DocumentBuilder('uri', 'title')],
+          delete: [],
+        },
+        {createFields: false}
+      );
+    });
+
+    afterAll(() => {
+      mockAxios.post.mockReset();
+    });
+
+    basicStreamExpectations();
+  });
+
+  describe('when streaming data from a file', () => {
     beforeEach(async () => {
       mockSuccessAxiosCalls();
       await source
