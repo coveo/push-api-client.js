@@ -66,6 +66,7 @@ export async function uploadBatch(
     const report = analyser.report();
     await createFieldsFromReport(platformClient, report);
   }
+  await strategy.preUpload?.();
   const res = await strategy.upload(batch);
   await strategy.postUpload?.();
 
