@@ -83,4 +83,16 @@ describe('typeUtils', () => {
       expect(getMostEnglobingType(from, to)).toBe(null);
     });
   });
+
+  describe('when the value is not a primitive', () => {
+    describe('when elements are not consistent', () => {
+      it.todo('should fallback on string type');
+    });
+
+    describe('when elements are consistent', () => {
+      // TODO: with array
+      // TODO: with object
+      it.todo('should pick up the right type');
+    });
+  });
 });

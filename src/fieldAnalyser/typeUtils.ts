@@ -1,7 +1,12 @@
 import {FieldTypes} from '@coveord/platform-client';
 
-const acceptedTypeEvolutions = [
+const acceptedNumericalTypeEvolutions = [
   [FieldTypes.LONG, FieldTypes.LONG_64, FieldTypes.DOUBLE],
+];
+
+const acceptedAllTypeEvolutions = [
+  ...acceptedNumericalTypeEvolutions,
+  FieldTypes.STRING,
 ];
 
 export function getMostEnglobingType(
@@ -12,7 +17,7 @@ export function getMostEnglobingType(
     return possibleType1;
   }
 
-  for (const acceptedTypeEvolution of acceptedTypeEvolutions) {
+  for (const acceptedTypeEvolution of acceptedNumericalTypeEvolutions) {
     if (
       acceptedTypeEvolution.includes(possibleType1) &&
       acceptedTypeEvolution.includes(possibleType2)
@@ -26,6 +31,13 @@ export function getMostEnglobingType(
 }
 
 export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
+  if (typeof obj === 'object') {
+    return getGuessedTypeFromObject(obj);
+  }
+  return getGuessedTypeFromPrimitive(obj);
+}
+
+function getGuessedTypeFromPrimitive(obj: unknown): FieldTypes {
   switch (typeof obj) {
     case 'number':
       return getSpecificNumericType(obj);
@@ -34,6 +46,26 @@ export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
     default:
       return FieldTypes.STRING;
   }
+}
+
+function getGuessedTypeFromObject(obj: null | Object): FieldTypes {
+  const initialType = acceptedAllTypeEvolutions[0];
+  const fallbackType = FieldTypes.STRING;
+
+  if (obj === null) {
+    return fallbackType;
+  }
+  const array = Array.isArray(obj) ? obj : Object.values(obj);
+  return (
+    array.reduce(
+      (previous: unknown, current: unknown) =>
+        getMostEnglobingType(
+          getGuessedTypeFromPrimitive(previous),
+          getGuessedTypeFromPrimitive(current)
+        ),
+      initialType
+    ) || fallbackType
+  );
 }
 
 function getSpecificNumericType(number: number): FieldTypes {
