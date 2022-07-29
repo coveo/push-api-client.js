@@ -46,8 +46,18 @@ describe('DocumentBuilder', () => {
 
   it('should marshal metadata', () => {
     expect(
-      docBuilder.withMetadata({foo: 'bar', buzz: ['bazz', 'bozz']}).marshal()
-    ).toMatchObject({foo: 'bar', buzz: ['bazz', 'bozz']});
+      docBuilder
+        .withMetadata({
+          foo: 'bar',
+          buzz: ['bazz', 'bozz'],
+          baz: {'': 'defaultValue', key1: 'value1'},
+        })
+        .marshal()
+    ).toMatchObject({
+      foo: 'bar',
+      buzz: ['bazz', 'bozz'],
+      baz: {'': 'defaultValue', key1: 'value1'},
+    });
   });
 
   it('should throw error for invalid single metadata value', () => {
