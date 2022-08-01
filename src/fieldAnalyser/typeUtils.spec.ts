@@ -83,4 +83,74 @@ describe('typeUtils', () => {
       expect(getMostEnglobingType(from, to)).toBe(null);
     });
   });
+
+  describe('when the value is not a primitive', () => {
+    describe('when the object contains inconsistencies', () => {
+      it.each([
+        {
+          object: {
+            key1: 42,
+            key2: '123',
+            key3: 12.23,
+          },
+          mostEnglobingType: FieldTypes.STRING,
+        },
+        {
+          object: [42, '123', 12.23],
+          mostEnglobingType: FieldTypes.STRING,
+        },
+        {
+          object: {
+            key1: 12,
+            key2: 42.32,
+          },
+          mostEnglobingType: FieldTypes.DOUBLE,
+        },
+        {
+          object: [12, 42.32],
+          mostEnglobingType: FieldTypes.DOUBLE,
+        },
+      ])(
+        'should fallback on the most englobing type',
+        ({object, mostEnglobingType}) => {
+          expect(getGuessedTypeFromValue(object)).toEqual(mostEnglobingType);
+        }
+      );
+    });
+
+    describe('when the object does not contain inconsistencies', () => {
+      it.each([
+        {
+          object: {
+            key1: 12,
+            key2: 0,
+          },
+          objectType: FieldTypes.LONG,
+        },
+        {
+          object: [12, 0],
+          objectType: FieldTypes.LONG,
+        },
+      ])(
+        'should fallback on the type of all the object values/elements',
+        ({object, objectType}) => {
+          expect(getGuessedTypeFromValue(object)).toEqual(objectType);
+        }
+      );
+    });
+
+    describe('when the value is a multi-level object', () => {
+      it('should return a string type', () => {
+        const multiLevelObject = {
+          level: {
+            anotherLevel: {
+              anotherLevelDeep: 123,
+            },
+          },
+        };
+        const guessedType = getGuessedTypeFromValue(multiLevelObject);
+        expect(guessedType).toEqual(FieldTypes.STRING);
+      });
+    });
+  });
 });

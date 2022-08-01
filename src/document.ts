@@ -33,7 +33,9 @@ export interface SecurityIdentity {
   securityProvider?: string;
 }
 
-export type MetadataValue = string | string[] | number | number[] | boolean;
+type BaseMetadataValue = string | string[] | number | number[] | boolean;
+type DictionaryMetadataValue = Record<string, BaseMetadataValue>;
+export type MetadataValue = BaseMetadataValue | DictionaryMetadataValue;
 export type Metadata = Record<string, MetadataValue>;
 
 /**

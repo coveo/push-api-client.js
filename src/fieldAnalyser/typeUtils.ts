@@ -1,31 +1,44 @@
 import {FieldTypes} from '@coveord/platform-client';
 
-const acceptedTypeEvolutions = [
-  [FieldTypes.LONG, FieldTypes.LONG_64, FieldTypes.DOUBLE],
+const acceptedNumericalTypeEvolutions = [
+  FieldTypes.LONG,
+  FieldTypes.LONG_64,
+  FieldTypes.DOUBLE,
+];
+
+const acceptedAllTypeEvolutions = [
+  ...acceptedNumericalTypeEvolutions,
+  FieldTypes.STRING,
 ];
 
 export function getMostEnglobingType(
   possibleType1: FieldTypes,
-  possibleType2: FieldTypes
+  possibleType2: FieldTypes,
+  acceptedTypeEvolution = acceptedNumericalTypeEvolutions
 ): FieldTypes | null {
   if (possibleType1 === possibleType2) {
     return possibleType1;
   }
 
-  for (const acceptedTypeEvolution of acceptedTypeEvolutions) {
-    if (
-      acceptedTypeEvolution.includes(possibleType1) &&
-      acceptedTypeEvolution.includes(possibleType2)
-    ) {
-      const idx1 = acceptedTypeEvolution.indexOf(possibleType1);
-      const idx2 = acceptedTypeEvolution.indexOf(possibleType2);
-      return acceptedTypeEvolution[Math.max(idx1, idx2)];
-    }
+  if (
+    acceptedTypeEvolution.includes(possibleType1) &&
+    acceptedTypeEvolution.includes(possibleType2)
+  ) {
+    const idx1 = acceptedTypeEvolution.indexOf(possibleType1);
+    const idx2 = acceptedTypeEvolution.indexOf(possibleType2);
+    return acceptedTypeEvolution[Math.max(idx1, idx2)];
   }
   return null;
 }
 
 export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
+  if (typeof obj === 'object') {
+    return getGuessedTypeFromObject(obj);
+  }
+  return getGuessedTypeFromPrimitive(obj);
+}
+
+function getGuessedTypeFromPrimitive(obj: unknown): FieldTypes {
   switch (typeof obj) {
     case 'number':
       return getSpecificNumericType(obj);
@@ -34,6 +47,27 @@ export function getGuessedTypeFromValue(obj: unknown): FieldTypes {
     default:
       return FieldTypes.STRING;
   }
+}
+
+function getGuessedTypeFromObject(obj: null | Object): FieldTypes {
+  const initialType = acceptedAllTypeEvolutions[0];
+  const fallbackType = FieldTypes.STRING;
+
+  if (obj === null) {
+    return fallbackType;
+  }
+  const array = Array.isArray(obj) ? obj : Object.values(obj);
+  return (
+    array.reduce(
+      (previous: FieldTypes, current: unknown) =>
+        getMostEnglobingType(
+          previous,
+          getGuessedTypeFromPrimitive(current),
+          acceptedAllTypeEvolutions
+        ),
+      initialType
+    ) || fallbackType
+  );
 }
 
 function getSpecificNumericType(number: number): FieldTypes {
