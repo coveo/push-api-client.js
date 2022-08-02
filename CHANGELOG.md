@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/coveo/push-api-client.js/compare/v2.4.29...v2.5.0) (2022-08-02)
+
+
+### Features
+
+* **fieldanalyser:** support dictionary fields ([#180](https://github.com/coveo/push-api-client.js/issues/180)) ([034fa2d](https://github.com/coveo/push-api-client.js/commit/034fa2d9aabe87fb232596b52b1fe660144abe06))
+
 ### [2.4.29](https://github.com/coveo/push-api-client.js/compare/v2.4.28...v2.4.29) (2022-08-01)
 
 ### [2.4.28](https://github.com/coveo/push-api-client.js/compare/v2.4.27...v2.4.28) (2022-08-01)
