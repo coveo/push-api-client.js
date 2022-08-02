@@ -17,6 +17,11 @@ async function main() {
       tags: ['the_first_tag', 'the_second_tag'],
       version: 1,
       somekey: 'some value',
+      dictionaryfield: {
+        '': 'default',
+        key1: 'value1',
+        key2: 'value2',
+      },
     });
 
   await source.addOrUpdateDocument('my_source_id', myDocument);
