@@ -1,4 +1,6 @@
-type PromiseGenerator<T> = Generator<Promise<T>, void, unknown>;
+type PromiseGenerator<T> =
+  | Generator<Promise<T>, void, unknown>
+  | AsyncGenerator<T, void, unknown>;
 
 const createWorkers = <T>(
   generator: () => PromiseGenerator<T>,
@@ -16,7 +18,7 @@ const createWorkers = <T>(
 };
 
 /**
- * Consumes a generator function concurrently
+ * Consumes a generator or an async generator function concurrently
  *
  * @template T
  * @param {() => PromiseGenerator<T>} generator The generator function to consume.
@@ -32,7 +34,7 @@ export const consumeGenerator = async <T>(
     generator: PromiseGenerator<T>,
     workerIndex: number
   ): Promise<T | void> => {
-    const next = generator.next();
+    const next = await generator.next();
     if (next.done) {
       return;
     }
