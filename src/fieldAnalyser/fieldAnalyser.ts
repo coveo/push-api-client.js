@@ -5,8 +5,6 @@ import {FieldStore} from './fieldStore';
 import {Inconsistencies} from './inconsistencies';
 import {InvalidPermanentId} from '../errors/fieldErrors';
 import {getGuessedTypeFromValue, getMostEnglobingType} from './typeUtils';
-import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
-import {writeFieldsPrivilege} from '../validation/preconditions/platformPrivilege';
 
 export type FieldAnalyserReport = {
   fields: FieldModel[];
@@ -35,10 +33,6 @@ export class FieldAnalyser {
    * @return {*}
    */
   public async add(batch: DocumentBuilder[]) {
-    await ensureNecessaryCoveoPrivileges(
-      this.platformClient,
-      writeFieldsPrivilege
-    );
     const existingFields = await this.ensureExistingFields();
 
     batch.flatMap((doc: DocumentBuilder) => {
