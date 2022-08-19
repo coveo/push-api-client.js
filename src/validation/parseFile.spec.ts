@@ -8,11 +8,11 @@ describe('parseFile', () => {
   const parse = (file: string) => () =>
     parseAndGetDocumentBuilderFromJSONDocument(file);
 
-  it('should accept non-url documentIDs', () => {
+  it('should accept non-url documentIDs', async () => {
     const file = join(pathToStub, 'jsondocuments', 'notAnUrl.json');
-    expect(() =>
+    await expect(
       parseAndGetDocumentBuilderFromJSONDocument(file)
-    ).not.toThrow();
+    ).resolves.not.toThrow();
   });
 
   it.each([
@@ -47,9 +47,9 @@ describe('parseFile', () => {
       error:
         'allowedpermissions:   value should be one of: UNKNOWN, USER, GROUP, VIRTUAL_GROUP.',
     },
-  ])('$title', ({fileName, error}) => {
+  ])('$title', async ({fileName, error}) => {
     const file = join(pathToStub, 'jsondocuments', fileName);
-    expect(parse(file)).toThrow(
+    await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
         `Document contains an invalid value for ${error}`
@@ -57,9 +57,9 @@ describe('parseFile', () => {
     );
   });
 
-  it('should fail on reserved keyword', () => {
+  it('should fail on reserved keyword', async () => {
     const file = join(pathToStub, 'jsondocuments', 'reservedKeyword.json');
-    expect(parse(file)).toThrow(
+    await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
         'Cannot use parentid as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names'
@@ -67,8 +67,8 @@ describe('parseFile', () => {
     );
   });
 
-  it('should fail on unsupported metadata key', () => {
+  it('should fail on unsupported metadata key', async () => {
     const file = join(pathToStub, 'jsondocuments', 'invalidFields.json');
-    expect(parse(file)).toThrowErrorMatchingSnapshot();
+    await expect(parse(file)).rejects.toThrowErrorMatchingSnapshot();
   });
 });
