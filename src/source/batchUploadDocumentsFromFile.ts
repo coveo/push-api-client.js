@@ -34,7 +34,7 @@ export class BatchUploadDocumentsFromFilesReturn {
       if (options.createFields) {
         const analyser = new FieldAnalyser(platformClient);
         for (const filePath of files.values()) {
-          const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(
+          const docBuilders = await parseAndGetDocumentBuilderFromJSONDocument(
             filePath,
             options
           );
