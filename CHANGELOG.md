@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.8](https://github.com/coveo/push-api-client.js/compare/v2.5.7...v2.5.8) (2022-08-22)
+
+
+### Bug Fixes
+
+* memory leak on async callback ([#189](https://github.com/coveo/push-api-client.js/issues/189)) ([2997a8c](https://github.com/coveo/push-api-client.js/commit/2997a8c2dfcc0ce7c83e6eebdf9cce403fdd55d4))
+* remove precondition check ([#190](https://github.com/coveo/push-api-client.js/issues/190)) ([f481f03](https://github.com/coveo/push-api-client.js/commit/f481f037a96dcabcaba7e94a37717dc2e3ab7608))
+
 ### [2.5.7](https://github.com/coveo/push-api-client.js/compare/v2.5.6...v2.5.7) (2022-08-22)
 
 ### [2.5.6](https://github.com/coveo/push-api-client.js/compare/v2.5.5...v2.5.6) (2022-08-22)
