@@ -45,9 +45,9 @@ export class FileConsumer {
     };
 
     // parallelize uploads across multiple files
-    const fileGenerator = function* () {
+    const fileGenerator = async function* () {
       for (const filePath of files.values()) {
-        const docBuilders = parseAndGetDocumentBuilderFromJSONDocument(
+        const docBuilders = await parseAndGetDocumentBuilderFromJSONDocument(
           filePath,
           options
         );

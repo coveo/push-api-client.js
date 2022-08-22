@@ -31,17 +31,29 @@ describe('generator', () => {
     }
   };
 
-  it('test', async () => {
-    const callback = jest.fn();
+  const asyncGenerator = async function* () {
+    yield* generator();
+  };
+
+  const callback = jest.fn();
+  const callSequence: [worker: number, promiseId: number][] = [
+    [0, 5],
+    [0, 1],
+    [0, 3],
+    [1, 6],
+    [1, 2],
+    [1, 4],
+  ];
+
+  it('should consume a generator', async () => {
     await consumeGenerator(generator, maxConcurrent, callback);
-    const callSequence: [worker: number, promiseId: number][] = [
-      [0, 5],
-      [0, 1],
-      [0, 3],
-      [1, 6],
-      [1, 2],
-      [1, 4],
-    ];
+    callSequence.forEach((step) => {
+      expect(callback).toHaveBeenCalledWith(step[0], step[1]);
+    });
+  });
+
+  it('should consume an async generator', async () => {
+    await consumeGenerator(asyncGenerator, maxConcurrent, callback);
     callSequence.forEach((step) => {
       expect(callback).toHaveBeenCalledWith(step[0], step[1]);
     });

@@ -24,26 +24,28 @@ import {RequiredKeyValidator} from './requiredKeyValidator';
 import {Metadata} from '../document';
 import {ParseDocumentOptions} from '../interfaces';
 
-export const parseAndGetDocumentBuilderFromJSONDocument = (
+export const parseAndGetDocumentBuilderFromJSONDocument = async (
   documentPath: PathLike,
   options?: ParseDocumentOptions
-): DocumentBuilder[] => {
+): Promise<DocumentBuilder[]> => {
   ensureFileIntegrity(documentPath);
 
   const fileContent = safeJSONParse(documentPath);
 
-  const executeCallback = (docBuilder: DocumentBuilder) => {
+  const executeCallback = async (docBuilder: DocumentBuilder) => {
     if (options?.callback) {
-      options?.callback(docBuilder, documentPath);
+      await options?.callback(docBuilder, documentPath);
     }
   };
 
   if (Array.isArray(fileContent)) {
-    return fileContent.map((doc) => {
+    const docBuilders: DocumentBuilder[] = [];
+    for (const doc of fileContent) {
       const docBuilder = processDocument(doc, documentPath, options);
-      executeCallback(docBuilder);
-      return docBuilder;
-    });
+      await executeCallback(docBuilder);
+      docBuilders.push(docBuilder);
+    }
+    return docBuilders;
   } else {
     const docBuilder = processDocument(fileContent, documentPath, options);
     executeCallback(docBuilder);
