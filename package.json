@@ -18,10 +18,10 @@
   },
   "devDependencies": {
     "@coveo/push-api-client": "file:.",
-    "@types/jest": "28.1.6",
-    "@types/node": "18.7.3",
-    "@typescript-eslint/eslint-plugin": "5.33.0",
-    "@typescript-eslint/parser": "5.33.0",
+    "@types/jest": "28.1.7",
+    "@types/node": "18.7.9",
+    "@typescript-eslint/eslint-plugin": "5.33.1",
+    "@typescript-eslint/parser": "5.33.1",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.0.1",
     "eslint": "8.22.0",
@@ -33,7 +33,7 @@
     "nodemon": "2.0.19",
     "prettier": "2.7.1",
     "standard-version": "9.5.0",
-    "ts-jest": "28.0.7",
+    "ts-jest": "28.0.8",
     "ts-node": "10.9.1",
     "typedoc": "0.23.10",
     "typescript": "4.7.4"
