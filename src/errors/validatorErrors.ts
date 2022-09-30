@@ -17,7 +17,14 @@ export class NotAJsonFileError extends PushApiClientBaseError {
 export class InvalidDocument extends PushApiClientBaseError {
   public name = 'Invalid JSON Document Error';
   public constructor(p: PathLike, explanation: string) {
-    super(`${p} is not a valid JSON document: ${explanation}`);
+    super(
+      [
+        `${p} is not a valid JSON document: ${explanation}`,
+        'Links on the expected JSON format',
+        ' • JSON Document example:   https://github.com/coveo/push-api-client.js/tree/main/samples/json',
+        ' • Document Body reference: https://docs.coveo.com/en/75#documentbody',
+      ].join('\n')
+    );
   }
 }
 

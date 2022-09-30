@@ -1,0 +1,30 @@
+[
+    {
+        "author": "Alice",
+        "date": "2017-11-08T12:18:41.666Z",
+        "documenttype": "Text",
+        "filename": "mytext.txt",
+        "language": [
+            "English"
+        ],
+        "documentId": "http://www.example.com/alice",
+        "sourcetype": "Push",
+        "title": "My Text",
+        "data": "This is a sample text written by Alice.",
+        "fileExtension": ".txt"
+    },
+    {
+        "author": "Bob",
+        "date": "2018-10-01T11:10:22.666Z",
+        "documenttype": "Text",
+        "filename": "anothertext.txt",
+        "language": [
+            "English"
+        ],
+        "documentId": "http://www.example.com/bob",
+        "sourcetype": "Push",
+        "title": "Another Text",
+        "data": "This is a sample text written by Alice.",
+        "fileExtension": ".txt"
+    }
+]
