@@ -24,7 +24,7 @@
         "documentId": "http://www.example.com/bob",
         "sourcetype": "Push",
         "title": "Another Text",
-        "data": "This is a sample text written by Alice.",
+        "data": "This is a sample text written by Bob.",
         "fileExtension": ".txt"
     }
 ]
