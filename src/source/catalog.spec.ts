@@ -1,11 +1,11 @@
 /* eslint-disable node/no-unpublished-import */
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
 import PlatformClient, {
   SourceVisibility,
   FieldTypes,
-} from '@coveord/platform-client';
+} from '@coveo/platform-client';
 import {DocumentBuilder} from '../documentBuilder';
 import axios from 'axios';
 import {join} from 'path';

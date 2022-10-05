@@ -1,4 +1,4 @@
-import {FieldModel} from '@coveord/platform-client';
+import {FieldModel} from '@coveo/platform-client';
 import {Inconsistencies} from '../fieldAnalyser/inconsistencies';
 import {PushApiClientBaseError} from './baseError';
 

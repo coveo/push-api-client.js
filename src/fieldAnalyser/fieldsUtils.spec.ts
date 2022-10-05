@@ -1,6 +1,6 @@
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 
-import PlatformClient, {FieldModel} from '@coveord/platform-client';
+import PlatformClient, {FieldModel} from '@coveo/platform-client';
 import {createFields, listAllFieldsFromOrg} from './fieldUtils';
 
 const mockedPlatformClient = jest.mocked(PlatformClient);

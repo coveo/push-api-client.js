@@ -1,8 +1,8 @@
 /* eslint-disable node/no-unpublished-import */
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import axios from 'axios';
 import {join} from 'path';
 import {cwd} from 'process';

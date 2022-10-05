@@ -10,8 +10,8 @@ import {
   SecurityIdentityModel,
   SourceType,
   SourceVisibility,
-} from '@coveord/platform-client';
-export {SourceVisibility} from '@coveord/platform-client';
+} from '@coveo/platform-client';
+export {SourceVisibility} from '@coveo/platform-client';
 import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');

@@ -2,8 +2,8 @@ import type {PlatformPrivilege} from './platformPrivilege';
 import type {
   PrivilegeEvaluatorModel,
   PrivilegeModel,
-} from '@coveord/platform-client';
-import PlatformClient from '@coveord/platform-client';
+} from '@coveo/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import {PrivilegeError} from '../../errors/privilegeError';
 
 // Code copy pasted from https://github.com/coveo/cli/blob/master/packages/cli/src/lib/decorators/preconditions/apiKeyPrivilege.ts#L15

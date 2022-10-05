@@ -1,4 +1,4 @@
-import {FieldTypes} from '@coveord/platform-client';
+import {FieldTypes} from '@coveo/platform-client';
 import {Inconsistencies} from './inconsistencies';
 
 describe('Inconsistencies', () => {
