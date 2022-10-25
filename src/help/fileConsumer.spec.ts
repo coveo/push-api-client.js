@@ -57,31 +57,6 @@ describe('FileConsumer', () => {
       fakeUpload.mockReset();
     });
 
-    it('should call callback on every batch upload', async () => {
-      const mockedHandleSuccess = jest.fn();
-      const documentCount = 5;
-      const documentSize = 2; // mb
-      const tmpDoc = createBatch(documentCount, documentSize);
-
-      fileConsumer.expectedDocumentCount = documentCount;
-      fileConsumer.onSuccess(mockedHandleSuccess);
-      await fileConsumer.consume([tmpDoc.name]);
-
-      expect(mockedHandleSuccess).toHaveBeenCalledTimes(3);
-      expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
-        1,
-        expect.objectContaining({remainingDocumentCount: 3})
-      );
-      expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({remainingDocumentCount: 1})
-      );
-      expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
-        3,
-        expect.objectContaining({remainingDocumentCount: 0})
-      );
-    });
-
     it('should call the success callback', async () => {
       const mockedHandleSuccess = jest.fn();
       fileConsumer.onSuccess(mockedHandleSuccess);
@@ -114,6 +89,44 @@ describe('FileConsumer', () => {
       fileConsumer.onSuccess(handleBatchUpload);
       await fileConsumer.consume(entries);
     });
+
+    describe('when the upload progress is returned', () => {
+      const mockedHandleSuccess = jest.fn();
+      const documentCount = 5;
+      const documentSize = 2; // mb
+      const tmpDoc = createBatch(documentCount, documentSize);
+
+      beforeEach(async () => {
+        fileConsumer.expectedDocumentCount = documentCount;
+        fileConsumer.onSuccess(mockedHandleSuccess);
+        await fileConsumer.consume([tmpDoc.name]);
+      });
+
+      it('should call callback on every batch upload', async () => {
+        expect(mockedHandleSuccess).toHaveBeenCalledTimes(3);
+      });
+
+      it('should return remaining and total documents at each call', async () => {
+        expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
+          1,
+          expect.objectContaining({
+            progress: {remainingDocumentCount: 3, totalDocumentCount: 5},
+          })
+        );
+        expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
+          2,
+          expect.objectContaining({
+            progress: {remainingDocumentCount: 1, totalDocumentCount: 5},
+          })
+        );
+        expect(mockedHandleSuccess).toHaveBeenNthCalledWith(
+          3,
+          expect.objectContaining({
+            progress: {remainingDocumentCount: 0, totalDocumentCount: 5},
+          })
+        );
+      });
+    });
   });
 
   describe('when upload is in error', () => {
@@ -143,7 +156,9 @@ describe('FileConsumer', () => {
           status: 412,
           statusText: 'BAD_REQUEST',
         },
-        expect.objectContaining({remainingDocumentCount: 3}) // 2 out of 5 document processed... 3 remaiming
+        expect.objectContaining({
+          progress: {remainingDocumentCount: 3, totalDocumentCount: 5},
+        }) // 2 out of 5 document processed... 3 remaiming
       );
     });
 

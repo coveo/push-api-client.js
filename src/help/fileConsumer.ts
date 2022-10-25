@@ -4,11 +4,13 @@ import {
   UploadBatchCallbackData,
   ConcurrentProcessing,
   ParseDocumentOptions,
+  UploadProgress,
 } from '../interfaces';
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
 import {consumeGenerator} from './generator';
 import {AxiosResponse} from 'axios';
+import {isUndefined} from '@coveo/bueno';
 
 export type SuccessfulUploadCallback = (data: UploadBatchCallbackData) => void;
 export type FailedUploadCallback = (
@@ -21,6 +23,7 @@ export type FailedUploadCallback = (
  */
 export class FileConsumer {
   private static maxContentLength = 5 * 1024 * 1024;
+  private _totalDocumentCount?: number;
   private _remainingDocumentCount?: number;
   private cbSuccess: SuccessfulUploadCallback = () => {};
   private cbFail: FailedUploadCallback = () => {};
@@ -104,6 +107,7 @@ export class FileConsumer {
   }
 
   public set expectedDocumentCount(count: number) {
+    this._totalDocumentCount = count;
     this._remainingDocumentCount = count;
   }
 
@@ -116,7 +120,7 @@ export class FileConsumer {
 
   private async uploadBatch(batch: DocumentBuilder[], fileNames: string[]) {
     let res: AxiosResponse | undefined;
-    const remainingDocumentCount = this.getRemainingDocumentCount(batch);
+    const progress = this.getProgress(batch);
     try {
       res = await this.upload({
         addOrUpdate: batch,
@@ -126,7 +130,7 @@ export class FileConsumer {
       this.cbFail(error, {
         files: fileNames,
         batch,
-        remainingDocumentCount,
+        progress,
       });
     }
 
@@ -134,8 +138,22 @@ export class FileConsumer {
       files: fileNames,
       batch,
       res,
-      remainingDocumentCount,
+      progress,
     });
+  }
+
+  private getProgress(batch: DocumentBuilder[]): UploadProgress | undefined {
+    const remainingDocumentCount = this.getRemainingDocumentCount(batch);
+    if (
+      isUndefined(remainingDocumentCount) ||
+      isUndefined(this._totalDocumentCount)
+    ) {
+      return;
+    }
+    return {
+      remainingDocumentCount,
+      totalDocumentCount: this._totalDocumentCount,
+    };
   }
 
   private get accumulator(): {size: number; chunks: DocumentBuilder[]} {
