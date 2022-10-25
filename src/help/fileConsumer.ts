@@ -21,6 +21,7 @@ export type FailedUploadCallback = (
  */
 export class FileConsumer {
   private static maxContentLength = 5 * 1024 * 1024;
+  private _remainingDocumentCount?: number;
   private cbSuccess: SuccessfulUploadCallback = () => {};
   private cbFail: FailedUploadCallback = () => {};
 
@@ -102,8 +103,20 @@ export class FileConsumer {
     return {chunksToUpload, close};
   }
 
+  public set expectedDocumentCount(count: number) {
+    this._remainingDocumentCount = count;
+  }
+
+  private getRemainingDocumentCount(batch: DocumentBuilder[]) {
+    if (this._remainingDocumentCount === undefined) {
+      return;
+    }
+    return (this._remainingDocumentCount -= batch.length);
+  }
+
   private async uploadBatch(batch: DocumentBuilder[], fileNames: string[]) {
     let res: AxiosResponse | undefined;
+    const remainingDocumentCount = this.getRemainingDocumentCount(batch);
     try {
       res = await this.upload({
         addOrUpdate: batch,
@@ -113,6 +126,7 @@ export class FileConsumer {
       this.cbFail(error, {
         files: fileNames,
         batch,
+        remainingDocumentCount,
       });
     }
 
@@ -120,6 +134,7 @@ export class FileConsumer {
       files: fileNames,
       batch,
       res,
+      remainingDocumentCount,
     });
   }
 

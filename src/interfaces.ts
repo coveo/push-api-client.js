@@ -15,11 +15,13 @@ export interface BatchUpdateDocuments {
  *
  * @param {string[]} files Files from which the documentBuilders were generated
  * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
+ * @param {number} remainingDocumentCount Number of remaining Documents to upload
  * @param {AxiosResponse} res Axios response
  */
 export interface UploadBatchCallbackData {
   files: string[];
   batch: DocumentBuilder[];
+  remainingDocumentCount?: number;
   res?: AxiosResponse;
 }
 

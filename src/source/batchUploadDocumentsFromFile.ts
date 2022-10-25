@@ -28,23 +28,28 @@ export class BatchUploadDocumentsFromFilesReturn {
     );
 
     this.internalPromise = (async () => {
+      let expectedDocumentCount = 0;
       const files = getAllJsonFilesFromEntries(filesOrDirectories);
       await strategy.preUpload?.();
 
-      if (options.createFields) {
-        const analyser = new FieldAnalyser(platformClient);
-        for (const filePath of files.values()) {
-          const docBuilders = await parseAndGetDocumentBuilderFromJSONDocument(
-            filePath,
-            options
-          );
+      const analyser = new FieldAnalyser(platformClient);
+      for (const filePath of files.values()) {
+        const docBuilders = await parseAndGetDocumentBuilderFromJSONDocument(
+          filePath,
+          options
+        );
+        expectedDocumentCount += docBuilders.length;
+        if (options.createFields) {
           await analyser.add(docBuilders);
         }
+      }
 
+      if (options.createFields) {
         const report = analyser.report();
         await createFieldsFromReport(platformClient, report);
       }
 
+      this.consumer.expectedDocumentCount = expectedDocumentCount;
       await this.consumer.consume(files, options);
       await strategy.postUpload?.();
     }).bind(this);
