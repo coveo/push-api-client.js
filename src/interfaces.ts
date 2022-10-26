@@ -12,14 +12,25 @@ export interface BatchUpdateDocuments {
 }
 
 /**
+ * @param {number} remainingDocumentCount Number of remaining documents to upload. This value decreases each time a new batch is uploaded
+ * @param {number} totalDocumentCount Total number documents to upload
+ */
+export interface UploadProgress {
+  remainingDocumentCount: number;
+  totalDocumentCount: number;
+}
+
+/**
  *
  * @param {string[]} files Files from which the documentBuilders were generated
  * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
+ * @param {UploadProgress} progress Progress of the upload process
  * @param {AxiosResponse} res Axios response
  */
 export interface UploadBatchCallbackData {
   files: string[];
   batch: DocumentBuilder[];
+  progress?: UploadProgress;
   res?: AxiosResponse;
 }
 
