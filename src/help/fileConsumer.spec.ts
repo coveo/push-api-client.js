@@ -1,48 +1,37 @@
 jest.mock('axios');
-
-import {fileSync} from 'tmp';
-import {join} from 'path';
-import {writeFileSync} from 'fs';
-import {cwd} from 'process';
+jest.mock('../validation/parseFile');
 import {
+  DocumentBuilder,
   FailedUploadCallback,
   SuccessfulUploadCallback,
   UploadBatchCallbackData,
 } from '..';
 import {FileConsumer} from './fileConsumer';
+import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 
-/**
- * Create a JSON file containing a document batch
- *
- * @param {number} count the number of items to add to the file (1 is the minimum)
- * @param {number} size the body size (in byte) of each item
- */
+const mockedParse = jest.mocked(parseAndGetDocumentBuilderFromJSONDocument);
 
-function createBatch(count: number, size: number) {
-  const tmpDoc = fileSync({postfix: '.json'});
-  const template = (byte: number) => {
-    const randomCharacter = '#';
-    const data = Buffer.alloc(byte * 1024 * 1024, randomCharacter).toString();
-    return {
-      documentid: 'https://some.url.com',
-      title: 'Some Title',
-      data,
-    };
-  };
+// generating 5 documents of 2 mb each
+mockedParse.mockResolvedValue(generateDocBuilderBatch(5, 2));
+function generateDocBuilderBatch(
+  documentCount: number,
+  documentSize: number
+): DocumentBuilder[] {
+  let counter = 1;
+  const randomCharacter = '#';
+  const bytes = documentSize * 1024 * 1024;
+  const data = Buffer.alloc(bytes, randomCharacter).toString();
+  const docBuilderFactory = () =>
+    new DocumentBuilder(`https://url.com/${counter++}`, 'title').withData(data);
 
-  const content: string[] = Array(count).fill(template(size));
-  writeFileSync(tmpDoc.name, JSON.stringify(content));
-  return tmpDoc;
+  return [...Array(documentCount)].map(docBuilderFactory);
 }
 
 describe('FileConsumer', () => {
   let fileConsumer: FileConsumer;
   const fakeUpload = jest.fn();
-  const pathToStub = join(cwd(), 'src', '__stub__');
-  const entries = [
-    join(pathToStub, 'jsondocuments', 'batman.json'),
-    join(pathToStub, 'jsondocuments', 'fightclub.json'),
-  ];
+  const singleEntry = ['foo.json'];
+  const entries = ['bar.json', 'baz.json'];
 
   describe('when upload is successful', () => {
     beforeEach(() => {
@@ -72,34 +61,64 @@ describe('FileConsumer', () => {
     });
 
     it('should only push JSON files', async () => {
-      const handleBatchUpload: SuccessfulUploadCallback = (
-        data: UploadBatchCallbackData
-      ) => {
-        const expected = [
-          'https://www.themoviedb.org/movie/268',
-          'https://www.themoviedb.org/movie/999',
-          'https://www.themoviedb.org/movie/550',
-        ];
+      const expectedSequence = [
+        'https://url.com/1',
+        'https://url.com/2',
+        'https://url.com/3',
+        'https://url.com/4',
+        'https://url.com/5',
+      ].values();
+      const handleBatchUpload = (data: UploadBatchCallbackData) => {
         for (let i = 0; i < data.batch.length; i++) {
           const documentBuilder = data.batch[i];
-          expect(documentBuilder.marshal().documentId).toEqual(expected[i]);
+          const {documentId} = documentBuilder.marshal();
+          expect(documentId).toEqual(expectedSequence.next().value);
         }
       };
 
       fileConsumer.onSuccess(handleBatchUpload);
-      await fileConsumer.consume(entries);
+      await fileConsumer.consume(singleEntry);
+    });
+
+    describe.each([
+      {
+        // 1 file with 5 documents of 2MB each => 10MB to upload => 3 batches: [4MB] [4MB] [2MB]
+        title: 'when consume a single file',
+        sequence: [2, 2, 1],
+        entries: ['foo.json'],
+      },
+      {
+        // 2 files with 5 documents each weighing 2MB => 20MB to upload => 5 batches: [4MB] [4MB] [4MB] [4MB] [4MB]
+        title: 'when consume 2 files',
+        sequence: [2, 2, 2, 2, 2],
+        entries: ['foo.json', 'bar.json'],
+      },
+    ])('$title', ({sequence, entries}) => {
+      it(`should create ${sequence.length} batches`, async () => {
+        const batchOrder = sequence.values();
+        const handleBatchUpload: SuccessfulUploadCallback = (data) =>
+          expect(data.batch.length).toEqual(batchOrder.next().value);
+
+        fileConsumer.onSuccess(handleBatchUpload);
+        await fileConsumer.consume(entries);
+      });
+
+      it(`should call callback ${sequence.length} times`, async () => {
+        const mockedHandleSuccess = jest.fn();
+        fileConsumer.onSuccess(mockedHandleSuccess);
+        await fileConsumer.consume(entries);
+        expect(mockedHandleSuccess).toHaveBeenCalledTimes(sequence.length);
+      });
     });
 
     describe('when the upload progress is returned', () => {
       const mockedHandleSuccess = jest.fn();
       const documentCount = 5;
-      const documentSize = 2; // mb
-      const tmpDoc = createBatch(documentCount, documentSize);
 
       beforeEach(async () => {
         fileConsumer.expectedDocumentCount = documentCount;
         fileConsumer.onSuccess(mockedHandleSuccess);
-        await fileConsumer.consume([tmpDoc.name]);
+        await fileConsumer.consume(singleEntry);
       });
 
       it('should call callback on every batch upload', async () => {
@@ -143,12 +162,10 @@ describe('FileConsumer', () => {
     it('should return the number of remaining documents', async () => {
       const mockedHandleError = jest.fn();
       const documentCount = 5;
-      const documentSize = 2; // mb
-      const tmpDoc = createBatch(documentCount, documentSize);
 
       fileConsumer.expectedDocumentCount = documentCount;
       fileConsumer.onError(mockedHandleError);
-      await fileConsumer.consume([tmpDoc.name]);
+      await fileConsumer.consume(singleEntry);
 
       expect(mockedHandleError).toHaveBeenCalledTimes(1);
       expect(mockedHandleError).toHaveBeenCalledWith(
