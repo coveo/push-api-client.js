@@ -8,7 +8,7 @@ import {
   SecurityIdentityDelete,
   SecurityIdentityDeleteOptions,
   SecurityIdentityModel,
-} from '@coveord/platform-client';
+} from '@coveo/platform-client';
 
 export class SecurityIdentity {
   /**

@@ -1,4 +1,4 @@
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {getAllJsonFilesFromEntries} from '../help/file';
 import {FileConsumer} from '../help/fileConsumer';

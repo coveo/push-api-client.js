@@ -1,4 +1,4 @@
-import PlatformClient, {FieldModel, FieldTypes} from '@coveord/platform-client';
+import PlatformClient, {FieldModel, FieldTypes} from '@coveo/platform-client';
 import {DocumentBuilder, MetadataValue} from '..';
 import {listAllFieldsFromOrg} from './fieldUtils';
 import {FieldStore} from './fieldStore';

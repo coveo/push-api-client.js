@@ -1,4 +1,4 @@
-import {FieldModel, FieldTypes} from '@coveord/platform-client';
+import {FieldModel, FieldTypes} from '@coveo/platform-client';
 
 export class FieldStore extends Map<string, FieldTypes> {
   public concat(fieldBuilder: FieldStore) {

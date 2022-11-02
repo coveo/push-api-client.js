@@ -5,7 +5,7 @@ import {
   PlatformClient,
   SourceType,
   SourceVisibility,
-} from '@coveord/platform-client';
+} from '@coveo/platform-client';
 import {
   castEnvironmentToPlatformClient,
   DEFAULT_ENVIRONMENT,

@@ -1,4 +1,4 @@
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
 import {DocumentBuilder} from '../documentBuilder';

@@ -1,4 +1,4 @@
-import {FieldTypes} from '@coveord/platform-client';
+import {FieldTypes} from '@coveo/platform-client';
 
 const acceptedNumericalTypeEvolutions = [
   FieldTypes.LONG,

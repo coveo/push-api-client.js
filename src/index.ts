@@ -17,6 +17,6 @@ export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
 export {PlatformEnvironment, Region, PlatformUrlOptions} from './environment';
-export {SourceVisibility} from '@coveord/platform-client';
+export {SourceVisibility} from '@coveo/platform-client';
 
 export {parseAndGetDocumentBuilderFromJSONDocument} from './validation/parseFile';

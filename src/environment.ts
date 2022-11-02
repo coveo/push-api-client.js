@@ -1,5 +1,5 @@
-import {Region, Environment} from '@coveord/platform-client';
-export {Region} from '@coveord/platform-client';
+import {Region, Environment} from '@coveo/platform-client';
+export {Region} from '@coveo/platform-client';
 
 export enum PlatformEnvironment {
   Dev = 'dev',

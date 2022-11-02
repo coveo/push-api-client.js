@@ -1,6 +1,6 @@
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import {writeFieldsPrivilege} from './platformPrivilege';
 import {ensureNecessaryCoveoPrivileges} from './apiKeyPrivilege';
 

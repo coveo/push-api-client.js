@@ -1,4 +1,4 @@
-import PlatformClient, {FieldModel} from '@coveord/platform-client';
+import PlatformClient, {FieldModel} from '@coveo/platform-client';
 import {FieldTypeInconsistencyError} from '../errors/fieldErrors';
 import {ensureNecessaryCoveoPrivileges} from '../validation/preconditions/apiKeyPrivilege';
 import {

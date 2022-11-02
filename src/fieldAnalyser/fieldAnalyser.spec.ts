@@ -1,6 +1,6 @@
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 
-import PlatformClient, {FieldTypes} from '@coveord/platform-client';
+import PlatformClient, {FieldTypes} from '@coveo/platform-client';
 import {DocumentBuilder, Metadata} from '..';
 import {InvalidPermanentId} from '../errors/fieldErrors';
 import {FieldAnalyser, FieldAnalyserReport} from './fieldAnalyser';
