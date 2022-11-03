@@ -176,7 +176,11 @@ describe('BatchUploadDocumentsFromFilesReturn', () => {
     });
   });
 
-  // Green path from here
+  it('should call #getAllJsonFilesFromEntries with the right files', async () => {
+    await getBatchUpload().batch();
+    expect(mockedGetAllFilesFromEntries).toHaveBeenCalledWith(['some/folder']);
+  });
+
   it('should execute pre and post upload methods once', async () => {
     await getBatchUpload().batch();
     expect(mockedPreUpload).toHaveBeenCalledTimes(1);

@@ -71,6 +71,4 @@ describe('parseFile', () => {
     const file = join(pathToStub, 'jsondocuments', 'invalidFields.json');
     await expect(parse(file)).rejects.toThrowErrorMatchingSnapshot();
   });
-
-  it.todo('should only push JSON documents'); // TODO: from mix documents
 });
