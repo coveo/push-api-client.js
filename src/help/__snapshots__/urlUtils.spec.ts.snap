@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UrlBuilder PushUrlBuilder should return the base url 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/my-source-id"`;
+
+exports[`UrlBuilder PushUrlBuilder should return the base url for update 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/my-source-id/documents/batch"`;
+
+exports[`UrlBuilder PushUrlBuilder should return the file container url 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/files"`;
+
+exports[`UrlBuilder StreamUrlBuilder should return the base url 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/my-source-id/stream"`;
+
+exports[`UrlBuilder StreamUrlBuilder should return the base url for update 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/my-source-id/stream/update"`;
+
+exports[`UrlBuilder StreamUrlBuilder should return the file container url 1`] = `"https://api.cloud.coveo.com/push/v1/organizations/org-id/files"`;
