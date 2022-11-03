@@ -6,12 +6,13 @@ const platformOptions = {
   region: Region.US,
   environment: PlatformEnvironment.Prod,
 };
+
 describe('UrlBuilder', () => {
   describe('PushUrlBuilder', () => {
     let builder: PushUrlBuilder;
 
     beforeEach(() => {
-      builder = new PushUrlBuilder('my-source-id', 'org-id', platformOptions);
+      builder = new PushUrlBuilder('source-id', 'org-id', platformOptions);
     });
 
     it('should return the base url', () => {
@@ -31,7 +32,7 @@ describe('UrlBuilder', () => {
     let builder: StreamUrlBuilder;
 
     beforeEach(() => {
-      builder = new StreamUrlBuilder('my-source-id', 'org-id', platformOptions);
+      builder = new StreamUrlBuilder('source-id', 'org-id', platformOptions);
     });
 
     it('should return the base url', () => {
