@@ -1,38 +1,106 @@
-// TODO:
+jest.mock('../APICore');
+jest.mock('../help/fileContainer');
 
-// import { FileContainerStrategy } from "./fileContainerStrategy";
+import {Region} from '@coveord/platform-client';
+import {DocumentBuilder} from '..';
+import {APICore} from '../APICore';
+import {PlatformEnvironment} from '../environment';
+import {uploadContentToFileContainer} from '../help/fileContainer';
+import {PushUrlBuilder, StreamUrlBuilder} from '../help/urlUtils';
+import {BatchUpdateDocuments} from '../interfaces';
+import {
+  FileContainerResponse,
+  FileContainerStrategy,
+} from './fileContainerStrategy';
 
-// describe('FileContainerStrategy', () => {
-//   it('should upload documents from local file', async () => {
-//     const urlBuilder = n
-//     new FileContainerStrategy()
-//     await source
-//       .batchUpdateDocumentsFromFiles(
-//         'the_id',
-//         [join(pathToStub, 'mixdocuments')],
-//         {createFields: false}
-//       )
-//       .batch();
+const mockedAPICore = jest.mocked(APICore);
+const mockedPut = jest.fn();
+const mockedPost = jest.fn();
+const mockedUploadToFileContainer = jest.mocked(uploadContentToFileContainer);
 
-//     expect(mockAxios.put).toHaveBeenCalledWith(
-//       'https://fake.upload.url/',
-//       expect.objectContaining({
-//         addOrUpdate: expect.arrayContaining([
-//           expect.objectContaining({
-//             documentId: 'https://www.themoviedb.org/movie/268',
-//           }),
-//           expect.objectContaining({
-//             documentId: 'https://www.themoviedb.org/movie/999',
-//           }),
-//         ]),
-//         delete: expect.arrayContaining([]),
-//       }),
-//       {
-//         headers: {
-//           foo: 'bar',
-//         },
-//         maxBodyLength: 256e6,
-//       }
-//     );
-//   });
-// });
+const platformOptions = {
+  region: Region.US,
+  environment: PlatformEnvironment.Prod,
+};
+
+const documentBatch: BatchUpdateDocuments = {
+  addOrUpdate: [
+    new DocumentBuilder('https://foo.com', 'Foo'),
+    new DocumentBuilder('https://bar.com', 'Bar'),
+  ],
+  delete: [{documentId: 'some_id', deleteChildren: false}],
+};
+
+const fileContainerResponse: FileContainerResponse = {
+  uploadUri: 'https://fake.upload.url',
+  fileId: 'file_id',
+  requiredHeaders: {foo: 'bar'},
+};
+
+const doMockAPICore = () => {
+  mockedAPICore.mockImplementation(
+    () =>
+      ({
+        put: mockedPut,
+        post: mockedPost,
+      } as unknown as APICore)
+  );
+};
+
+const doMockFileContainerResponse = () => {
+  mockedPost.mockResolvedValue({data: fileContainerResponse});
+};
+
+describe('FileContainerStrategy', () => {
+  beforeAll(() => {
+    doMockAPICore();
+  });
+
+  describe.each([
+    {
+      builderClass: PushUrlBuilder,
+      pushUrl:
+        'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/documents/batch?fileId=file_id', // note the last part of the url
+    },
+    {
+      builderClass: StreamUrlBuilder,
+      pushUrl:
+        'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/update?fileId=file_id', // note the last part of the url
+    },
+  ])('when using a $builder', ({builderClass, pushUrl}) => {
+    let strategy: FileContainerStrategy;
+
+    beforeAll(() => {
+      doMockFileContainerResponse();
+    });
+
+    beforeEach(async () => {
+      const builder = new builderClass('source-id', 'org-id', platformOptions);
+      strategy = new FileContainerStrategy(
+        builder,
+        new APICore('access_token')
+      );
+      await strategy.upload(documentBatch);
+    });
+
+    it('should create a file container', () => {
+      expect(mockedPost).toHaveBeenCalledTimes(1);
+      expect(mockedPost).toHaveBeenCalledWith(
+        'https://api.cloud.coveo.com/push/v1/organizations/org-id/files'
+      );
+    });
+
+    it('should call #uploadContentToFileContainer with file container and batch', () => {
+      expect(mockedUploadToFileContainer).toHaveBeenCalledTimes(1);
+      expect(mockedUploadToFileContainer).toHaveBeenCalledWith(
+        fileContainerResponse,
+        documentBatch
+      );
+    });
+
+    it('should push file container content', () => {
+      expect(mockedPut).toHaveBeenCalledTimes(1);
+      expect(mockedPut).toHaveBeenCalledWith(pushUrl);
+    });
+  });
+});
