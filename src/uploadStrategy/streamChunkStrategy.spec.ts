@@ -1,7 +1,7 @@
 jest.mock('../APICore');
 jest.mock('../help/fileContainer');
 
-import {Region} from '@coveord/platform-client';
+import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
 import {PlatformEnvironment} from '../environment';

@@ -1,4 +1,4 @@
-import {Region} from '@coveord/platform-client';
+import {Region} from '@coveo/platform-client';
 import {PlatformEnvironment} from '../environment';
 import {PushUrlBuilder, StreamUrlBuilder} from './urlUtils';
 

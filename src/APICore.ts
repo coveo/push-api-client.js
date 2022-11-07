@@ -13,18 +13,6 @@ export class APICore {
         ...this.axiosRequestHeaders,
       });
 
-      // const response: AxiosResponse<T> = await new Promise(
-      //   (resolve, reject) => {
-      //     setTimeout(() => {
-      //       console.log('request');
-      //       reject({
-      //         status: 555,
-      //         statusText: 'YOYOYO',
-      //       } as unknown as AxiosResponse);
-      //     }, 700);
-      //   }
-      // );
-
       if (this.isThrottled(response.status)) {
         throw response;
       }

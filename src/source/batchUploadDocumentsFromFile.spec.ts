@@ -3,7 +3,7 @@ jest.mock('../validation/parseFile');
 jest.mock('../fieldAnalyser/fieldAnalyser');
 jest.mock('../fieldAnalyser/fieldUtils');
 
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';

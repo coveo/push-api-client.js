@@ -3,7 +3,7 @@ jest.mock('../fieldAnalyser/fieldUtils');
 jest.mock('../APICore');
 jest.mock('./batchUploadDocumentsFromFile');
 
-import PlatformClient from '@coveord/platform-client';
+import PlatformClient from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';

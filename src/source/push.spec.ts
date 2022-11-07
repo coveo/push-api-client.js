@@ -1,5 +1,5 @@
 /* eslint-disable node/no-unpublished-import */
-jest.mock('@coveord/platform-client');
+jest.mock('@coveo/platform-client');
 jest.mock('./documentUploader');
 jest.mock('../uploadStrategy');
 jest.mock('../APICore');
