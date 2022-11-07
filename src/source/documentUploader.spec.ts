@@ -45,7 +45,6 @@ describe('documentUploader', () => {
 
     it('should create missing fields from report', async () => {
       await upload({createFields: true});
-      // TODO: go over all latest test and remove uncessary mocks !!!
       expect(createFieldsFromReport).toHaveBeenCalled();
     });
 
@@ -81,7 +80,6 @@ describe('documentUploader', () => {
 
     it('should create missing fields from report', async () => {
       await upload({createFields: true});
-      // TODO: go over all latest test and remove uncessary mocks !!!
       expect(createFieldsFromReport).toHaveBeenCalled();
     });
 

@@ -19,8 +19,6 @@ import {BuiltInTransformers} from '../validation/transformers/transformer';
 import {BatchUploadDocumentsFromFilesReturn} from './batchUploadDocumentsFromFile';
 
 const mockedParse = jest.mocked(parseAndGetDocumentBuilderFromJSONDocument);
-const mockedFieldAnalyser = jest.mocked(FieldAnalyser);
-const mockedCreateFieldsFromReport = jest.mocked(createFieldsFromReport);
 const mockedGetAllFilesFromEntries = jest.mocked(getAllJsonFilesFromEntries);
 const mockedUpload = jest.fn();
 const mockedPreUpload = jest.fn();
@@ -92,11 +90,11 @@ describe('BatchUploadDocumentsFromFilesReturn', () => {
     });
 
     it('should always call the field analyser', () => {
-      expect(mockedFieldAnalyser).toHaveBeenCalledTimes(1);
+      expect(FieldAnalyser).toHaveBeenCalledTimes(1);
     });
 
     it('should call #createFieldsFromReport', () => {
-      expect(mockedCreateFieldsFromReport).toHaveBeenCalledTimes(1);
+      expect(createFieldsFromReport).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -106,11 +104,11 @@ describe('BatchUploadDocumentsFromFilesReturn', () => {
     });
 
     it('should always call the field analyser', () => {
-      expect(mockedFieldAnalyser).toHaveBeenCalledTimes(1);
+      expect(FieldAnalyser).toHaveBeenCalledTimes(1);
     });
 
     it('should call #createFieldsFromReport', () => {
-      expect(mockedCreateFieldsFromReport).not.toHaveBeenCalled();
+      expect(createFieldsFromReport).not.toHaveBeenCalled();
     });
   });
 

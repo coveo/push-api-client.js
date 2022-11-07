@@ -13,7 +13,6 @@ import {StreamChunkStrategy} from './streamChunkStrategy';
 
 const mockedAPICore = jest.mocked(APICore);
 const mockedPost = jest.fn();
-const mockedUploadToFileContainer = jest.mocked(uploadContentToFileContainer);
 
 const platformOptions = {
   region: Region.US,
@@ -105,8 +104,8 @@ describe('StreamChunkStrategy', () => {
   });
 
   it('should call #uploadContentToFileContainer with file container and batch', () => {
-    expect(mockedUploadToFileContainer).toHaveBeenCalledTimes(1);
-    expect(mockedUploadToFileContainer).toHaveBeenCalledWith(
+    expect(uploadContentToFileContainer).toHaveBeenCalledTimes(1);
+    expect(uploadContentToFileContainer).toHaveBeenCalledWith(
       fileContainerResponse,
       documentBatch
     );
