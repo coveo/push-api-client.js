@@ -1,3 +1,4 @@
+// TODO: reduce tests
 /* eslint-disable node/no-unpublished-import */
 jest.mock('@coveo/platform-client');
 jest.mock('axios');
@@ -327,3 +328,6 @@ describe('CatalogSource - Push', () => {
     });
   });
 });
+
+// TODO: test batchStreamDocuments
+// TODO: test batchStreamDocumentsFromFiles

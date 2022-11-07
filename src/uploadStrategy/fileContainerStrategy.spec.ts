@@ -93,7 +93,17 @@ describe('FileContainerStrategy', () => {
       expect(uploadContentToFileContainer).toHaveBeenCalledTimes(1);
       expect(uploadContentToFileContainer).toHaveBeenCalledWith(
         fileContainerResponse,
-        documentBatch
+        {
+          addOrUpdate: expect.arrayContaining([
+            expect.objectContaining({
+              uri: 'https://foo.com',
+            }),
+            expect.objectContaining({
+              uri: 'https://bar.com',
+            }),
+          ]),
+          delete: [{deleteChildren: false, documentId: 'some_id'}],
+        }
       );
     });
 
