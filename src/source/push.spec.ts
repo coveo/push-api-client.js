@@ -2,14 +2,14 @@
 jest.mock('@coveo/platform-client');
 jest.mock('./documentUploader');
 jest.mock('../uploadStrategy');
-jest.mock('../APICore');
+jest.mock('axios');
 import PlatformClient, {SourceVisibility} from '@coveo/platform-client';
 import {PushSource} from './push';
 import {DocumentBuilder} from '../documentBuilder';
 import {join} from 'path';
 import {cwd} from 'process';
 import {BatchUpdateDocuments, PlatformEnvironment, Region} from '..';
-import {APICore} from '../APICore';
+import axios, {AxiosPromise} from 'axios';
 import {
   uploadBatch,
   uploadBatchFromFile,
@@ -18,7 +18,7 @@ import {
 import {FileContainerStrategy} from '../uploadStrategy';
 import {PushUrlBuilder} from '../help/urlUtils';
 
-const mockedAPICore = jest.mocked(APICore);
+const mockedAxios = jest.mocked(axios);
 const mockedDelete = jest.fn();
 const mockedPost = jest.fn();
 const mockedPlatformClient = jest.mocked(PlatformClient);
@@ -29,30 +29,33 @@ const mockedUploadBatch = jest.mocked(uploadBatch);
 const mockedUploadBatchFromFile = jest.mocked(uploadBatchFromFile);
 const pathToStub = join(cwd(), 'src', '__stub__');
 
+const requestHeader = {
+  headers: {
+    Accept: 'application/json',
+    Authorization: 'Bearer the_key',
+    'Content-Type': 'application/json',
+  },
+};
 const dummyClient = {
   source: {
     create: mockCreateSource,
   },
 } as unknown as PlatformClient;
 
-const dummyAPICore = {
-  delete: mockedDelete,
-  post: mockedPost,
-} as unknown as APICore;
-
 const doMockPlatformClient = () => {
   mockedPlatformClient.mockImplementation(() => dummyClient);
 };
 
-const doMockAPICore = () => {
-  mockedAPICore.mockImplementation(() => dummyAPICore);
+const doMockAxios = () => {
+  mockedAxios.delete = mockedDelete;
+  mockedAxios.post = mockedPost;
 };
 
 describe('PushSource', () => {
   let defaultSource: PushSource;
 
   beforeAll(() => {
-    doMockAPICore();
+    doMockAxios();
     doMockPlatformClient();
   });
 
@@ -114,7 +117,7 @@ describe('PushSource', () => {
         dummyClient,
         new DocumentBuilder('the_uri', 'the_title'),
         new URL(expectedUrl),
-        dummyAPICore,
+        requestHeader,
         undefined
       );
     }
@@ -133,29 +136,51 @@ describe('PushSource', () => {
       new URL(
         'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents'
       ),
-      dummyAPICore,
+      requestHeader,
       {createFields: true}
     );
   });
 
-  it('should call #APICore on delete', () => {
+  it('should do a delete request', () => {
     defaultSource.deleteDocument('the_id', 'the_uri', true);
     expect(mockedDelete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true'
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer the_key',
+          'Content-Type': 'application/json',
+        },
+      }
     );
   });
 
-  it('should call #APICore on status update', () => {
+  it('should do a post request', () => {
     defaultSource.setSourceStatus('the_id', 'INCREMENTAL');
     expect(mockedPost).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/status?statusType=INCREMENTAL'
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/status?statusType=INCREMENTAL',
+      {},
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer the_key',
+          'Content-Type': 'application/json',
+        },
+      }
     );
   });
 
-  describe('calls #APICore when doing delete olderthan', () => {
+  describe('when delete olderthan', () => {
     const expectCorrectOrderingId = (id: number | string) => {
       expect(mockedDelete).toHaveBeenCalledWith(
-        `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`
+        `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: 'Bearer the_key',
+            'Content-Type': 'application/json',
+          },
+        }
       );
     };
 
@@ -177,10 +202,17 @@ describe('PushSource', () => {
     });
   });
 
-  it('should call #APICore on delete', () => {
+  it('should do a delete requets', () => {
     defaultSource.deleteDocument('the_id', 'the_uri', true);
     expect(mockedDelete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true'
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer the_key',
+          'Content-Type': 'application/json',
+        },
+      }
     );
   });
 
@@ -211,7 +243,7 @@ describe('PushSource', () => {
 
       expect(FileContainerStrategy).toHaveBeenCalledWith(
         expect.any(PushUrlBuilder),
-        dummyAPICore
+        requestHeader
       );
     });
   });
@@ -226,7 +258,7 @@ describe('PushSource', () => {
 
       expect(FileContainerStrategy).toHaveBeenCalledWith(
         expect.any(PushUrlBuilder),
-        dummyAPICore
+        requestHeader
       );
 
       expect(mockedUploadBatchFromFile).toHaveBeenCalledWith(

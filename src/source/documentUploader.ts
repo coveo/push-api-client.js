@@ -1,7 +1,6 @@
 import PlatformClient from '@coveo/platform-client';
-import {AxiosResponse} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
 import {FieldAnalyser} from '..';
-import {APICore} from '../APICore';
 import {DocumentBuilder} from '../documentBuilder';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {noop} from '../help/function';
@@ -28,7 +27,7 @@ export async function uploadDocument(
   platformClient: PlatformClient,
   docBuilder: DocumentBuilder,
   addURL: URL,
-  api: APICore,
+  documentsAxiosConfig: AxiosRequestConfig,
   options?: BatchUpdateDocumentsOptions
 ) {
   const {createFields}: Required<BatchUpdateDocumentsOptions> = {
@@ -44,7 +43,11 @@ export async function uploadDocument(
 
   const doc = docBuilder.build();
   addURL.searchParams.append('documentId', doc.uri);
-  return api.put(addURL.toString(), docBuilder.marshal());
+  return axios.put(
+    addURL.toString(),
+    docBuilder.marshal(),
+    documentsAxiosConfig
+  );
 }
 
 export async function uploadBatch(

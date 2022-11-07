@@ -1,11 +1,10 @@
+jest.mock('axios');
 jest.mock('../fieldAnalyser/fieldAnalyser');
 jest.mock('../fieldAnalyser/fieldUtils');
-jest.mock('../APICore');
 jest.mock('./batchUploadDocumentsFromFile');
 
 import PlatformClient from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
-import {APICore} from '../APICore';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
 import {noop} from '../help/function';
@@ -18,13 +17,23 @@ import {
   uploadBatchFromFile,
   uploadDocument,
 } from './documentUploader';
+import axios from 'axios';
+
+const axiosSpy = jest.spyOn(axios, 'put');
 
 const dummyClient = new PlatformClient({accessToken: 'my_token'});
-const dummyAPI = new APICore('my_token');
 const dummyStrategy: UploadStrategy = {
   upload: jest.fn(),
   preUpload: jest.fn(),
   postUpload: jest.fn(),
+};
+
+const expectedDocumentsHeaders = {
+  headers: {
+    Accept: 'application/json',
+    Authorization: 'Bearer the_key',
+    'Content-Type': 'application/json',
+  },
 };
 
 describe('documentUploader', () => {
@@ -34,7 +43,7 @@ describe('documentUploader', () => {
         dummyClient,
         new DocumentBuilder('http://some.url', 'Some document'),
         new URL('https://fake.upload.url'),
-        dummyAPI,
+        expectedDocumentsHeaders,
         options
       );
 
@@ -55,12 +64,19 @@ describe('documentUploader', () => {
 
     it('should upload document', async () => {
       await upload();
-      expect(APICore.prototype.put).toBeCalledWith(
+      expect(axiosSpy).toBeCalledWith(
         'https://fake.upload.url/?documentId=http%3A%2F%2Fsome.url',
         expect.objectContaining({
           documentId: 'http://some.url',
           title: 'Some document',
-        })
+        }),
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: 'Bearer the_key',
+            'Content-Type': 'application/json',
+          },
+        }
       );
     });
   });

@@ -12,6 +12,7 @@ import {
   SourceVisibility,
 } from '@coveo/platform-client';
 export {SourceVisibility} from '@coveo/platform-client';
+import axios, {AxiosRequestConfig} from 'axios';
 import {DocumentBuilder} from '../documentBuilder';
 import dayjs = require('dayjs');
 import {URL} from 'url';
@@ -28,6 +29,7 @@ import {
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
+import {axiosRequestHeaders} from '../help/axiosUtils';
 import {
   uploadBatch,
   uploadBatchFromFile,
@@ -36,7 +38,6 @@ import {
 import {PushUrlBuilder} from '../help/urlUtils';
 import {FileContainerStrategy, UploadStrategy} from '../uploadStrategy';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
-import {APICore} from '../APICore';
 
 export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 
@@ -47,7 +48,6 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
  */
 export class PushSource {
   public platformClient: PlatformClient;
-  private api: APICore;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
@@ -63,7 +63,6 @@ export class PushSource {
     private organizationid: string,
     options?: PlatformUrlOptions
   ) {
-    this.api = new APICore(this.apikey);
     this.options = {...PushSource.defaultOptions, ...options};
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
@@ -184,7 +183,7 @@ export class PushSource {
       this.platformClient,
       docBuilder,
       addURL,
-      this.api,
+      this.documentsAxiosConfig,
       options
     );
   }
@@ -244,7 +243,7 @@ export class PushSource {
     const deleteURL = new URL(`${this.urlBuilder(sourceID).baseURL}/documents`);
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
-    return this.api.delete(deleteURL.toString());
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
   }
 
   /**
@@ -262,7 +261,7 @@ export class PushSource {
       `${this.urlBuilder(sourceID).baseURL}/documents/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
-    return this.api.delete(deleteURL.toString());
+    return axios.delete(deleteURL.toString(), this.documentsAxiosConfig);
   }
 
   /**
@@ -274,7 +273,11 @@ export class PushSource {
   public setSourceStatus(sourceID: string, status: SourceStatus) {
     const urlStatus = new URL(`${this.urlBuilder(sourceID).baseURL}/status`);
     urlStatus.searchParams.append('statusType', status);
-    return this.api.post(urlStatus.toString());
+    return axios.post(urlStatus.toString(), {}, this.documentsAxiosConfig);
+  }
+
+  private get documentsAxiosConfig(): AxiosRequestConfig {
+    return axiosRequestHeaders(this.apikey);
   }
 
   public async createFields(analyser: FieldAnalyser) {
@@ -288,6 +291,7 @@ export class PushSource {
 
   private fileContainerStrategy(sourceId: string): UploadStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
-    return new FileContainerStrategy(urlBuilder, this.api);
+    const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
+    return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 }

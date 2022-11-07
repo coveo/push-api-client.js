@@ -1,9 +1,9 @@
-jest.mock('../APICore');
+jest.mock('axios');
 jest.mock('../help/fileContainer');
 
 import {Region} from '@coveo/platform-client';
+import axios from 'axios';
 import {DocumentBuilder} from '..';
-import {APICore} from '../APICore';
 import {PlatformEnvironment} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {PushUrlBuilder, StreamUrlBuilder} from '../help/urlUtils';
@@ -13,7 +13,7 @@ import {
   FileContainerStrategy,
 } from './fileContainerStrategy';
 
-const mockedAPICore = jest.mocked(APICore);
+const mockedAxios = jest.mocked(axios);
 const mockedPut = jest.fn();
 const mockedPost = jest.fn();
 
@@ -36,14 +36,9 @@ const fileContainerResponse: FileContainerResponse = {
   requiredHeaders: {foo: 'bar'},
 };
 
-const doMockAPICore = () => {
-  mockedAPICore.mockImplementation(
-    () =>
-      ({
-        put: mockedPut,
-        post: mockedPost,
-      } as unknown as APICore)
-  );
+const doMockAxios = () => {
+  mockedAxios.put = mockedPut;
+  mockedAxios.post = mockedPost;
 };
 
 const doMockFileContainerResponse = () => {
@@ -52,7 +47,7 @@ const doMockFileContainerResponse = () => {
 
 describe('FileContainerStrategy', () => {
   beforeAll(() => {
-    doMockAPICore();
+    doMockAxios();
   });
 
   describe.each([
@@ -75,17 +70,28 @@ describe('FileContainerStrategy', () => {
 
     beforeEach(async () => {
       const builder = new builderClass('source-id', 'org-id', platformOptions);
-      strategy = new FileContainerStrategy(
-        builder,
-        new APICore('access_token')
-      );
+      strategy = new FileContainerStrategy(builder, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer the_key',
+          'Content-Type': 'application/json',
+        },
+      });
       await strategy.upload(documentBatch);
     });
 
     it('should create a file container', () => {
       expect(mockedPost).toHaveBeenCalledTimes(1);
       expect(mockedPost).toHaveBeenCalledWith(
-        'https://api.cloud.coveo.com/push/v1/organizations/org-id/files'
+        'https://api.cloud.coveo.com/push/v1/organizations/org-id/files',
+        {},
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: 'Bearer the_key',
+            'Content-Type': 'application/json',
+          },
+        }
       );
     });
 
@@ -109,7 +115,17 @@ describe('FileContainerStrategy', () => {
 
     it('should push file container content', () => {
       expect(mockedPut).toHaveBeenCalledTimes(1);
-      expect(mockedPut).toHaveBeenCalledWith(pushUrl);
+      expect(mockedPut).toHaveBeenCalledWith(
+        pushUrl,
+        {},
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: 'Bearer the_key',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     });
   });
 });

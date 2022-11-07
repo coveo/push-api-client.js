@@ -1,9 +1,9 @@
+import axios, {AxiosRequestConfig} from 'axios';
 import {URL} from 'url';
 import {BatchUpdateDocuments} from '../interfaces';
 import {UploadStrategy} from './strategy';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {StreamUrlBuilder} from '../help/urlUtils';
-import {APICore} from '../APICore';
 
 export interface StreamResponse {
   uploadUri: string;
@@ -22,7 +22,7 @@ export class StreamChunkStrategy implements UploadStrategy {
   private _openedStream: StreamResponse | null = null;
   public constructor(
     private urlBuilder: StreamUrlBuilder,
-    private api: APICore
+    private documentsAxiosConfig: AxiosRequestConfig
   ) {}
 
   public async upload(batch: BatchUpdateDocuments) {
@@ -40,7 +40,11 @@ export class StreamChunkStrategy implements UploadStrategy {
 
   public async openStream() {
     const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
-    const res = await this.api.post<StreamResponse>(openStreamUrl.toString());
+    const res = await axios.post<StreamResponse>(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
 
     this._openedStream = res.data;
   }
@@ -53,7 +57,11 @@ export class StreamChunkStrategy implements UploadStrategy {
       `${this.urlBuilder.baseStreamURL}/${this._openedStream.streamId}/close`
     );
 
-    const res = await this.api.post(openStreamUrl.toString());
+    const res = await axios.post(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
     this._openedStream = null;
     return res.data;
   }
@@ -68,7 +76,11 @@ export class StreamChunkStrategy implements UploadStrategy {
       `${this.urlBuilder.baseStreamURL}/${streamId}/chunk`
     );
 
-    const res = await this.api.post<StreamResponse>(openStreamUrl.toString());
+    const res = await axios.post<StreamResponse>(
+      openStreamUrl.toString(),
+      {},
+      this.documentsAxiosConfig
+    );
     return res.data;
   }
 }

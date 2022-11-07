@@ -19,9 +19,9 @@ import {
   BatchUpdateDocumentsFromFiles,
   BatchUpdateDocumentsOptions,
 } from '../interfaces';
+import {axiosRequestHeaders} from '../help/axiosUtils';
 import {uploadBatch, uploadBatchFromFile} from './documentUploader';
 import {StreamUrlBuilder} from '../help/urlUtils';
-import {APICore} from '../APICore';
 
 /**
  * Manage a catalog source.
@@ -30,7 +30,6 @@ import {APICore} from '../APICore';
  */
 export class CatalogSource {
   private platformClient: PlatformClient;
-  private api: APICore;
   private options: Required<PlatformUrlOptions>;
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
@@ -49,7 +48,6 @@ export class CatalogSource {
     opts: PlatformUrlOptions = CatalogSource.defaultOptions
   ) {
     this.options = {...CatalogSource.defaultOptions, ...opts};
-    this.api = new APICore(this.apikey);
     this.platformClient = new PlatformClient({
       accessToken: apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),
@@ -155,11 +153,13 @@ export class CatalogSource {
 
   private fileContainerStrategy(sourceId: string): FileContainerStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
-    return new FileContainerStrategy(urlBuilder, this.api);
+    const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
+    return new FileContainerStrategy(urlBuilder, documentsAxiosConfig);
   }
 
   private streamChunkStrategy(sourceId: string): StreamChunkStrategy {
     const urlBuilder = this.urlBuilder(sourceId);
-    return new StreamChunkStrategy(urlBuilder, this.api);
+    const documentsAxiosConfig = axiosRequestHeaders(this.apikey);
+    return new StreamChunkStrategy(urlBuilder, documentsAxiosConfig);
   }
 }
