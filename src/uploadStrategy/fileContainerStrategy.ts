@@ -1,8 +1,8 @@
-import axios, {AxiosRequestConfig} from 'axios';
 import {BatchUpdateDocuments} from '../interfaces';
 import {UploadStrategy} from './strategy';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {URLBuilder} from '../help/urlUtils';
+import {APICore} from '../APICore';
 export interface FileContainerResponse {
   uploadUri: string;
   fileId: string;
@@ -16,10 +16,7 @@ export interface FileContainerResponse {
  * @implements {UploadStrategy}
  */
 export class FileContainerStrategy implements UploadStrategy {
-  public constructor(
-    private urlBuilder: URLBuilder,
-    private documentsAxiosConfig: AxiosRequestConfig
-  ) {}
+  public constructor(private urlBuilder: URLBuilder, private api: APICore) {}
 
   public async upload(batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
@@ -29,17 +26,13 @@ export class FileContainerStrategy implements UploadStrategy {
 
   private async createFileContainer() {
     const fileContainerURL = this.urlBuilder.fileContainerUrl.toString();
-    const res = await axios.post<FileContainerResponse>(
-      fileContainerURL,
-      {},
-      this.documentsAxiosConfig
-    );
+    const res = await this.api.post<FileContainerResponse>(fileContainerURL);
     return res.data;
   }
 
   private pushFileContainerContent(fileContainer: FileContainerResponse) {
     const pushURL = this.urlBuilder.baseAPIURLForUpdate;
     pushURL.searchParams.append('fileId', fileContainer.fileId);
-    return axios.put(pushURL.toString(), {}, this.documentsAxiosConfig);
+    return this.api.put(pushURL.toString());
   }
 }
