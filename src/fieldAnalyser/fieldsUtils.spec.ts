@@ -1,7 +1,10 @@
 jest.mock('@coveo/platform-client');
 
-import PlatformClient, {FieldModel} from '@coveo/platform-client';
-import {createFields, listAllFieldsFromOrg} from './fieldUtils';
+import PlatformClient, {FieldModel, FieldTypes} from '@coveo/platform-client';
+import {Inconsistencies} from './inconsistencies';
+import {FieldTypeInconsistencyError} from '../errors';
+import * as Utils from './fieldUtils';
+const {createFields, listAllFieldsFromOrg, createFieldsFromReport} = Utils;
 
 const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockedCreateField = jest.fn();
@@ -96,91 +99,36 @@ describe('fieldUtils', () => {
     );
   });
 
-  // TODO:
-  // TODO:
-  // TODO:
-  // TODO:
-  // describe('when there are no inconsistencies', () => {
-  //   beforeEach(() => {
-  //     const inconsistencies = new Inconsistencies();
-  //     mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
-  //   });
+  describe('when creating fields from report', () => {
+    const fields: FieldModel[] = [
+      {name: 'field1'},
+      {name: 'field2'},
+      {name: 'field3'},
+    ];
 
-  //   it('should analyse document builder', async () => {
-  //     const docBuilder = new DocumentBuilder('the_uri', 'the_title');
-  //     await uploadDocument('the_id', docBuilder);
-  //     expect(mockAnalyserAdd).toHaveBeenCalledWith([docBuilder]);
-  //   });
+    it('should call #createFields', async () => {
+      const spy = jest.spyOn(Utils, 'createFields');
+      const inconsistencies = new Inconsistencies();
+      await createFieldsFromReport(dummyPlatformClient(), {
+        fields,
+        inconsistencies,
+      });
+      expect(spy).toHaveBeenCalledWith(client, [
+        {name: 'field1'},
+        {name: 'field2'},
+        {name: 'field3'},
+      ]);
+    });
 
-  //   it('should analyse document builder batch', async () => {
-  //     await uploadBatch('the_id', batch);
-  //     expect(mockAnalyserAdd).toHaveBeenCalledWith(batch.addOrUpdate);
-  //   });
-  // });
-
-  // describe('when document batches contain type inconsistencies', () => {
-  //   beforeEach(() => {
-  //     const inconsistencies = new Inconsistencies().add('foo', [
-  //       FieldTypes.STRING,
-  //       FieldTypes.DOUBLE,
-  //     ]);
-  //     mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
-  //   });
-  //   it('should throw', async () => {
-  //     await expect(() => uploadBatch('the_id', batch)).rejects.toThrow(
-  //       FieldTypeInconsistencyError
-  //     );
-  //   });
-  // });
-
-  // describe('when document batches contain missing fields', () => {
-  //   beforeEach(() => {
-  //     const inconsistencies = new Inconsistencies();
-  //     mockAnalyserReport.mockReturnValueOnce({
-  //       fields: [
-  //         {name: 'stringfield', type: FieldTypes.STRING},
-  //         {name: 'numericalfield', type: FieldTypes.DOUBLE},
-  //       ],
-  //       inconsistencies,
-  //     });
-  //   });
-  //   it('should create fields', async () => {
-  //     await uploadBatch('the_id', batch);
-  //     expect(mockCreateField).toHaveBeenCalledWith([
-  //       {name: 'stringfield', type: FieldTypes.STRING},
-  //       {name: 'numericalfield', type: FieldTypes.DOUBLE},
-  //     ]);
-  //   });
-  // });
-
-  // describe('when document batches do not contain missing fields', () => {
-  //   beforeEach(() => {
-  //     const inconsistencies = new Inconsistencies();
-  //     mockAnalyserReport.mockReturnValueOnce({fields: [], inconsistencies});
-  //   });
-
-  //   it('should not create fields', async () => {
-  //     uploadBatch('the_id', batch);
-  //     expect(mockCreateField).not.toHaveBeenCalled();
-  //   });
-  // });
-
-  // describe('when field names should be transformed', () => {
-  //   beforeEach(() => {
-  //     const inconsistencies = new Inconsistencies();
-  //     mockAnalyserReport.mockReturnValueOnce({
-  //       fields: [{name: 'transformed_field', type: FieldTypes.STRING}],
-  //       inconsistencies,
-  //     });
-  //   });
-
-  //   describe('when field normalization is enabled', () => {
-  //     it('should create transformed fields', async () => {
-  //       await uploadBatch('the_id', batch);
-  //       expect(mockCreateField).toHaveBeenCalledWith([
-  //         {name: 'transformed_field', type: FieldTypes.STRING},
-  //       ]);
-  //     });
-  //   });
-  // });
+    it('should throw if inconsistencies', async () => {
+      const inconsistencies = new Inconsistencies();
+      inconsistencies.add('foo', [FieldTypes.STRING, FieldTypes.DOUBLE]);
+      const create = () =>
+        createFieldsFromReport(dummyPlatformClient(), {
+          fields,
+          inconsistencies,
+        });
+      await expect(() => create()).rejects.toThrow(FieldTypeInconsistencyError);
+    });
+  });
 });
