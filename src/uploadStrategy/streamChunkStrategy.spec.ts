@@ -1,9 +1,9 @@
-jest.mock('axios');
+jest.mock('../APICore');
 jest.mock('../help/fileContainer');
 
 import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
-import axios from 'axios';
+import {APICore} from '../APICore';
 import {PlatformEnvironment} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {StreamUrlBuilder} from '../help/urlUtils';
@@ -11,7 +11,7 @@ import {BatchUpdateDocuments} from '../interfaces';
 import {FileContainerResponse} from './fileContainerStrategy';
 import {StreamChunkStrategy} from './streamChunkStrategy';
 
-const mockedAxios = jest.mocked(axios);
+const mockedAPICore = jest.mocked(APICore);
 const mockedPost = jest.fn();
 
 const platformOptions = {
@@ -33,8 +33,8 @@ const fileContainerResponse: FileContainerResponse = {
   requiredHeaders: {foo: 'bar'},
 };
 
-const doMockAxios = () => {
-  mockedAxios.post = mockedPost;
+const doMockAPICore = () => {
+  mockedAPICore.prototype.post.mockImplementation(mockedPost);
 };
 
 const doAxiosMockFileContainerResponse = () => ({
@@ -62,7 +62,7 @@ const mockSuccessAxiosCalls = () => {
 describe('StreamChunkStrategy', () => {
   let strategy: StreamChunkStrategy;
   beforeAll(() => {
-    doMockAxios();
+    doMockAPICore();
     mockSuccessAxiosCalls();
   });
 
@@ -72,13 +72,7 @@ describe('StreamChunkStrategy', () => {
       'org-id',
       platformOptions
     );
-    strategy = new StreamChunkStrategy(builder, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: 'Bearer the_key',
-        'Content-Type': 'application/json',
-      },
-    });
+    strategy = new StreamChunkStrategy(builder, new APICore('access_token'));
     await strategy.preUpload();
     await strategy.upload(documentBatch);
     await strategy.postUpload();
@@ -91,45 +85,21 @@ describe('StreamChunkStrategy', () => {
   it('should open a stream', () => {
     expect(mockedPost).toHaveBeenNthCalledWith(
       1,
-      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/open',
-      {},
-      {
-        headers: {
-          Accept: 'application/json',
-          Authorization: 'Bearer the_key',
-          'Content-Type': 'application/json',
-        },
-      }
+      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/open'
     );
   });
 
   it('should request a stream chunk', () => {
     expect(mockedPost).toHaveBeenNthCalledWith(
       2,
-      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/the_stream_id/chunk',
-      {},
-      {
-        headers: {
-          Accept: 'application/json',
-          Authorization: 'Bearer the_key',
-          'Content-Type': 'application/json',
-        },
-      }
+      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/the_stream_id/chunk'
     );
   });
 
   it('should close the opened stream', () => {
     expect(mockedPost).toHaveBeenNthCalledWith(
       3,
-      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/the_stream_id/close',
-      {},
-      {
-        headers: {
-          Accept: 'application/json',
-          Authorization: 'Bearer the_key',
-          'Content-Type': 'application/json',
-        },
-      }
+      'https://api.cloud.coveo.com/push/v1/organizations/org-id/sources/source-id/stream/the_stream_id/close'
     );
   });
 
