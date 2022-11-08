@@ -1,6 +1,8 @@
-jest.mock('axios');
+const mockedPut = jest.fn();
+jest.mock('axios', () => ({
+  default: {put: mockedPut},
+}));
 
-import axios from 'axios';
 import {BatchUpdateDocuments, DocumentBuilder} from '..';
 import {
   FileContainerResponse,
@@ -8,7 +10,6 @@ import {
 } from './fileContainer';
 
 describe('#uploadContentToFileContainer', () => {
-  const mockAxios = axios as jest.Mocked<typeof axios>;
   const fileContainerResponse: FileContainerResponse = {
     uploadUri: 'https://fake.upload.url',
     fileId: 'file_id',
@@ -21,7 +22,7 @@ describe('#uploadContentToFileContainer', () => {
   };
 
   const doMockAxiosPut = () => {
-    mockAxios.put.mockImplementation(() => Promise.resolve());
+    mockedPut.mockImplementation(() => Promise.resolve());
   };
 
   beforeEach(() => {
@@ -31,7 +32,7 @@ describe('#uploadContentToFileContainer', () => {
   it('should perform an PUT request with the right params', async () => {
     await uploadContentToFileContainer(fileContainerResponse, batch);
 
-    expect(mockAxios.put).toHaveBeenCalledWith(
+    expect(mockedPut).toHaveBeenCalledWith(
       'https://fake.upload.url/',
       expect.objectContaining({
         addOrUpdate: expect.arrayContaining([
@@ -52,7 +53,7 @@ describe('#uploadContentToFileContainer', () => {
 
   describe('when an MaxBodyLengthExceededError is thrown', () => {
     beforeEach(() => {
-      mockAxios.put.mockImplementationOnce(() =>
+      mockedPut.mockImplementationOnce(() =>
         Promise.reject(new FakeMaxBodyLengthExceededError())
       );
     });
@@ -67,7 +68,7 @@ describe('#uploadContentToFileContainer', () => {
   describe('when anything else than MaxBodyLengthExceededError is thrown', () => {
     const thrownError = new Error();
     beforeEach(() => {
-      mockAxios.put.mockImplementationOnce(() => Promise.reject(thrownError));
+      mockedPut.mockImplementationOnce(() => Promise.reject(thrownError));
     });
 
     it('should just bubble up the error', async () => {
