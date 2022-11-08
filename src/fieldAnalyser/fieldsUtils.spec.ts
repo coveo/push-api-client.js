@@ -1,7 +1,10 @@
 jest.mock('@coveo/platform-client');
 
-import PlatformClient, {FieldModel} from '@coveo/platform-client';
-import {createFields, listAllFieldsFromOrg} from './fieldUtils';
+import PlatformClient, {FieldModel, FieldTypes} from '@coveo/platform-client';
+import {Inconsistencies} from './inconsistencies';
+import {FieldTypeInconsistencyError} from '../errors';
+import * as Utils from './fieldUtils';
+const {createFields, listAllFieldsFromOrg, createFieldsFromReport} = Utils;
 
 const mockedPlatformClient = jest.mocked(PlatformClient);
 const mockedCreateField = jest.fn();
@@ -94,5 +97,38 @@ describe('fieldUtils', () => {
         });
       }
     );
+  });
+
+  describe('when creating fields from report', () => {
+    const fields: FieldModel[] = [
+      {name: 'field1'},
+      {name: 'field2'},
+      {name: 'field3'},
+    ];
+
+    it('should call #createFields', async () => {
+      const spy = jest.spyOn(Utils, 'createFields');
+      const inconsistencies = new Inconsistencies();
+      await createFieldsFromReport(dummyPlatformClient(), {
+        fields,
+        inconsistencies,
+      });
+      expect(spy).toHaveBeenCalledWith(client, [
+        {name: 'field1'},
+        {name: 'field2'},
+        {name: 'field3'},
+      ]);
+    });
+
+    it('should throw if inconsistencies', async () => {
+      const inconsistencies = new Inconsistencies();
+      inconsistencies.add('foo', [FieldTypes.STRING, FieldTypes.DOUBLE]);
+      const create = () =>
+        createFieldsFromReport(dummyPlatformClient(), {
+          fields,
+          inconsistencies,
+        });
+      await expect(() => create()).rejects.toThrow(FieldTypeInconsistencyError);
+    });
   });
 });
