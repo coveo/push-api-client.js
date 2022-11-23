@@ -8,12 +8,11 @@
   ],
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
-  "//": "TODO: CDX-1239: Drop axios alpha version",
   "dependencies": {
     "@coveo/bueno": "^0.42.0",
     "@coveo/platform-client": "37.7.0",
     "abortcontroller-polyfill": "^1.7.1",
-    "axios": "^1.2.0-alpha.1",
+    "axios": "^1.2.0",
     "dayjs": "^1.10.4",
     "exponential-backoff": "^3.1.0",
     "isomorphic-fetch": "^3.0.0"
