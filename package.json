@@ -1,6 +1,6 @@
 {
   "name": "@coveo/push-api-client",
-  "version": "2.7.11",
+  "version": "2.7.12",
   "description": "Push API client",
   "main": "./dist/index.js",
   "files": [
