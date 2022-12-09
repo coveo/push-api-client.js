@@ -1,13 +1,13 @@
 import dayjs = require('dayjs');
 import {createHash} from 'crypto';
 import {CompressionType, Document, Metadata, MetadataValue} from './document';
-import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 import {isFieldNameValid} from './fieldAnalyser/fieldUtils';
 import {UnsupportedFieldError} from './errors/fieldErrors';
 import {
   BuiltInTransformers,
   Transformer,
 } from './validation/transformers/transformer';
+import {PermissionSetBuilder} from './permissionSetBuilder';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -23,7 +23,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: true}, // TODO: Revisit with CDX-307 on validation
+      permissions: [{allowAnonymous: true}], // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -206,37 +206,27 @@ export class DocumentBuilder {
   }
 
   /**
-   * Set allowed identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
-   * @returns
+   * TODO: Set complex permission level
    */
-  public withAllowedPermissions(
-    securityIdentityBuilder: SecurityIdentityBuilder
-  ) {
-    this.setPermission(securityIdentityBuilder, 'allowedPermissions');
+  public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
+    this.doc.permissions?.push(permissionSetBuilder.build());
     return this;
   }
 
   /**
-   * Set denied identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
-   * @returns
+   * TODO: Set complex permission level
    */
-  public withDeniedPermissions(
-    securityIdentityBuilder: SecurityIdentityBuilder
+  public withPermissionLevel(
+    permissionLevelName: string,
+    permissionSetBuilders: PermissionSetBuilder[]
   ) {
-    this.setPermission(securityIdentityBuilder, 'deniedPermissions');
-    return this;
-  }
-
-  /**
-   * Set allowAnonymous for permissions on the document. See {@link Document.permissions}
-   * @param allowAnonymous
-   * @returns
-   */
-  public withAllowAnonymousUsers(allowAnonymous: boolean) {
-    this.doc.permissions!.allowAnonymous = allowAnonymous;
-    return this;
+    const permissionSets = permissionSetBuilders.map((permissionSet) =>
+      permissionSet.build()
+    );
+    this.doc.permissions?.push({
+      name: permissionLevelName,
+      permissionSets,
+    });
   }
 
   public build() {
@@ -283,17 +273,9 @@ export class DocumentBuilder {
 
   private marshalPermissions() {
     if (!this.doc.permissions) {
-      return {};
+      return [];
     }
-    return {
-      permissions: [
-        {
-          allowAnonymous: this.doc.permissions.allowAnonymous,
-          allowedPermissions: this.doc.permissions.allowedPermissions || [],
-          deniedPermissions: this.doc.permissions.deniedPermissions || [],
-        },
-      ],
-    };
+    return {permissions: this.doc.permissions};
   }
 
   private validateAndFillMissing() {
@@ -321,22 +303,6 @@ export class DocumentBuilder {
     const isBase64 = Buffer.from(data, 'base64').toString('base64') === data;
     if (!isBase64) {
       throw 'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.';
-    }
-  }
-
-  private setPermission(
-    securityIdentityBuilder: SecurityIdentityBuilder,
-    permissionSection: 'allowedPermissions' | 'deniedPermissions'
-  ) {
-    const identities = securityIdentityBuilder.build();
-    if (!this.doc.permissions![permissionSection]) {
-      this.doc.permissions![permissionSection] = [];
-    }
-    if (Array.isArray(identities)) {
-      this.doc.permissions![permissionSection] =
-        this.doc.permissions![permissionSection]?.concat(identities);
-    } else {
-      this.doc.permissions![permissionSection]?.push(identities);
     }
   }
 }

@@ -21,8 +21,9 @@ import {
   NotAJsonFileError,
 } from '../errors/validatorErrors';
 import {RequiredKeyValidator} from './requiredKeyValidator';
-import {Metadata} from '../document';
+import {Metadata, PermissionLevelModel, PermissionSetModel} from '../document';
 import {ParseDocumentOptions} from '../interfaces';
+import {PermissionSetBuilder} from '../permissionSetBuilder';
 
 export const parseAndGetDocumentBuilderFromJSONDocument = async (
   documentPath: PathLike,
@@ -77,11 +78,7 @@ const processDocument = (
   );
   try {
     processKnownKeys(caseInsensitiveDoc, documentBuilder);
-    processSecurityIdentities(
-      caseInsensitiveDoc,
-      documentBuilder,
-      documentPath
-    );
+    processPermissionList(caseInsensitiveDoc, documentBuilder, documentPath);
     processMetadata(caseInsensitiveDoc, documentBuilder, options);
   } catch (error) {
     if (typeof error === 'string') {
@@ -167,7 +164,10 @@ const processKnownKeys = (
   );
 };
 
-const processSecurityIdentities = (
+// TODO: test with simple permissions
+// TODO: test with complext permissions
+// TODO: check if can provide both complex and simple permission within the array
+const processPermissionList = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
   documentBuilder: DocumentBuilder,
   documentPath: PathLike
@@ -176,69 +176,138 @@ const processSecurityIdentities = (
     'permissions',
     caseInsensitiveDoc
   ).whenExists((permissions) => {
-    const caseInsensitivePermissions = new CaseInsensitiveDocument(
-      permissions!
-    );
-    const requiredAllowAnonymous = new RequiredKeyValidator(
-      'allowanonymous',
-      caseInsensitivePermissions,
-      new BooleanValue({required: true})
-    );
-    if (!requiredAllowAnonymous.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredAllowAnonymous.explanation
-      );
-    }
+    permissions?.forEach((permission) => {
+      const caseInsensitivePermission =
+        new CaseInsensitiveDocument<PrimitivesValues>(permission);
 
-    const requiredAllowedPermissions = new RequiredKeyValidator(
-      'allowedpermissions',
-      caseInsensitivePermissions,
-      getSecurityIdentitySchemaValidation()
-    );
-
-    if (!requiredAllowedPermissions.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredAllowedPermissions.explanation
-      );
-    }
-
-    const requiredDeniedPermissions = new RequiredKeyValidator(
-      'deniedpermissions',
-      caseInsensitivePermissions,
-      getSecurityIdentitySchemaValidation()
-    );
-
-    if (!requiredDeniedPermissions.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredDeniedPermissions.explanation
-      );
-    }
-
-    documentBuilder.withAllowAnonymousUsers(permissions!.allowAnonymous);
-    permissions?.allowedPermissions?.forEach((p) => {
-      documentBuilder.withAllowedPermissions(
-        new AnySecurityIdentityBuilder(
-          p.identityType,
-          p.identity,
-          p.securityProvider
-        )
-      );
-    });
-    permissions?.deniedPermissions?.forEach((p) => {
-      documentBuilder.withDeniedPermissions(
-        new AnySecurityIdentityBuilder(
-          p.identityType,
-          p.identity,
-          p.securityProvider
-        )
-      );
+      new KnownKeys('permissionsets', caseInsensitivePermission)
+        .whenExists<PermissionLevelModel>((permissionLevel) => {
+          processPermissionLevel(
+            permissionLevel,
+            documentBuilder,
+            documentPath
+          );
+        })
+        .whenDoesNotExist<PermissionSetModel>((permissionSet) => {
+          processPermissionSet(permissionSet, documentBuilder, documentPath);
+        });
     });
 
     delete caseInsensitiveDoc.documentRecord['permissions'];
   });
+};
+
+const processPermissionSet = (
+  permissionSet: PermissionSetModel,
+  documentBuilder: DocumentBuilder,
+  documentPath: PathLike
+) => {
+  const permissionSetBuilder =
+    validateRequiredPermissionSetKeysAndGetPermissionSetBuilder(
+      permissionSet,
+      documentPath
+    );
+
+  documentBuilder.withPermissionSet(permissionSetBuilder);
+};
+
+const processPermissionLevel = (
+  permission: PermissionLevelModel,
+  documentBuilder: DocumentBuilder,
+  documentPath: PathLike
+) => {
+  const permissionSetBuilders = permission.permissionSets.map(
+    (permissionSet) => {
+      // TODO: test with nameless permission level
+      const caseInsensitivePermissions = new CaseInsensitiveDocument(
+        permission
+      );
+      const requiredPermissionLevelName = new RequiredKeyValidator<string>(
+        'name',
+        caseInsensitivePermissions,
+        new StringValue({required: true, emptyAllowed: false})
+      );
+      if (!requiredPermissionLevelName.isValid) {
+        throw new InvalidDocument(
+          documentPath,
+          requiredPermissionLevelName.explanation
+        );
+      }
+      return validateRequiredPermissionSetKeysAndGetPermissionSetBuilder(
+        permissionSet,
+        documentPath
+      );
+    }
+  );
+
+  documentBuilder.withPermissionLevel(permission.name, permissionSetBuilders);
+};
+
+const validateRequiredPermissionSetKeysAndGetPermissionSetBuilder = (
+  permission: PermissionSetModel,
+  documentPath: PathLike
+): PermissionSetBuilder => {
+  const caseInsensitivePermissions = new CaseInsensitiveDocument(permission);
+  const requiredAllowAnonymous = new RequiredKeyValidator(
+    'allowanonymous',
+    caseInsensitivePermissions,
+    new BooleanValue({required: true})
+  );
+  if (!requiredAllowAnonymous.isValid) {
+    throw new InvalidDocument(documentPath, requiredAllowAnonymous.explanation);
+  }
+
+  const requiredAllowedPermissions = new RequiredKeyValidator(
+    'allowedpermissions',
+    caseInsensitivePermissions,
+    getSecurityIdentitySchemaValidation()
+  );
+
+  if (!requiredAllowedPermissions.isValid) {
+    throw new InvalidDocument(
+      documentPath,
+      requiredAllowedPermissions.explanation
+    );
+  }
+
+  const requiredDeniedPermissions = new RequiredKeyValidator(
+    'deniedpermissions',
+    caseInsensitivePermissions,
+    getSecurityIdentitySchemaValidation()
+  );
+
+  if (!requiredDeniedPermissions.isValid) {
+    throw new InvalidDocument(
+      documentPath,
+      requiredDeniedPermissions.explanation
+    );
+  }
+
+  const permissionSetBuilder = new PermissionSetBuilder(
+    permission.allowAnonymous
+  );
+
+  permission.allowedPermissions?.forEach((p) => {
+    permissionSetBuilder.withAllowedPermissions(
+      new AnySecurityIdentityBuilder(
+        p.identityType,
+        p.identity,
+        p.securityProvider
+      )
+    );
+  });
+
+  permission.deniedPermissions?.forEach((p) => {
+    permissionSetBuilder.withDeniedPermissions(
+      new AnySecurityIdentityBuilder(
+        p.identityType,
+        p.identity,
+        p.securityProvider
+      )
+    );
+  });
+
+  return permissionSetBuilder;
 };
 
 const processMetadata = (
@@ -279,8 +348,9 @@ const getSecurityIdentitySchemaValidation =
             emptyAllowed: false,
           }),
           securityProvider: new StringValue({
-            emptyAllowed: false,
-            required: true,
+            emptyAllowed: true,
+            // TODO: not sure this is really required
+            required: false,
           }),
         },
       }),
