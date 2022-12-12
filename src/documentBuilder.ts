@@ -8,6 +8,8 @@ import {
   BuiltInTransformers,
   Transformer,
 } from './validation/transformers/transformer';
+import {z} from 'zod';
+import {pathToFileURL} from 'url';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -255,9 +257,17 @@ export class DocumentBuilder {
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
       ...this.marshalPermissions(),
-      documentId: uri,
+      ...this.marshalDocumentId(),
     };
     return out;
+  }
+
+  private marshalDocumentId() {
+    return {
+      documentId: z.string().url().safeParse(this.uri).success
+        ? this.uri
+        : pathToFileURL(this.uri).toString(),
+    };
   }
 
   private marshalMetadata() {
