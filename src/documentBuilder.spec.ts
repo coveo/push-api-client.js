@@ -1,4 +1,6 @@
+import {PermissionSetModel} from './document';
 import {DocumentBuilder} from './documentBuilder';
+import {PermissionSetBuilder} from './permissionSetBuilder';
 import {
   GroupSecurityIdentityBuilder,
   UserSecurityIdentityBuilder,
@@ -169,11 +171,15 @@ describe('DocumentBuilder', () => {
     expect(() => docBuilder.withFileExtension('nope')).toThrow();
   });
 
+  // TODO: describe permission sets
+
   it('should marshal allowedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(
+      false
+    ).withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'));
+
     expect(
-      docBuilder
-        .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       allowedPermissions: expect.arrayContaining([
         expect.objectContaining({identity: 'bob@foo.com'}),
@@ -182,11 +188,12 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal allowedPermissions in multiple #withAllowedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(false)
+      .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+      .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'));
+
     expect(
-      docBuilder
-        .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-        .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'))
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       allowedPermissions: expect.arrayContaining([
         expect.objectContaining({
@@ -202,12 +209,14 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal multiple allowedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(
+      false
+    ).withAllowedPermissions(
+      new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
+    );
+
     expect(
-      docBuilder
-        .withAllowedPermissions(
-          new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
-        )
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       allowedPermissions: expect.arrayContaining([
         expect.objectContaining({identity: 'bob@foo.com'}),
@@ -217,10 +226,12 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
+      new UserSecurityIdentityBuilder('bob@foo.com')
+    );
+
     expect(
-      docBuilder
-        .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       deniedPermissions: expect.arrayContaining([
         expect.objectContaining({identity: 'bob@foo.com'}),
@@ -229,11 +240,12 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions in multiple #withDeniedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(false)
+      .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
+      .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'));
+
     expect(
-      docBuilder
-        .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-        .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'))
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       deniedPermissions: expect.arrayContaining([
         expect.objectContaining({
@@ -249,12 +261,12 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal multiple deniedPermissions', () => {
+    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
+      new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
+    );
+
     expect(
-      docBuilder
-        .withDeniedPermissions(
-          new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
-        )
-        .marshal().permissions![0]
+      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
     ).toMatchObject({
       deniedPermissions: expect.arrayContaining([
         expect.objectContaining({identity: 'bob@foo.com'}),
@@ -264,14 +276,14 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal allowedPermissions to an empty array when undefined', () => {
-    expect(docBuilder.marshal().permissions![0].allowedPermissions.length).toBe(
-      0
-    );
+    const permissionSet = docBuilder.marshal()
+      .permissions[0] as PermissionSetModel;
+    expect(permissionSet.allowedPermissions!.length).toBe(0);
   });
 
   it('should marshal deniedPermissions to an empty array when undefined', () => {
-    expect(docBuilder.marshal().permissions![0].deniedPermissions.length).toBe(
-      0
-    );
+    const permissionSet = docBuilder.marshal()
+      .permissions[0] as PermissionSetModel;
+    expect(permissionSet.deniedPermissions!.length).toBe(0);
   });
 });

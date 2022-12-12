@@ -272,10 +272,7 @@ export class DocumentBuilder {
   }
 
   private marshalPermissions() {
-    if (!this.doc.permissions) {
-      return [];
-    }
-    return {permissions: this.doc.permissions};
+    return {permissions: this.doc.permissions || []};
   }
 
   private validateAndFillMissing() {
