@@ -1,6 +1,6 @@
 {
   "name": "@coveo/push-api-client",
-  "version": "2.7.12",
+  "version": "2.7.13",
   "description": "Push API client",
   "main": "./dist/index.js",
   "files": [
@@ -24,6 +24,7 @@
     "@typescript-eslint/eslint-plugin": "5.45.1",
     "@typescript-eslint/parser": "5.45.1",
     "cz-conventional-changelog": "3.3.0",
+    "detect-indent": "7.0.1",
     "dotenv": "16.0.3",
     "eslint": "8.29.0",
     "eslint-config-prettier": "8.5.0",
@@ -86,5 +87,10 @@
   "bugs": {
     "url": "https://github.com/coveo/push-api-client.js/issues"
   },
-  "homepage": "https://github.com/coveo/push-api-client.js#readme"
+  "homepage": "https://github.com/coveo/push-api-client.js#readme",
+  "standard-version": {
+    "scripts": {
+      "prebump": "node fixLock.mjs"
+    }
+  }
 }
