@@ -181,9 +181,6 @@ const ensurePermissionArray = (
   }
 };
 
-// TODO: test with simple permissions
-// TODO: test with complext permissions
-// TODO: check if can provide both complex and simple permission within the array
 const processPermissionList = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
   documentBuilder: DocumentBuilder,
@@ -232,7 +229,6 @@ const processPermissionLevel = (
 ) => {
   const permissionSetBuilders = permission.permissionSets.map(
     (permissionSet) => {
-      // TODO: test with nameless permission level
       const caseInsensitivePermissions = new CaseInsensitiveDocument(
         permission
       );

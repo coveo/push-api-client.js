@@ -207,7 +207,10 @@ export class DocumentBuilder {
   }
 
   /**
-   * TODO: Set complex permission level
+   * Set a permission set on the document
+   * Multiple permission sets can be combined.
+   *
+   * See [Simple Permission Model Definition Examples](https://docs.coveo.com/en/107)
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
     this.doc.permissions?.push(permissionSetBuilder.build());
@@ -215,7 +218,18 @@ export class DocumentBuilder {
   }
 
   /**
-   * TODO: Set complex permission level
+   * Set a permission level on the document
+   * Multiple permission levels can be added to the document. In this case, the order at which this method is called will influence the permission hierarchy.
+   *
+   * Consider the following example:
+   * ```
+   *  doc.withPermissionLevel('level1', [setA])
+   *     .withPermissionLevel('level2', [setB, setC])
+   * ```
+   *
+   * Permission sets from level1 (`setA`) will supersed the ones from level2 (`setB` and `setC`).
+   *
+   * See [Complex Permission Model Definition](https://docs.coveo.com/en/25/index-content/complex-permission-model-definition-example)
    */
   public withPermissionLevel(
     permissionLevelName: string,
