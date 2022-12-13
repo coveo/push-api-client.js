@@ -188,7 +188,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal allowedPermissions in multiple #withAllowedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false)
+    const permissionSet = new PermissionSetBuilder()
       .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
       .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'));
 
@@ -226,7 +226,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
+    const permissionSet = new PermissionSetBuilder().withDeniedPermissions(
       new UserSecurityIdentityBuilder('bob@foo.com')
     );
 
@@ -240,7 +240,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions in multiple #withDeniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false)
+    const permissionSet = new PermissionSetBuilder()
       .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
       .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'));
 
@@ -261,7 +261,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal multiple deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
+    const permissionSet = new PermissionSetBuilder().withDeniedPermissions(
       new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
     );
 

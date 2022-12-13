@@ -164,6 +164,23 @@ const processKnownKeys = (
   );
 };
 
+const ensurePermissionArray = (
+  caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
+  documentPath: PathLike
+) => {
+  const requiredPermissionArray = new RequiredKeyValidator(
+    'permissions',
+    caseInsensitiveDoc,
+    new ArrayValue({required: false})
+  );
+  if (!requiredPermissionArray.isValid) {
+    throw new InvalidDocument(
+      documentPath,
+      requiredPermissionArray.explanation
+    );
+  }
+};
+
 // TODO: test with simple permissions
 // TODO: test with complext permissions
 // TODO: check if can provide both complex and simple permission within the array
@@ -172,25 +189,22 @@ const processPermissionList = (
   documentBuilder: DocumentBuilder,
   documentPath: PathLike
 ) => {
+  ensurePermissionArray(caseInsensitiveDoc, documentPath);
   new KnownKeys<Document['permissions']>(
     'permissions',
     caseInsensitiveDoc
   ).whenExists((permissions) => {
-    permissions?.forEach((permission) => {
+    permissions!.forEach((permission) => {
       const caseInsensitivePermission =
         new CaseInsensitiveDocument<PrimitivesValues>(permission);
 
       new KnownKeys('permissionsets', caseInsensitivePermission)
-        .whenExists<PermissionLevelModel>((permissionLevel) => {
-          processPermissionLevel(
-            permissionLevel,
-            documentBuilder,
-            documentPath
-          );
-        })
-        .whenDoesNotExist<PermissionSetModel>((permissionSet) => {
-          processPermissionSet(permissionSet, documentBuilder, documentPath);
-        });
+        .whenExists<PermissionLevelModel>((permissionLevel) =>
+          processPermissionLevel(permissionLevel, documentBuilder, documentPath)
+        )
+        .whenDoesNotExist<PermissionSetModel>((permissionSet) =>
+          processPermissionSet(permissionSet, documentBuilder, documentPath)
+        );
     });
 
     delete caseInsensitiveDoc.documentRecord['permissions'];

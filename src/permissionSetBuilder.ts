@@ -9,7 +9,7 @@ export class PermissionSetBuilder {
    * TODO: document on permission set
    * @param {boolean} allowAnonymous Set allowAnonymous for permissions on the document
    */
-  public constructor(allowAnonymous: boolean) {
+  public constructor(allowAnonymous = false) {
     this.permissionSet = {allowAnonymous};
   }
 

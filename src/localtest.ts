@@ -12,7 +12,7 @@ const SOURCE_ID = process.env.SOURCE_ID as string;
 async function main() {
   const source = new PushSource(API_KEY, ORG_ID);
   await source.setSourceStatus(SOURCE_ID, 'REFRESH');
-  const allowedPermissionSet = new PermissionSetBuilder(false)
+  const allowedPermissionSet = new PermissionSetBuilder()
     .withAllowedPermissions(
       new UserSecurityIdentityBuilder('olamothe@coveo.com')
     )
@@ -55,7 +55,7 @@ async function main() {
     delete: [],
   };
 
-  const permissionSet = new PermissionSetBuilder(false).withAllowedPermissions(
+  const permissionSet = new PermissionSetBuilder().withAllowedPermissions(
     new UserSecurityIdentityBuilder('olamothe@coveo.com')
   );
 

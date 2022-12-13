@@ -34,6 +34,10 @@ export class KnownKeys<T extends PrimitivesValues> {
   }
 
   public whenDoesNotExist<U = T>(cb: (v: U) => void) {
-    return this.whenExists(cb);
+    const value = this.value;
+    if (isNullOrUndefined(value)) {
+      cb(this.doc.documentRecord as U);
+    }
+    return this;
   }
 }
