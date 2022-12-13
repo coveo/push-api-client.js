@@ -18,7 +18,7 @@ export class DocumentBuilder {
    * @param uri The URI of the document. See {@link Document.uri}
    * @param title The title of the document. See {@link Document.title}
    */
-  constructor(uri: string, title: string) {
+  constructor(private uri: string, title: string) {
     this.doc = {
       uri,
       title,
@@ -211,10 +211,6 @@ export class DocumentBuilder {
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
     this.doc.permissions?.push(permissionSetBuilder.build());
-    console.log('*********************');
-    console.log(this.doc.permissions);
-    console.log('*********************');
-
     return this;
   }
 
@@ -232,6 +228,8 @@ export class DocumentBuilder {
       name: permissionLevelName,
       permissionSets,
     });
+
+    return this;
   }
 
   public build() {

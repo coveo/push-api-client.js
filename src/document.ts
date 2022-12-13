@@ -51,8 +51,6 @@ export type CompressionType =
 export type PermissionSetModel = {
   /**
    * Whether to allow anonymous users in this permission set.
-   *
-   * Default value is false.
    */
   allowAnonymous: boolean;
   /**

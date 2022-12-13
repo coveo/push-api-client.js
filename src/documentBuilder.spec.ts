@@ -1,9 +1,9 @@
-import {PermissionSetModel} from './document';
 import {DocumentBuilder} from './documentBuilder';
 import {PermissionSetBuilder} from './permissionSetBuilder';
 import {
   GroupSecurityIdentityBuilder,
   UserSecurityIdentityBuilder,
+  VirtualGroupSecurityIdentityBuilder,
 } from './securityIdentityBuilder';
 import {BuiltInTransformers} from './validation/transformers/transformer';
 
@@ -171,126 +171,84 @@ describe('DocumentBuilder', () => {
     expect(() => docBuilder.withFileExtension('nope')).toThrow();
   });
 
-  // TODO: describe permission sets
+  it('should build every permission set added to the document', () => {
+    const userIdentity = new UserSecurityIdentityBuilder([
+      'bob@foo.com',
+      'sue@foo.com',
+    ]);
+    const groupIdentity = new GroupSecurityIdentityBuilder('my_group');
+    const bobSpy = jest.spyOn(userIdentity, 'build');
+    const groupSpy = jest.spyOn(userIdentity, 'build');
 
-  it('should marshal allowedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(
-      false
-    ).withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'));
-
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      allowedPermissions: expect.arrayContaining([
-        expect.objectContaining({identity: 'bob@foo.com'}),
-      ]),
-    });
-  });
-
-  it('should marshal allowedPermissions in multiple #withAllowedPermissions', () => {
     const permissionSet = new PermissionSetBuilder(false)
-      .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-      .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'));
+      .withDeniedPermissions(userIdentity)
+      .withDeniedPermissions(groupIdentity);
 
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      allowedPermissions: expect.arrayContaining([
-        expect.objectContaining({
-          identity: 'bob@foo.com',
-          identityType: 'USER',
-        }),
-        expect.objectContaining({
-          identity: 'my_group',
-          identityType: 'GROUP',
-        }),
-      ]),
-    });
+    docBuilder.withPermissionSet(permissionSet);
+
+    expect(bobSpy).toHaveBeenCalledTimes(1);
+    expect(groupSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should marshal multiple allowedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(
-      false
-    ).withAllowedPermissions(
-      new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
-    );
-
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      allowedPermissions: expect.arrayContaining([
-        expect.objectContaining({identity: 'bob@foo.com'}),
-        expect.objectContaining({identity: 'sue@foo.com'}),
-      ]),
-    });
+  it('should marshal an empty array when permissions are not defined', () => {
+    expect(docBuilder.marshal().permissions).toHaveLength(0);
   });
 
-  it('should marshal deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
-      new UserSecurityIdentityBuilder('bob@foo.com')
-    );
-
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      deniedPermissions: expect.arrayContaining([
-        expect.objectContaining({identity: 'bob@foo.com'}),
-      ]),
-    });
-  });
-
-  it('should marshal deniedPermissions in multiple #withDeniedPermissions', () => {
+  it('should marshal permission set', () => {
+    const userIdentity = new UserSecurityIdentityBuilder([
+      'bob@foo.com',
+      'sue@foo.com',
+    ]);
     const permissionSet = new PermissionSetBuilder(false)
-      .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
-      .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'));
+      .withDeniedPermissions(userIdentity)
+      .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'))
+      .withDeniedPermissions(
+        new VirtualGroupSecurityIdentityBuilder('virtual_group')
+      );
 
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      deniedPermissions: expect.arrayContaining([
-        expect.objectContaining({
-          identity: 'bob@foo.com',
-          identityType: 'USER',
-        }),
-        expect.objectContaining({
-          identity: 'my_group',
-          identityType: 'GROUP',
-        }),
-      ]),
-    });
+    const {permissions} = docBuilder.withPermissionSet(permissionSet).marshal();
+    expect(permissions).toHaveLength(1);
   });
 
-  it('should marshal multiple deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
-      new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
+  describe('when combining multiple permission sets', () => {
+    // Example taken from https://docs.coveo.com/en/107
+    const openedPermissionSet = new PermissionSetBuilder(
+      true
+    ).withDeniedPermissions(
+      new UserSecurityIdentityBuilder('asmith@example.com')
     );
 
-    expect(
-      docBuilder.withPermissionSet(permissionSet).marshal().permissions[0]
-    ).toMatchObject({
-      deniedPermissions: expect.arrayContaining([
-        expect.objectContaining({identity: 'bob@foo.com'}),
-        expect.objectContaining({identity: 'sue@foo.com'}),
-      ]),
+    const restrictedPermissionSet = new PermissionSetBuilder(false)
+      .withAllowedPermissions(new GroupSecurityIdentityBuilder('SampleTeam1'))
+      .withAllowedPermissions(
+        new UserSecurityIdentityBuilder('emitchell@example.com')
+      );
+
+    const misteryPermissionSet = new PermissionSetBuilder(false)
+      .withDeniedPermissions(
+        new VirtualGroupSecurityIdentityBuilder('SampleGroup')
+      )
+      .withAllowedPermissions(new UserSecurityIdentityBuilder('MysteryUserX'));
+
+    it('should marshal multiple permission sets', () => {
+      const {permissions} = docBuilder
+        .withPermissionSet(openedPermissionSet)
+        .withPermissionSet(restrictedPermissionSet)
+        .withPermissionSet(misteryPermissionSet)
+        .marshal();
+      expect(permissions).toHaveLength(3);
+    });
+
+    it('should marshal permission level', () => {
+      const {permissions} = docBuilder
+        .withPermissionLevel('level1', [
+          openedPermissionSet,
+          restrictedPermissionSet,
+        ])
+        .withPermissionLevel('level2', [misteryPermissionSet])
+        .marshal();
+
+      expect(permissions).toMatchSnapshot();
     });
   });
-
-  // it('should marshal allowedPermissions to an empty array when undefined', () => {
-  //   const permissionSet = docBuilder.marshal()
-  //     .permissions[0] as PermissionSetModel;
-  //   expect(permissionSet.allowedPermissions!.length).toBe(0);
-  // });
-
-  // it('should marshal deniedPermissions to an empty array when undefined', () => {
-  //   const permissionSet = docBuilder.marshal()
-  //     .permissions[0] as PermissionSetModel;
-  //   expect(permissionSet.deniedPermissions!.length).toBe(0);
-  // });
-  it('should marshal permissions to an empty array when undefined', () => {
-    const permissionSet = docBuilder.marshal().permissions;
-    expect(permissionSet).toEqual([]);
-  });
-
-  // TODO: test with levels
-  // TODO: add sample file with permission levels
 });

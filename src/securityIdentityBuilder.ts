@@ -31,7 +31,7 @@ export class AnySecurityIdentityBuilder implements SecurityIdentityBuilder {
     this.securityIdentity = {
       identityType,
       identity,
-      securityProvider,
+      ...(securityProvider && {securityProvider}),
     };
   }
 

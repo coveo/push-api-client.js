@@ -10,7 +10,6 @@ Field names can only contain lowercase letters (a-z), numbers (0-9), and undersc
     "
 `;
 
-
 exports[`DocumentBuilder should throw error for invalid metadata values even after transformation 1`] = `
 "
 The following field names are still invalid after transformation:
@@ -19,4 +18,61 @@ The following field names are still invalid after transformation:
 
 Field names can only contain lowercase letters (a-z), numbers (0-9), and underscores. Field names must be at least one character long and must start with a lowercase letter.
     "
+`;
+
+exports[`DocumentBuilder when combining multiple permission sets should marshal permission level 1`] = `
+[
+  {
+    "name": "level1",
+    "permissionSets": [
+      {
+        "allowAnonymous": true,
+        "allowedPermissions": [],
+        "deniedPermissions": [
+          {
+            "identity": "asmith@example.com",
+            "identityType": "USER",
+            "securityProvider": "Email Security Provider",
+          },
+        ],
+      },
+      {
+        "allowAnonymous": false,
+        "allowedPermissions": [
+          {
+            "identity": "SampleTeam1",
+            "identityType": "GROUP",
+          },
+          {
+            "identity": "emitchell@example.com",
+            "identityType": "USER",
+            "securityProvider": "Email Security Provider",
+          },
+        ],
+        "deniedPermissions": [],
+      },
+    ],
+  },
+  {
+    "name": "level2",
+    "permissionSets": [
+      {
+        "allowAnonymous": false,
+        "allowedPermissions": [
+          {
+            "identity": "MysteryUserX",
+            "identityType": "USER",
+            "securityProvider": "Email Security Provider",
+          },
+        ],
+        "deniedPermissions": [
+          {
+            "identity": "SampleGroup",
+            "identityType": "VIRTUAL_GROUP",
+          },
+        ],
+      },
+    ],
+  },
+]
 `;

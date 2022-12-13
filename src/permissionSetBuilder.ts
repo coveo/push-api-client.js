@@ -6,14 +6,14 @@ type PermissionSection = keyof Pick<
   'allowedPermissions' | 'deniedPermissions'
 >;
 
-// TODO: test
 export class PermissionSetBuilder {
   private permissionSet: PermissionSetModel;
 
   /**
-   * Creates an instance of PermissionSetBuilder.
-   * TODO: document on permission set
-   * @param {boolean} allowAnonymous Set allowAnonymous for permissions on the document
+   * Builds a Permission Set Model
+   *
+   * See[Simple Permission Model Definition](https://docs.coveo.com/en/107/index-content/simple-permission-model-definition-examples)
+   * @param {boolean} allowAnonymous Whether to allow anonymous users in this permission set
    */
   public constructor(allowAnonymous: boolean) {
     this.permissionSet = {
@@ -24,8 +24,10 @@ export class PermissionSetBuilder {
   }
 
   /**
-   * Set allowed identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
+   * Set allowed identities on the document. See {@link PermissionSetModel}
+   *
+   * When the {@link PermissionsSetBuilder} class is instanciated with `allowAnonymous` property set to `true`, calling this method is redundant, and can therefore be omitted.
+   * @param securityIdentityBuilder The allowed security identities to add to the permission set
    * @returns
    */
   public withAllowedPermissions(
@@ -36,8 +38,9 @@ export class PermissionSetBuilder {
   }
 
   /**
-   * Set denied identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
+   * Set denied identities on the document. See {@link PermissionSetModel}
+   *
+   * @param securityIdentityBuilder The denied security identities to add to the permission set
    * @returns
    */
   public withDeniedPermissions(
