@@ -18,12 +18,13 @@ export class DocumentBuilder {
    * @param uri The URI of the document. See {@link Document.uri}
    * @param title The title of the document. See {@link Document.title}
    */
-  constructor(private uri: string, title: string) {
+  constructor(uri: string, title: string) {
     this.doc = {
       uri,
       title,
       metadata: {},
-      permissions: [{allowAnonymous: true}], // TODO: Revisit with CDX-307 on validation
+      permissions: [], // TODO: Revisit with CDX-307 on validation
+      // TODO: test when source is secured and there is no permissions
     };
   }
 
@@ -210,6 +211,10 @@ export class DocumentBuilder {
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
     this.doc.permissions?.push(permissionSetBuilder.build());
+    console.log('*********************');
+    console.log(this.doc.permissions);
+    console.log('*********************');
+
     return this;
   }
 

@@ -1,6 +1,12 @@
 import {PermissionSetModel} from './document';
 import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 
+type PermissionSection = keyof Pick<
+  PermissionSetModel,
+  'allowedPermissions' | 'deniedPermissions'
+>;
+
+// TODO: test
 export class PermissionSetBuilder {
   private permissionSet: PermissionSetModel;
 
@@ -9,8 +15,12 @@ export class PermissionSetBuilder {
    * TODO: document on permission set
    * @param {boolean} allowAnonymous Set allowAnonymous for permissions on the document
    */
-  public constructor(allowAnonymous = false) {
-    this.permissionSet = {allowAnonymous};
+  public constructor(allowAnonymous: boolean) {
+    this.permissionSet = {
+      allowAnonymous,
+      allowedPermissions: [],
+      deniedPermissions: [],
+    };
   }
 
   /**
@@ -47,12 +57,9 @@ export class PermissionSetBuilder {
 
   private setPermission(
     securityIdentityBuilder: SecurityIdentityBuilder,
-    permissionSection: 'allowedPermissions' | 'deniedPermissions'
+    permissionSection: PermissionSection
   ) {
     const identities = securityIdentityBuilder.build();
-    if (!this.permissionSet[permissionSection]) {
-      this.permissionSet[permissionSection] = [];
-    }
     if (Array.isArray(identities)) {
       this.permissionSet[permissionSection] =
         this.permissionSet[permissionSection]?.concat(identities);

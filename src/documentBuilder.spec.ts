@@ -188,7 +188,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal allowedPermissions in multiple #withAllowedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder()
+    const permissionSet = new PermissionSetBuilder(false)
       .withAllowedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
       .withAllowedPermissions(new GroupSecurityIdentityBuilder('my_group'));
 
@@ -226,7 +226,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder().withDeniedPermissions(
+    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
       new UserSecurityIdentityBuilder('bob@foo.com')
     );
 
@@ -240,7 +240,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal deniedPermissions in multiple #withDeniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder()
+    const permissionSet = new PermissionSetBuilder(false)
       .withDeniedPermissions(new UserSecurityIdentityBuilder('bob@foo.com'))
       .withDeniedPermissions(new GroupSecurityIdentityBuilder('my_group'));
 
@@ -261,7 +261,7 @@ describe('DocumentBuilder', () => {
   });
 
   it('should marshal multiple deniedPermissions', () => {
-    const permissionSet = new PermissionSetBuilder().withDeniedPermissions(
+    const permissionSet = new PermissionSetBuilder(false).withDeniedPermissions(
       new UserSecurityIdentityBuilder(['bob@foo.com', 'sue@foo.com'])
     );
 
@@ -275,15 +275,22 @@ describe('DocumentBuilder', () => {
     });
   });
 
-  it('should marshal allowedPermissions to an empty array when undefined', () => {
-    const permissionSet = docBuilder.marshal()
-      .permissions[0] as PermissionSetModel;
-    expect(permissionSet.allowedPermissions!.length).toBe(0);
+  // it('should marshal allowedPermissions to an empty array when undefined', () => {
+  //   const permissionSet = docBuilder.marshal()
+  //     .permissions[0] as PermissionSetModel;
+  //   expect(permissionSet.allowedPermissions!.length).toBe(0);
+  // });
+
+  // it('should marshal deniedPermissions to an empty array when undefined', () => {
+  //   const permissionSet = docBuilder.marshal()
+  //     .permissions[0] as PermissionSetModel;
+  //   expect(permissionSet.deniedPermissions!.length).toBe(0);
+  // });
+  it('should marshal permissions to an empty array when undefined', () => {
+    const permissionSet = docBuilder.marshal().permissions;
+    expect(permissionSet).toEqual([]);
   });
 
-  it('should marshal deniedPermissions to an empty array when undefined', () => {
-    const permissionSet = docBuilder.marshal()
-      .permissions[0] as PermissionSetModel;
-    expect(permissionSet.deniedPermissions!.length).toBe(0);
-  });
+  // TODO: test with levels
+  // TODO: add sample file with permission levels
 });

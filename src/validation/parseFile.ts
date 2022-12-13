@@ -362,9 +362,8 @@ const getSecurityIdentitySchemaValidation =
             emptyAllowed: false,
           }),
           securityProvider: new StringValue({
-            emptyAllowed: true,
-            // TODO: not sure this is really required
-            required: false,
+            emptyAllowed: false,
+            required: true,
           }),
         },
       }),
