@@ -1,6 +1,6 @@
 {
   "name": "@coveo/push-api-client",
-  "version": "2.7.14",
+  "version": "2.7.16",
   "description": "Push API client",
   "main": "./dist/index.js",
   "files": [
@@ -91,7 +91,7 @@
   "homepage": "https://github.com/coveo/push-api-client.js#readme",
   "standard-version": {
     "scripts": {
-      "prebump": "node fixLock.mjs"
+      "postbump": "node fixLock.mjs"
     }
   }
 }
