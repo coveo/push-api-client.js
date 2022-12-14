@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/coveo/push-api-client.js/compare/v2.7.16...v2.8.0) (2022-12-14)
+
+
+### Features
+
+* normalize docID to valid URI ([#236](https://github.com/coveo/push-api-client.js/issues/236)) ([985d209](https://github.com/coveo/push-api-client.js/commit/985d209b790f98b08141e6439d3689c9fc65f3de))
+
 ### [2.7.16](https://github.com/coveo/push-api-client.js/compare/v2.7.15...v2.7.16) (2022-12-13)
 
 ### [2.7.15](https://github.com/coveo/push-api-client.js/compare/v2.7.14...v2.7.15) (2022-12-13)
