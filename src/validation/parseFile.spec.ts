@@ -47,6 +47,11 @@ describe('parseFile', () => {
       error:
         'allowedpermissions:   value should be one of: UNKNOWN, USER, GROUP, VIRTUAL_GROUP.',
     },
+    {
+      title: 'should fail on permission not being an array',
+      fileName: 'notAPermissionArray.json',
+      error: 'permissions: value is not an array',
+    },
   ])('$title', async ({fileName, error}) => {
     const file = join(pathToStub, 'jsondocuments', fileName);
     await expect(parse(file)).rejects.toThrow(
