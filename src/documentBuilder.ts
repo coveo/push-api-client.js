@@ -1,13 +1,13 @@
 import dayjs = require('dayjs');
 import {createHash} from 'crypto';
 import {CompressionType, Document, Metadata, MetadataValue} from './document';
-import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 import {isFieldNameValid} from './fieldAnalyser/fieldUtils';
 import {UnsupportedFieldError} from './errors/fieldErrors';
 import {
   BuiltInTransformers,
   Transformer,
 } from './validation/transformers/transformer';
+import {PermissionSetBuilder} from './permissionSetBuilder';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -23,7 +23,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: {allowAnonymous: true}, // TODO: Revisit with CDX-307 on validation
+      permissions: [], // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -206,39 +206,42 @@ export class DocumentBuilder {
   }
 
   /**
-   * Set allowed identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
-   * @returns
+   * Set a permission set on the document
+   * Multiple permission sets can be combined.
+   *
+   * See [Simple Permission Model Definition Examples](https://docs.coveo.com/en/107)
    */
-  public withAllowedPermissions(
-    // TODO: CDX-1278 use PermissionSetBuilder instead
-    securityIdentityBuilder: SecurityIdentityBuilder
-  ) {
-    this.setPermission(securityIdentityBuilder, 'allowedPermissions');
+  public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
+    this.doc.permissions?.push(permissionSetBuilder.build());
     return this;
   }
 
   /**
-   * Set denied identities on the document. See {@link Document.permissions}
-   * @param securityIdentityBuilder
-   * @returns
+   * Set a permission level on the document
+   * Multiple permission levels can be added to the document. In this case, the order at which this method is called will influence the permission hierarchy.
+   *
+   * Consider the following example:
+   * ```
+   *  doc.withPermissionLevel('level1', [setA])
+   *     .withPermissionLevel('level2', [setB, setC])
+   * ```
+   *
+   * Permission sets from level1 (`setA`) will supersed the ones from level2 (`setB` and `setC`).
+   *
+   * See [Complex Permission Model Definition](https://docs.coveo.com/en/25/index-content/complex-permission-model-definition-example)
    */
-  public withDeniedPermissions(
-    // TODO: CDX-1278 use PermissionSetBuilder instead
-    securityIdentityBuilder: SecurityIdentityBuilder
+  public withPermissionLevel(
+    permissionLevelName: string,
+    permissionSetBuilders: PermissionSetBuilder[]
   ) {
-    this.setPermission(securityIdentityBuilder, 'deniedPermissions');
-    return this;
-  }
+    const permissionSets = permissionSetBuilders.map((permissionSet) =>
+      permissionSet.build()
+    );
+    this.doc.permissions?.push({
+      name: permissionLevelName,
+      permissionSets,
+    });
 
-  /**
-   * Set allowAnonymous for permissions on the document. See {@link Document.permissions}
-   * @param allowAnonymous
-   * @returns
-   */
-  public withAllowAnonymousUsers(allowAnonymous: boolean) {
-    // TODO: CDX-1278 use PermissionSetBuilder instead
-    this.doc.permissions!.allowAnonymous = allowAnonymous;
     return this;
   }
 
@@ -285,18 +288,7 @@ export class DocumentBuilder {
   }
 
   private marshalPermissions() {
-    if (!this.doc.permissions) {
-      return {};
-    }
-    return {
-      permissions: [
-        {
-          allowAnonymous: this.doc.permissions.allowAnonymous,
-          allowedPermissions: this.doc.permissions.allowedPermissions || [],
-          deniedPermissions: this.doc.permissions.deniedPermissions || [],
-        },
-      ],
-    };
+    return {permissions: this.doc.permissions || []};
   }
 
   private validateAndFillMissing() {
@@ -324,22 +316,6 @@ export class DocumentBuilder {
     const isBase64 = Buffer.from(data, 'base64').toString('base64') === data;
     if (!isBase64) {
       throw 'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.';
-    }
-  }
-
-  private setPermission(
-    securityIdentityBuilder: SecurityIdentityBuilder,
-    permissionSection: 'allowedPermissions' | 'deniedPermissions'
-  ) {
-    const identities = securityIdentityBuilder.build();
-    if (!this.doc.permissions![permissionSection]) {
-      this.doc.permissions![permissionSection] = [];
-    }
-    if (Array.isArray(identities)) {
-      this.doc.permissions![permissionSection] =
-        this.doc.permissions![permissionSection]?.concat(identities);
-    } else {
-      this.doc.permissions![permissionSection]?.push(identities);
     }
   }
 }

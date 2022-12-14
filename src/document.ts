@@ -170,23 +170,7 @@ export interface Document {
    *
    * See https://docs.coveo.com/en/107 for more information.
    */
-  // TODO: CDX-1278 support simple and complex permission sets Array<PermissionSetModel | PermissionLevelModel>;
-  permissions?: {
-    /**
-     * Whether to allow anonymous users in this permission set.
-     *
-     * Default value is false.
-     */
-    allowAnonymous: boolean;
-    /**
-     * The list of allowed permissions for this permission set.
-     */
-    allowedPermissions?: SecurityIdentity[];
-    /**
-     * The list of denied permissions for this permission set.
-     */
-    deniedPermissions?: SecurityIdentity[];
-  };
+  permissions?: Array<PermissionSetModel | PermissionLevelModel>;
   /**
    * The file extension of the data you're pushing.
    *
