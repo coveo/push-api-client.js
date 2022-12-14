@@ -15,7 +15,7 @@ const users = {
   cbrown: 'cbrown@example.com',
   dmoore: 'dmoore@example.com',
   emitchell: 'emitchell@example.com',
-  mystery: 'MysteryUserX',
+  mystery: 'MysteryUserX', // Alias resolving to emitchell@example.com
 };
 
 const permissionLevel1 = () => {
@@ -50,7 +50,6 @@ const permissionLevel2 = () => {
 async function main() {
   const source = new PushSource('my_api_key', 'my_coveo_organization_id');
 
-  // Puttin everything toggether
   const myDocument = new DocumentBuilder(
     'https://my.document.uri',
     'My document title'
