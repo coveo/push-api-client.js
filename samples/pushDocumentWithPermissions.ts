@@ -21,6 +21,7 @@ async function main() {
     'https://my.document.uri',
     'My document title'
   )
+    // TODO: CDX-??? use PermissionSetBuilder instead
     .withAllowAnonymousUsers(false)
     .withAllowedPermissions(allowedUsers)
     .withDeniedPermissions(deniedUsers);
