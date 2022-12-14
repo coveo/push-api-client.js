@@ -170,7 +170,7 @@ export interface Document {
    *
    * See https://docs.coveo.com/en/107 for more information.
    */
-  // TODO: CDX-??? support simple and complex permission sets Array<PermissionSetModel | PermissionLevelModel>;
+  // TODO: CDX-1278 support simple and complex permission sets Array<PermissionSetModel | PermissionLevelModel>;
   permissions?: {
     /**
      * Whether to allow anonymous users in this permission set.
