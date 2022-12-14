@@ -1,0 +1,26 @@
+{
+  "DocumentId": "https://www.themoviedb.org/movie/550",
+  "title": "Fight Club",
+  "permissions": [
+    {
+      "allowAnonymous": true,
+      "deniedPermissions": [
+        {
+          "identity": "bob@foo.com",
+          "identityType": "USER",
+          "securityProvider": "Email Security Provider"
+        }
+      ]
+    },
+    {
+      "allowAnonymous": false,
+      "allowedPermissions": [
+        {
+          "identity": "bar@foo.com",
+          "identityType": "USER",
+          "securityProvider": "Email Security Provider"
+        }
+      ]
+    }
+  ]
+}

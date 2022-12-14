@@ -348,7 +348,7 @@ const isFile = (p: PathLike) => {
 const getSecurityIdentitySchemaValidation =
   (): ArrayValue<SecurityIdentity> => {
     return new ArrayValue({
-      required: true,
+      required: false,
       each: new RecordValue({
         values: {
           identity: new StringValue({required: true, emptyAllowed: false}),
@@ -358,8 +358,8 @@ const getSecurityIdentitySchemaValidation =
             emptyAllowed: false,
           }),
           securityProvider: new StringValue({
-            emptyAllowed: false,
-            required: true,
+            emptyAllowed: true,
+            required: false,
           }),
         },
       }),
