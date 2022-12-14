@@ -24,7 +24,6 @@ export class DocumentBuilder {
       title,
       metadata: {},
       permissions: [], // TODO: Revisit with CDX-307 on validation
-      // TODO: test when source is secured and there is no permissions
     };
   }
 

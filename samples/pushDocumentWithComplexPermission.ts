@@ -3,7 +3,7 @@ import {
   DocumentBuilder,
   UserSecurityIdentityBuilder,
   GroupSecurityIdentityBuilder,
-  PermissionSetBuilder
+  PermissionSetBuilder,
 } from '@coveo/push-api-client';
 
 // Complex Permission Model Definition Example
