@@ -31,7 +31,7 @@ exports[`DocumentBuilder when combining multiple permission sets should marshal 
         "deniedPermissions": [
           {
             "identity": "asmith@example.com",
-            "identityType": "USER",
+            "identityType": "User",
             "securityProvider": "Email Security Provider",
           },
         ],
@@ -41,11 +41,11 @@ exports[`DocumentBuilder when combining multiple permission sets should marshal 
         "allowedPermissions": [
           {
             "identity": "SampleTeam1",
-            "identityType": "GROUP",
+            "identityType": "Group",
           },
           {
             "identity": "emitchell@example.com",
-            "identityType": "USER",
+            "identityType": "User",
             "securityProvider": "Email Security Provider",
           },
         ],
@@ -61,14 +61,14 @@ exports[`DocumentBuilder when combining multiple permission sets should marshal 
         "allowedPermissions": [
           {
             "identity": "MysteryUserX",
-            "identityType": "USER",
+            "identityType": "User",
             "securityProvider": "Email Security Provider",
           },
         ],
         "deniedPermissions": [
           {
             "identity": "SampleGroup",
-            "identityType": "VIRTUAL_GROUP",
+            "identityType": "VirtualGroup",
           },
         ],
       },
