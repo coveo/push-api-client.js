@@ -23,7 +23,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: [], // TODO: Revisit with CDX-307 on validation
+      permissions: [], // TODO: CDX-1282 Prevent pushing empty permission arrays
     };
   }
 
