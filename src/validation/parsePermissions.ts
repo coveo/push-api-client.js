@@ -72,7 +72,7 @@ const processPermissionLevel = (
   documentBuilder: DocumentBuilder,
   documentPath: PathLike
 ) => {
-  // TODO: require at least some permissions
+  // TODO: CDX-1282: require at least some permissions
   const permissionSetBuilders = permission.permissionSets!.map(
     (permissionSet) => {
       const caseInsensitivePermissions = new CaseInsensitiveDocument(
@@ -96,7 +96,7 @@ const processPermissionLevel = (
     }
   );
 
-  // TODO: prevent empty permission set
+  // TODO: CDX-1282: prevent empty permission set
   documentBuilder.withPermissionLevel(permission.name!, permissionSetBuilders);
 };
 
