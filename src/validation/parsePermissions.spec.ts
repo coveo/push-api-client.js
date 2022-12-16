@@ -54,8 +54,7 @@ describe('parsePermissions', () => {
     documentBuilder = new DocumentBuilder('https://foo.com', 'Some Document');
   });
 
-  // TODO: CDX-1282 unskip
-  it.skip('should not marhsal empty permssion when is empty array', () => {
+  it('should not marhsal empty permssion when is empty array', () => {
     const caseInsensitiveDoc = new CaseInsensitiveDocument<PrimitivesValues>({
       permissions: [],
     });

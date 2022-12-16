@@ -190,8 +190,8 @@ describe('DocumentBuilder', () => {
     expect(groupSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should marshal an empty array when permissions are not defined', () => {
-    expect(docBuilder.marshal().permissions).toHaveLength(0);
+  it('should not marshal an empty array when permissions are not defined', () => {
+    expect(docBuilder.marshal()).not.toContain('permissions');
   });
 
   it('should marshal permission set', () => {

@@ -23,7 +23,6 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: [], // TODO: Revisit with CDX-307 on validation
     };
   }
 
@@ -212,7 +211,8 @@ export class DocumentBuilder {
    * See [Simple Permission Model Definition Examples](https://docs.coveo.com/en/107)
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
-    this.doc.permissions?.push(permissionSetBuilder.build());
+    this.doc.permissions = this.doc.permissions || [];
+    this.doc.permissions.push(permissionSetBuilder.build());
     return this;
   }
 
@@ -234,10 +234,11 @@ export class DocumentBuilder {
     permissionLevelName: string,
     permissionSetBuilders: PermissionSetBuilder[]
   ) {
+    this.doc.permissions = this.doc.permissions || [];
     const permissionSets = permissionSetBuilders.map((permissionSet) =>
       permissionSet.build()
     );
-    this.doc.permissions?.push({
+    this.doc.permissions.push({
       name: permissionLevelName,
       permissionSets,
     });
@@ -288,7 +289,8 @@ export class DocumentBuilder {
   }
 
   private marshalPermissions() {
-    return {permissions: this.doc.permissions || []};
+    const permissions = this.doc.permissions;
+    return {...(permissions && {permissions})};
   }
 
   private validateAndFillMissing() {
