@@ -1,13 +1,13 @@
-import {PermissionSetModel} from './document';
+import {PermissionSet} from '@coveo/platform-client';
 import {SecurityIdentityBuilder} from './securityIdentityBuilder';
 
-type PermissionSection = keyof Pick<
-  PermissionSetModel,
+export type PermissionSection = keyof Pick<
+  PermissionSet,
   'allowedPermissions' | 'deniedPermissions'
 >;
 
 export class PermissionSetBuilder {
-  private permissionSet: PermissionSetModel;
+  private permissionSet: PermissionSet;
 
   /**
    * Builds a Permission Set Model
@@ -24,7 +24,7 @@ export class PermissionSetBuilder {
   }
 
   /**
-   * Set allowed identities on the document. See {@link PermissionSetModel}
+   * Set allowed identities on the document. See {@link PermissionSet}
    *
    * When the {@link PermissionsSetBuilder} class is instanciated with `allowAnonymous` property set to `true`, calling this method is redundant, and can therefore be omitted.
    * @param securityIdentityBuilder The allowed security identities to add to the permission set
@@ -38,7 +38,7 @@ export class PermissionSetBuilder {
   }
 
   /**
-   * Set denied identities on the document. See {@link PermissionSetModel}
+   * Set denied identities on the document. See {@link PermissionSet}
    *
    * @param securityIdentityBuilder The denied security identities to add to the permission set
    * @returns
@@ -54,7 +54,7 @@ export class PermissionSetBuilder {
    * Build and return the security identity or identities.
    * @returns
    */
-  public build(): PermissionSetModel {
+  public build(): PermissionSet {
     return this.permissionSet;
   }
 
