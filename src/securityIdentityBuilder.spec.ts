@@ -1,3 +1,4 @@
+import {PermissionIdentityType} from '@coveo/platform-client';
 import {
   GroupSecurityIdentityBuilder,
   VirtualGroupSecurityIdentityBuilder,
@@ -10,7 +11,7 @@ describe('SecurityIdentityBuilder', () => {
       const identity = new UserSecurityIdentityBuilder('foo@example.com');
       expect(identity.build()).toEqual({
         identity: 'foo@example.com',
-        identityType: 'USER',
+        identityType: PermissionIdentityType.User,
         securityProvider: 'Email Security Provider',
       });
     });
@@ -22,17 +23,20 @@ describe('SecurityIdentityBuilder', () => {
       );
       expect(identity.build()).toEqual({
         identity: 'foo@example.com',
-        identityType: 'USER',
+        identityType: PermissionIdentityType.User,
         securityProvider: 'provider12345',
       });
     });
   });
 
   describe.each([
-    {identityBuilderClass: GroupSecurityIdentityBuilder, identityType: 'GROUP'},
+    {
+      identityBuilderClass: GroupSecurityIdentityBuilder,
+      identityType: PermissionIdentityType.Group,
+    },
     {
       identityBuilderClass: VirtualGroupSecurityIdentityBuilder,
-      identityType: 'VIRTUAL_GROUP',
+      identityType: PermissionIdentityType.VirtualGroup,
     },
   ])(
     'when instanciating a $identityBuilderClass.name',

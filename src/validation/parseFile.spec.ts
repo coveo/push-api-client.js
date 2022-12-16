@@ -52,6 +52,7 @@ describe('parseFile', () => {
       fileName: 'notAPermissionArray.json',
       error: 'permissions: value is not an array',
     },
+    // TODO: CDX-1282: test with empty permission array
   ])('$title', async ({fileName, error}) => {
     const file = join(pathToStub, 'jsondocuments', fileName);
     await expect(parse(file)).rejects.toThrow(
