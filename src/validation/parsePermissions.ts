@@ -18,6 +18,7 @@ import {
   PermissionSet,
   PermissionLevel,
   Permission,
+  PermissionIdentityType,
 } from '@coveo/platform-client';
 
 export const processPermissionList = (
@@ -182,6 +183,11 @@ const validateRequiredPermissionSetKeysAndGetPermissionSetBuilder = (
   return permissionSetBuilder;
 };
 
+const getIdentityTypeRegex = () => {
+  const identityTypesValues = Object.values(PermissionIdentityType);
+  return new RegExp(identityTypesValues.join('|'), 'i');
+};
+
 const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
   return new ArrayValue({
     required: false,
@@ -189,7 +195,7 @@ const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
       values: {
         identity: new StringValue({required: true, emptyAllowed: false}),
         identityType: new StringValue({
-          constrainTo: ['UNKNOWN', 'USER', 'GROUP', 'VIRTUAL_GROUP'],
+          regex: getIdentityTypeRegex(),
           required: true,
           emptyAllowed: false,
         }),
