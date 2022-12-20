@@ -21,7 +21,7 @@ describe('parsePermissions', () => {
     ALLOWEDPERMISSIONS: [
       {
         identity: 'asmith@example.com',
-        identityType: 'USER',
+        identityType: 'User',
       },
       {
         identity: 'bjones@example.com',
@@ -35,17 +35,17 @@ describe('parsePermissions', () => {
     deniedpermissions: [
       {
         identity: 'foo',
-        identityType: 'VIRTUAL_GROUP',
+        identityType: 'VirtualGroup',
       },
     ],
     allowedPERMISSIONS: [
       {
         identity: 'Sample_group',
-        identityType: 'GROUP',
+        identityType: 'Group',
       },
       {
         identity: 'bjones@example.com',
-        identityType: 'USER',
+        identityType: 'user',
       },
     ],
   };

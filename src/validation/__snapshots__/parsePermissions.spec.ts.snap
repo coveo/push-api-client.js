@@ -7,7 +7,7 @@ exports[`parsePermissions should marhsal allowed permssion set 1`] = `
     "allowedPermissions": [
       {
         "identity": "asmith@example.com",
-        "identityType": "USER",
+        "identityType": "User",
       },
       {
         "identity": "bjones@example.com",
@@ -36,7 +36,7 @@ exports[`parsePermissions should marhsal combined permssion sets 1`] = `
     "allowedPermissions": [
       {
         "identity": "asmith@example.com",
-        "identityType": "USER",
+        "identityType": "User",
       },
       {
         "identity": "bjones@example.com",
@@ -50,17 +50,17 @@ exports[`parsePermissions should marhsal combined permssion sets 1`] = `
     "allowedPermissions": [
       {
         "identity": "Sample_group",
-        "identityType": "GROUP",
+        "identityType": "Group",
       },
       {
         "identity": "bjones@example.com",
-        "identityType": "USER",
+        "identityType": "user",
       },
     ],
     "deniedPermissions": [
       {
         "identity": "foo",
-        "identityType": "VIRTUAL_GROUP",
+        "identityType": "VirtualGroup",
       },
     ],
   },
