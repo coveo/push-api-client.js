@@ -212,8 +212,8 @@ class PermissionParser {
   private throwInvalidDocumentError(explanation: string): never {
     throw new InvalidDocument(
       this.documentPath,
-      explanation,
-      this.caseInsensitiveDoc.originalDocument
+      this.caseInsensitiveDoc.originalDocument,
+      explanation
     );
   }
 }

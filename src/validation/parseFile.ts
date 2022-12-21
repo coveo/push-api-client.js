@@ -72,8 +72,8 @@ const processDocument = (
     if (typeof error === 'string') {
       throw new InvalidDocument(
         documentPath,
-        error,
-        caseInsensitiveDoc.originalDocument
+        caseInsensitiveDoc.originalDocument,
+        error
       );
     }
     throw error;
@@ -94,8 +94,8 @@ const validateRequiredKeysAndGetDocumentBuilder = (
   if (!requiredDocumentId.isValid) {
     throw new InvalidDocument(
       documentPath,
-      requiredDocumentId.explanation,
-      caseInsensitiveDoc.originalDocument
+      caseInsensitiveDoc.originalDocument,
+      requiredDocumentId.explanation
     );
   }
 
@@ -107,8 +107,8 @@ const validateRequiredKeysAndGetDocumentBuilder = (
   if (!requiredDocumentTitle.isValid) {
     throw new InvalidDocument(
       documentPath,
-      requiredDocumentTitle.explanation,
-      caseInsensitiveDoc.originalDocument
+      caseInsensitiveDoc.originalDocument,
+      requiredDocumentTitle.explanation
     );
   }
 
