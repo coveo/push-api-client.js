@@ -70,7 +70,11 @@ const processDocument = (
     processMetadata(caseInsensitiveDoc, documentBuilder, options);
   } catch (error) {
     if (typeof error === 'string') {
-      throw new InvalidDocument(documentPath, error);
+      throw new InvalidDocument(
+        documentPath,
+        error,
+        caseInsensitiveDoc.originalDocument
+      );
     }
     throw error;
   }
@@ -88,7 +92,11 @@ const validateRequiredKeysAndGetDocumentBuilder = (
   );
 
   if (!requiredDocumentId.isValid) {
-    throw new InvalidDocument(documentPath, requiredDocumentId.explanation);
+    throw new InvalidDocument(
+      documentPath,
+      requiredDocumentId.explanation,
+      caseInsensitiveDoc.originalDocument
+    );
   }
 
   const requiredDocumentTitle = new RequiredKeyValidator<string>(
@@ -97,12 +105,14 @@ const validateRequiredKeysAndGetDocumentBuilder = (
     new StringValue({required: true, emptyAllowed: false})
   );
   if (!requiredDocumentTitle.isValid) {
-    throw new InvalidDocument(documentPath, requiredDocumentTitle.explanation);
+    throw new InvalidDocument(
+      documentPath,
+      requiredDocumentTitle.explanation,
+      caseInsensitiveDoc.originalDocument
+    );
   }
 
-  delete caseInsensitiveDoc.documentRecord['documentid'];
-  delete caseInsensitiveDoc.documentRecord['uri'];
-  delete caseInsensitiveDoc.documentRecord['title'];
+  caseInsensitiveDoc.delete('documentid', 'uri', 'title');
 
   return new DocumentBuilder(
     requiredDocumentId.value!,
@@ -116,38 +126,38 @@ const processKnownKeys = (
 ) => {
   new KnownKeys<string>('author', caseInsensitiveDoc).whenExists((author) => {
     documentBuilder.withAuthor(author);
-    delete caseInsensitiveDoc.documentRecord['author'];
+    caseInsensitiveDoc.delete('author');
   });
   new KnownKeys<string>('clickableuri', caseInsensitiveDoc).whenExists(
     (clickuri) => {
       documentBuilder.withClickableUri(clickuri);
-      delete caseInsensitiveDoc.documentRecord['clickableuri'];
+      caseInsensitiveDoc.delete('clickableuri');
     }
   );
   new KnownKeys<string>('data', caseInsensitiveDoc).whenExists((data) => {
     documentBuilder.withData(data);
-    delete caseInsensitiveDoc.documentRecord['data'];
+    caseInsensitiveDoc.delete('data');
   });
   new KnownKeys<string>('date', caseInsensitiveDoc).whenExists((date) => {
     documentBuilder.withDate(date);
-    delete caseInsensitiveDoc.documentRecord['date'];
+    caseInsensitiveDoc.delete('date');
   });
   new KnownKeys<string>('modifieddate', caseInsensitiveDoc).whenExists(
     (modifiedDate) => {
       documentBuilder.withModifiedDate(modifiedDate);
-      delete caseInsensitiveDoc.documentRecord['modifieddate'];
+      caseInsensitiveDoc.delete('modifieddate');
     }
   );
   new KnownKeys<string>('fileextension', caseInsensitiveDoc).whenExists(
     (fileExtension) => {
       documentBuilder.withFileExtension(fileExtension);
-      delete caseInsensitiveDoc.documentRecord['fileextension'];
+      caseInsensitiveDoc.delete('fileextension');
     }
   );
   new KnownKeys<string>('permanentid', caseInsensitiveDoc).whenExists(
     (permanentId) => {
       documentBuilder.withPermanentId(permanentId);
-      delete caseInsensitiveDoc.documentRecord['permanentid'];
+      caseInsensitiveDoc.delete('permanentid');
     }
   );
 };
@@ -158,7 +168,7 @@ const processMetadata = (
   options?: ParseDocumentOptions
 ) => {
   const metadata: Metadata = {};
-  Object.entries(caseInsensitiveDoc.documentRecord).forEach(([k, v]) => {
+  Object.entries(caseInsensitiveDoc.remainingRecord).forEach(([k, v]) => {
     metadata[k] = v! as Extract<PrimitivesValues, MetadataValue>;
   });
   documentBuilder.withMetadata(metadata, options?.fieldNameTransformer);
