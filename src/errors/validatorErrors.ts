@@ -1,3 +1,4 @@
+import {PrimitivesValues} from '@coveo/bueno';
 import {PathLike} from 'fs';
 import {PushApiClientBaseError} from './baseError';
 
@@ -16,7 +17,11 @@ export class NotAJsonFileError extends PushApiClientBaseError {
 
 export class InvalidDocument extends PushApiClientBaseError {
   public name = 'Invalid JSON Document Error';
-  public constructor(p: PathLike, explanation: string) {
+  public constructor(
+    p: PathLike,
+    explanation: string,
+    private invalidDocument: Record<string, PrimitivesValues>
+  ) {
     super(
       [
         `${p} is not a valid JSON: ${explanation}`,
@@ -25,6 +30,9 @@ export class InvalidDocument extends PushApiClientBaseError {
         ' • Document Body reference: https://docs.coveo.com/en/75#documentbody',
       ].join('\n')
     );
+  }
+  public get document(): Readonly<Record<string, PrimitivesValues>> {
+    return this.invalidDocument;
   }
 }
 
