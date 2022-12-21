@@ -17,7 +17,7 @@ export class NotAJsonFileError extends PushApiClientBaseError {
 
 export class InvalidDocument extends PushApiClientBaseError {
   public name = 'Invalid JSON Document Error';
-  private doc: Readonly<Record<string, PrimitivesValues>>;
+  public document: Readonly<Record<string, PrimitivesValues>>;
   public constructor(
     p: PathLike,
     doc: Record<string, PrimitivesValues>,
@@ -31,12 +31,12 @@ export class InvalidDocument extends PushApiClientBaseError {
         ' • Document Body reference: https://docs.coveo.com/en/75#documentbody',
       ].join('\n')
     );
-    this.doc = doc;
+    this.document = doc;
   }
 
-  public get document() {
-    return this.doc;
-  }
+  // public get document() {
+  //   return this.doc;
+  // }
 }
 
 export class UnsupportedAttribute extends PushApiClientBaseError {
