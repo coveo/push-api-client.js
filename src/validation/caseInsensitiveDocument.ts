@@ -29,7 +29,6 @@ export class CaseInsensitiveDocument<T> {
   }
 
   private shallowCopy(sourceRecord: Record<string, T>) {
-    // No need to copy nested properties
     return Object.assign({}, sourceRecord);
   }
 }
