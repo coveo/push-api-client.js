@@ -1,0 +1,14 @@
+[
+  {
+    "DocumentId": "https://www.example.com/foo",
+    "title": "Foo"
+  },
+  {
+    "DocumentId": "https://www.example.com/bar",
+    "Broken_title": "Bar"
+  },
+  {
+    "DocumentId": "https://www.example.com/baz",
+    "title": "Baz"
+  }
+]

@@ -62,6 +62,7 @@ describe('parseFile', () => {
     await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
+        expect.anything(),
         `Document contains an invalid value for ${error}`
       )
     );
@@ -79,9 +80,24 @@ describe('parseFile', () => {
     await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
+        expect.anything(),
         'Cannot use parentid as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names'
       )
     );
+  });
+
+  it('should return document in error', async () => {
+    const file = join(pathToStub, 'jsondocuments', 'brokenBatch.json');
+    const documentInError = {
+      DocumentId: 'https://www.example.com/bar',
+      Broken_title: 'Bar',
+    };
+
+    try {
+      await parseAndGetDocumentBuilderFromJSONDocument(file);
+    } catch (error) {
+      expect((error as InvalidDocument).document).toEqual(documentInError);
+    }
   });
 
   it('should fail on unsupported metadata key', async () => {
