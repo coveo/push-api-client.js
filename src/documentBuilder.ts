@@ -213,6 +213,7 @@ export class DocumentBuilder {
    * @returns
    */
   public withAllowedPermissions(
+    // TODO: CDX-1278 use PermissionSetBuilder instead
     securityIdentityBuilder: SecurityIdentityBuilder
   ) {
     this.setPermission(securityIdentityBuilder, 'allowedPermissions');
@@ -225,6 +226,7 @@ export class DocumentBuilder {
    * @returns
    */
   public withDeniedPermissions(
+    // TODO: CDX-1278 use PermissionSetBuilder instead
     securityIdentityBuilder: SecurityIdentityBuilder
   ) {
     this.setPermission(securityIdentityBuilder, 'deniedPermissions');
@@ -237,6 +239,7 @@ export class DocumentBuilder {
    * @returns
    */
   public withAllowAnonymousUsers(allowAnonymous: boolean) {
+    // TODO: CDX-1278 use PermissionSetBuilder instead
     this.doc.permissions!.allowAnonymous = allowAnonymous;
     return this;
   }

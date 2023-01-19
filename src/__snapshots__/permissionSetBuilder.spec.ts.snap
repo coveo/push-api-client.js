@@ -1,0 +1,110 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PermissionSetBuilder should marshal allowedPermissions in multiple #withAllowedPermissions 1`] = `
+{
+  "allowAnonymous": false,
+  "allowedPermissions": [
+    {
+      "identity": "max@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "sue@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "bob@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "SampleGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "SpecialGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "my_group",
+      "identityType": "GROUP",
+    },
+  ],
+  "deniedPermissions": [],
+}
+`;
+
+exports[`PermissionSetBuilder should marshal both allowed and denied permissions  1`] = `
+{
+  "allowAnonymous": false,
+  "allowedPermissions": [
+    {
+      "identity": "SampleGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "SpecialGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "my_group",
+      "identityType": "GROUP",
+    },
+  ],
+  "deniedPermissions": [
+    {
+      "identity": "max@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "sue@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "bob@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+  ],
+}
+`;
+
+exports[`PermissionSetBuilder should marshal deniedPermissions in multiple #withDeniedPermissions 1`] = `
+{
+  "allowAnonymous": false,
+  "allowedPermissions": [],
+  "deniedPermissions": [
+    {
+      "identity": "max@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "sue@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "bob@foo.com",
+      "identityType": "USER",
+      "securityProvider": "Email Security Provider",
+    },
+    {
+      "identity": "SampleGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "SpecialGroup",
+      "identityType": "VIRTUAL_GROUP",
+    },
+    {
+      "identity": "my_group",
+      "identityType": "GROUP",
+    },
+  ],
+}
+`;

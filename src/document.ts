@@ -48,6 +48,26 @@ export type CompressionType =
   | 'LZMA'
   | 'ZLIB';
 
+export type PermissionSetModel = {
+  /**
+   * Whether to allow anonymous users in this permission set.
+   */
+  allowAnonymous: boolean;
+  /**
+   * The list of allowed permissions for this permission set.
+   */
+  allowedPermissions?: SecurityIdentity[];
+  /**
+   * The list of denied permissions for this permission set.
+   */
+  deniedPermissions?: SecurityIdentity[];
+};
+
+export type PermissionLevelModel = {
+  name: string;
+  permissionSets: PermissionSetModel[];
+};
+
 /**
  * A Coveo document.
  */
@@ -150,6 +170,7 @@ export interface Document {
    *
    * See https://docs.coveo.com/en/107 for more information.
    */
+  // TODO: CDX-1278 support simple and complex permission sets Array<PermissionSetModel | PermissionLevelModel>;
   permissions?: {
     /**
      * Whether to allow anonymous users in this permission set.
