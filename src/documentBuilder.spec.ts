@@ -17,8 +17,14 @@ describe('DocumentBuilder', () => {
     expect(docBuilder.marshal().title).toBe('title');
   });
 
-  it('should marshal uri to documentId', () => {
-    expect(docBuilder.marshal().documentId).toBe('uri');
+  it('should uri marshal to documentID (path->uri)', () => {
+    expect(docBuilder.marshal().documentId).toMatch(/file:\/\/.*\/uri/);
+  });
+
+  it('should uri marshal to documentID (uri->uri)', () => {
+    expect(
+      new DocumentBuilder('foo://bar.biz', 'aaa').marshal().documentId
+    ).toBe('foo://bar.biz');
   });
 
   it('should marshal data', () => {
