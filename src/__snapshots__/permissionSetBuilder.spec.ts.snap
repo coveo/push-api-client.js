@@ -6,30 +6,30 @@ exports[`PermissionSetBuilder should marshal allowedPermissions in multiple #wit
   "allowedPermissions": [
     {
       "identity": "max@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "sue@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "bob@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "SampleGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "SpecialGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "my_group",
-      "identityType": "GROUP",
+      "identityType": "Group",
     },
   ],
   "deniedPermissions": [],
@@ -42,31 +42,31 @@ exports[`PermissionSetBuilder should marshal both allowed and denied permissions
   "allowedPermissions": [
     {
       "identity": "SampleGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "SpecialGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "my_group",
-      "identityType": "GROUP",
+      "identityType": "Group",
     },
   ],
   "deniedPermissions": [
     {
       "identity": "max@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "sue@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "bob@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
   ],
@@ -80,30 +80,30 @@ exports[`PermissionSetBuilder should marshal deniedPermissions in multiple #with
   "deniedPermissions": [
     {
       "identity": "max@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "sue@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "bob@foo.com",
-      "identityType": "USER",
+      "identityType": "User",
       "securityProvider": "Email Security Provider",
     },
     {
       "identity": "SampleGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "SpecialGroup",
-      "identityType": "VIRTUAL_GROUP",
+      "identityType": "VirtualGroup",
     },
     {
       "identity": "my_group",
-      "identityType": "GROUP",
+      "identityType": "Group",
     },
   ],
 }

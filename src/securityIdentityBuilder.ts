@@ -1,14 +1,16 @@
-import {SecurityIdentity, SecurityIdentityType} from './document';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type {PermissionSetBuilder} from './permissionSetBuilder';
+import {Permission, PermissionIdentityType} from '@coveo/platform-client';
 
 /**
- * Build a security identity. See {@link SecurityIdentity}.
+ * Build a security identity. See {@link Permission}.
  */
 export interface SecurityIdentityBuilder {
-  build(): SecurityIdentity | SecurityIdentity[];
+  build(): Permission | Permission[];
 }
 
 /**
- * Build any {@link SecurityIdentityType}.
+ * Build any {@link PermissionIdentityType}.
  *
  * Instead of using this class directly, use one of:
  * - {@link UserSecurityIdentityBuilder}
@@ -16,15 +18,24 @@ export interface SecurityIdentityBuilder {
  * - {@link VirtualGroupSecurityIdentityBuilder}
  */
 export class AnySecurityIdentityBuilder implements SecurityIdentityBuilder {
-  private securityIdentity: SecurityIdentity;
+  private securityIdentity: Permission;
   /**
+   * @param identityType  The type of the identity.
+   * Valid values:
+   * - `UNKNOWN`
+   * - `USER` : Defines a single user.
+   * - `GROUP` : Defines an existing group of identities within the indexed system. Individual members of this group can be of any valid identity Type (USER, GROUP, or VIRTUAL_GROUP).
+   * - `VIRTUAL_GROUP` : Defines a group that doesn't exist within the indexed system. Mechanically, a `VIRTUAL_GROUP` is identical to a `GROUP`.
    *
-   * @param identityType
-   * @param identity
-   * @param securityProvider
+   * @param identity The name of the security identity.
+   * Examples:
+   * - `asmith@example.com`
+   * - `SampleTeam2`
+   *
+   * @param securityProvider The security identity provider through which the security identity is updated. Defaults to the first security identity provider associated with the target source.
    */
   constructor(
-    identityType: SecurityIdentityType,
+    identityType: PermissionIdentityType,
     identity: string,
     securityProvider?: string
   ) {
@@ -47,15 +58,15 @@ export class AnySecurityIdentityBuilder implements SecurityIdentityBuilder {
 /**
  * Build a security identity of type `USER`.
  *
- * Typically used in conjunction with {@link DocumentBuilder.withAllowedPermissions} or {@link DocumentBuilder.withDeniedPermissions}.
+ * Typically used in conjunction with {@link PermissionSetBuilder.withAllowedPermissions} or {@link PermissionSetBuilder.withDeniedPermissions}.
  *
- * See {@link SecurityIdentity}.
+ * See {@link Permission}.
  */
 export class UserSecurityIdentityBuilder implements SecurityIdentityBuilder {
   /**
    * Pass either a single user, or an array of user to create multiple identities.
-   * @param user
-   * @param securityProvider
+   * @param {(string | string[])} user  The user identity or identities
+   * @param {string} [securityProvider='Email Security Provider'] The security identity provider through which the security identity is updated. Defaults to the first security identity provider associated with the target source.
    */
   constructor(
     private user: string | string[],
@@ -69,11 +80,15 @@ export class UserSecurityIdentityBuilder implements SecurityIdentityBuilder {
   public build() {
     if (Array.isArray(this.user)) {
       return this.user.map((u) =>
-        new AnySecurityIdentityBuilder('USER', u, this.securityProvider).build()
+        new AnySecurityIdentityBuilder(
+          PermissionIdentityType.User,
+          u,
+          this.securityProvider
+        ).build()
       );
     }
     return new AnySecurityIdentityBuilder(
-      'USER',
+      PermissionIdentityType.User,
       this.user,
       this.securityProvider
     ).build();
@@ -83,15 +98,15 @@ export class UserSecurityIdentityBuilder implements SecurityIdentityBuilder {
 /**
  * Build a security identity of type `GROUP`.
  *
- * Typically used in conjunction with {@link DocumentBuilder.withAllowedPermissions} or {@link DocumentBuilder.withDeniedPermissions}.
+ * Typically used in conjunction with {@link PermissionSetBuilder.withAllowedPermissions} or {@link PermissionSetBuilder.withDeniedPermissions}.
  *
- * See {@link SecurityIdentity}.
+ * See {@link Permission}.
  */
 export class GroupSecurityIdentityBuilder implements SecurityIdentityBuilder {
   /**
    * Pass either a single `group`, or an array of `group` to create multiple identities.
-   * @param group
-   * @param securityProvider
+   * @param {(string | string[])} group
+   * @param {string} [securityProvider] The security identity provider through which the security identity is updated. Defaults to the first security identity provider associated with the target source.
    */
   constructor(
     private group: string | string[],
@@ -106,14 +121,14 @@ export class GroupSecurityIdentityBuilder implements SecurityIdentityBuilder {
     if (Array.isArray(this.group)) {
       return this.group.map((g) =>
         new AnySecurityIdentityBuilder(
-          'GROUP',
+          PermissionIdentityType.Group,
           g,
           this.securityProvider
         ).build()
       );
     }
     return new AnySecurityIdentityBuilder(
-      'GROUP',
+      PermissionIdentityType.Group,
       this.group,
       this.securityProvider
     ).build();
@@ -122,17 +137,17 @@ export class GroupSecurityIdentityBuilder implements SecurityIdentityBuilder {
 /**
  * Build a security identity of type `VIRTUAL_GROUP`.
  *
- * Typically used in conjunction with {@link DocumentBuilder.withAllowedPermissions} or {@link DocumentBuilder.withDeniedPermissions}.
+ * Typically used in conjunction with {@link PermissionSetBuilder.withAllowedPermissions} or {@link PermissionSetBuilder.withDeniedPermissions}.
  *
- * See {@link SecurityIdentity}.
+ * See {@link Permission}.
  */
 export class VirtualGroupSecurityIdentityBuilder
   implements SecurityIdentityBuilder
 {
   /**
    * Pass either a single `virtualGroup`, or an array of `virtualGroup` to create multiple identities.
-   * @param group
-   * @param securityProvider
+   * @param {(string | string[])} virtualGroup
+   * @param {string} [securityProvider] The security identity provider through which the security identity is updated. Defaults to the first security identity provider associated with the target source.
    */
   constructor(
     private virtualGroup: string | string[],
@@ -147,14 +162,14 @@ export class VirtualGroupSecurityIdentityBuilder
     if (Array.isArray(this.virtualGroup)) {
       return this.virtualGroup.map((vg) =>
         new AnySecurityIdentityBuilder(
-          'VIRTUAL_GROUP',
+          PermissionIdentityType.VirtualGroup,
           vg,
           this.securityProvider
         ).build()
       );
     }
     return new AnySecurityIdentityBuilder(
-      'VIRTUAL_GROUP',
+      PermissionIdentityType.VirtualGroup,
       this.virtualGroup,
       this.securityProvider
     ).build();
