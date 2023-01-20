@@ -8,6 +8,8 @@ import {
   Transformer,
 } from './validation/transformers/transformer';
 import {PermissionSetBuilder} from './permissionSetBuilder';
+import {z} from 'zod';
+import {pathToFileURL} from 'url';
 /**
  * Utility class to build a {@link Document}.
  */
@@ -23,7 +25,7 @@ export class DocumentBuilder {
       uri,
       title,
       metadata: {},
-      permissions: [], // TODO: Revisit with CDX-307 on validation
+      permissions: [], // TODO: CDX-1282 Prevent pushing empty permission arrays
     };
   }
 
@@ -261,9 +263,17 @@ export class DocumentBuilder {
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
       ...this.marshalPermissions(),
-      documentId: uri,
+      ...this.marshalDocumentId(),
     };
     return out;
+  }
+
+  private marshalDocumentId() {
+    return {
+      documentId: z.string().url().safeParse(this.uri).success
+        ? this.uri
+        : pathToFileURL(this.uri).toString(),
+    };
   }
 
   private marshalMetadata() {
