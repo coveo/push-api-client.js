@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`parseFile should fail on reserved keyword 1`] = `
-"/Users/ylakhdar/Repos/push-api-client.js/src/__stub__/jsondocuments/brokenBatch.json is not a valid JSON: Document contains an invalid value for title: value is required.
+brokenBatch.json is not a valid JSON: Document contains an invalid value for title: value is required.
 Document in error:
 {
   "DocumentId": "https://www.example.com/bar",
@@ -10,7 +10,7 @@ Document in error:
 
 Helpful links on the expected JSON format:
  • JSON file example: https://github.com/coveo/push-api-client.js/tree/main/samples/json
- • Document Body reference: https://docs.coveo.com/en/75#documentbody"
+ • Document Body reference: https://docs.coveo.com/en/75#documentbody
 `;
 
 exports[`parseFile should fail on unsupported metadata key 1`] = `

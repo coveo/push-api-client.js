@@ -4,6 +4,16 @@ import {parseAndGetDocumentBuilderFromJSONDocument} from './parseFile';
 import {InvalidDocument} from '../errors/validatorErrors';
 import {readFileSync} from 'fs';
 
+const stripFilePathFromSnapshot = () => {
+  const fileJsonFileErrorRegex = new RegExp(
+    /^.*?(\w+\.json)(?= is not a valid JSON)/m
+  );
+  expect.addSnapshotSerializer({
+    test: (val: string) => Boolean(val.match(fileJsonFileErrorRegex)),
+    print: (val) => `${val}`.replace(fileJsonFileErrorRegex, '$1'),
+  });
+};
+
 describe('parseFile', () => {
   const pathToStub = join(cwd(), 'src', '__stub__');
   const parse = (file: string) => () =>
@@ -91,6 +101,7 @@ describe('parseFile', () => {
 
   it('should fail on reserved keyword', async () => {
     const file = join(pathToStub, 'jsondocuments', 'brokenBatch.json');
+    stripFilePathFromSnapshot();
     await expect(parse(file)).rejects.toThrowErrorMatchingSnapshot();
   });
 
