@@ -10,7 +10,7 @@
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
     "@coveo/bueno": "^0.43.0",
-    "@coveo/platform-client": "40.1.0",
+    "@coveo/platform-client": "40.2.0",
     "abortcontroller-polyfill": "^1.7.1",
     "axios": "^1.2.0",
     "dayjs": "^1.10.4",
@@ -20,10 +20,10 @@
   },
   "devDependencies": {
     "@coveo/push-api-client": "file:.",
-    "@types/jest": "29.2.5",
+    "@types/jest": "29.2.6",
     "@types/node": "18.11.18",
-    "@typescript-eslint/eslint-plugin": "5.48.1",
-    "@typescript-eslint/parser": "5.48.1",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
     "cz-conventional-changelog": "3.3.0",
     "detect-indent": "7.0.1",
     "dotenv": "16.0.3",
