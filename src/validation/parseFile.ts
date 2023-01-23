@@ -1,17 +1,5 @@
-import {
-  ArrayValue,
-  BooleanValue,
-  PrimitivesValues,
-  RecordValue,
-  StringValue,
-} from '@coveo/bueno';
-import {
-  DocumentBuilder,
-  Document,
-  SecurityIdentity,
-  AnySecurityIdentityBuilder,
-  MetadataValue,
-} from '..';
+import {PrimitivesValues, StringValue} from '@coveo/bueno';
+import {DocumentBuilder, MetadataValue} from '..';
 import {existsSync, lstatSync, PathLike, readFileSync} from 'fs';
 import {CaseInsensitiveDocument} from './caseInsensitiveDocument';
 import {KnownKeys} from './knownKey';
@@ -23,6 +11,7 @@ import {
 import {RequiredKeyValidator} from './requiredKeyValidator';
 import {Metadata} from '../document';
 import {ParseDocumentOptions} from '../interfaces';
+import {processPermissionList} from './parsePermissions';
 
 export const parseAndGetDocumentBuilderFromJSONDocument = async (
   documentPath: PathLike,
@@ -77,11 +66,7 @@ const processDocument = (
   );
   try {
     processKnownKeys(caseInsensitiveDoc, documentBuilder);
-    processSecurityIdentities(
-      caseInsensitiveDoc,
-      documentBuilder,
-      documentPath
-    );
+    processPermissionList(caseInsensitiveDoc, documentBuilder, documentPath);
     processMetadata(caseInsensitiveDoc, documentBuilder, options);
   } catch (error) {
     if (typeof error === 'string') {
@@ -167,80 +152,6 @@ const processKnownKeys = (
   );
 };
 
-const processSecurityIdentities = (
-  caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
-  documentBuilder: DocumentBuilder,
-  documentPath: PathLike
-) => {
-  new KnownKeys<Document['permissions']>(
-    'permissions',
-    caseInsensitiveDoc
-  ).whenExists((permissions) => {
-    const caseInsensitivePermissions = new CaseInsensitiveDocument(
-      permissions!
-    );
-    const requiredAllowAnonymous = new RequiredKeyValidator(
-      'allowanonymous',
-      caseInsensitivePermissions,
-      new BooleanValue({required: true})
-    );
-    if (!requiredAllowAnonymous.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredAllowAnonymous.explanation
-      );
-    }
-
-    const requiredAllowedPermissions = new RequiredKeyValidator(
-      'allowedpermissions',
-      caseInsensitivePermissions,
-      getSecurityIdentitySchemaValidation()
-    );
-
-    if (!requiredAllowedPermissions.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredAllowedPermissions.explanation
-      );
-    }
-
-    const requiredDeniedPermissions = new RequiredKeyValidator(
-      'deniedpermissions',
-      caseInsensitivePermissions,
-      getSecurityIdentitySchemaValidation()
-    );
-
-    if (!requiredDeniedPermissions.isValid) {
-      throw new InvalidDocument(
-        documentPath,
-        requiredDeniedPermissions.explanation
-      );
-    }
-
-    documentBuilder.withAllowAnonymousUsers(permissions!.allowAnonymous);
-    permissions?.allowedPermissions?.forEach((p) => {
-      documentBuilder.withAllowedPermissions(
-        new AnySecurityIdentityBuilder(
-          p.identityType,
-          p.identity,
-          p.securityProvider
-        )
-      );
-    });
-    permissions?.deniedPermissions?.forEach((p) => {
-      documentBuilder.withDeniedPermissions(
-        new AnySecurityIdentityBuilder(
-          p.identityType,
-          p.identity,
-          p.securityProvider
-        )
-      );
-    });
-
-    delete caseInsensitiveDoc.documentRecord['permissions'];
-  });
-};
-
 const processMetadata = (
   caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
   documentBuilder: DocumentBuilder,
@@ -265,24 +176,3 @@ const isFile = (p: PathLike) => {
   }
   return lstatSync(p).isFile();
 };
-
-const getSecurityIdentitySchemaValidation =
-  (): ArrayValue<SecurityIdentity> => {
-    return new ArrayValue({
-      required: true,
-      each: new RecordValue({
-        values: {
-          identity: new StringValue({required: true, emptyAllowed: false}),
-          identityType: new StringValue({
-            constrainTo: ['UNKNOWN', 'USER', 'GROUP', 'VIRTUAL_GROUP'],
-            required: true,
-            emptyAllowed: false,
-          }),
-          securityProvider: new StringValue({
-            emptyAllowed: false,
-            required: true,
-          }),
-        },
-      }),
-    });
-  };
