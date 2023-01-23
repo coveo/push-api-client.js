@@ -45,7 +45,17 @@ describe('parseFile', () => {
       title: 'should fail on identityType with an invalid value',
       fileName: 'identityTypeInvalidValue.json',
       error:
-        'allowedpermissions:   value should be one of: UNKNOWN, USER, GROUP, VIRTUAL_GROUP.',
+        'allowedpermissions:   value did not match provided regex /Unknown|User|Group|VirtualGroup/i',
+    },
+    {
+      title: 'should fail on permission not being an array',
+      fileName: 'notAPermissionArray.json',
+      error: 'permissions: value is not an array',
+    },
+    {
+      title: 'should fail on permission not being an array',
+      fileName: 'notAPermissionArray.json',
+      error: 'permissions: value is not an array',
     },
     {
       title: 'should fail on permission not being an array',

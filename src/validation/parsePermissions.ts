@@ -18,6 +18,7 @@ import {
   PermissionSet,
   PermissionLevel,
   Permission,
+  PermissionIdentityType,
 } from '@coveo/platform-client';
 
 export const processPermissionList = (
@@ -72,7 +73,6 @@ const processPermissionLevel = (
   documentBuilder: DocumentBuilder,
   documentPath: PathLike
 ) => {
-  // TODO: CDX-1282: require at least some permissions
   const permissionSetBuilders = permission.permissionSets!.map(
     (permissionSet) => {
       const caseInsensitivePermissions = new CaseInsensitiveDocument(
@@ -96,7 +96,6 @@ const processPermissionLevel = (
     }
   );
 
-  // TODO: CDX-1282: prevent empty permission set
   documentBuilder.withPermissionLevel(permission.name!, permissionSetBuilders);
 };
 
@@ -182,6 +181,11 @@ const validateRequiredPermissionSetKeysAndGetPermissionSetBuilder = (
   return permissionSetBuilder;
 };
 
+const getIdentityTypeRegex = () => {
+  const identityTypesValues = Object.values(PermissionIdentityType);
+  return new RegExp(identityTypesValues.join('|'), 'i');
+};
+
 const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
   return new ArrayValue({
     required: false,
@@ -189,7 +193,7 @@ const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
       values: {
         identity: new StringValue({required: true, emptyAllowed: false}),
         identityType: new StringValue({
-          constrainTo: ['UNKNOWN', 'USER', 'GROUP', 'VIRTUAL_GROUP'],
+          regex: getIdentityTypeRegex(),
           required: true,
           emptyAllowed: false,
         }),
