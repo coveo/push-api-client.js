@@ -1,34 +1,5 @@
 import {PermissionLevel, PermissionSet} from '@coveo/platform-client';
 
-/**
- * A simple permission model. See https://docs.coveo.com/en/107 for more information.
- */
-// export interface PermissionIdentityModel {
-//   /**
-//    * The name of the security identity.
-//    *
-//    * Examples:
-//    *  - `asmith@example.com`
-//    *  - `SampleTeam2`
-//    */
-//   identity: string;
-//   /**
-//    * The type of the identity.
-//    * Valid values:
-//    * - `UNKNOWN`
-//    * - `USER` : Defines a single user.
-//    * - `GROUP` : Defines an existing group of identities within the indexed system. Individual members of this group can be of any valid identity Type (USER, GROUP, or VIRTUAL_GROUP).
-//    * - `VIRTUAL_GROUP` : Defines a group that doesn't exist within the indexed system. Mechanically, a `VIRTUAL_GROUP` is identical to a `GROUP`.
-//    */
-//   identityType: SinglePermissionIdentityType;
-//   /**
-//    * The security identity provider through which the security identity is updated.
-//    *
-//    * Defaults to the first security identity provider associated with the target Push source.
-//    */
-//   securityProvider?: string;
-// }
-
 type BaseMetadataValue = string | string[] | number | number[] | boolean;
 type DictionaryMetadataValue = Record<string, BaseMetadataValue>;
 export type MetadataValue = BaseMetadataValue | DictionaryMetadataValue;

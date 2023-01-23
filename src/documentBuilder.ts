@@ -8,21 +8,26 @@ import {
   Transformer,
 } from './validation/transformers/transformer';
 import {PermissionSetBuilder} from './permissionSetBuilder';
+import {z} from 'zod';
+import {pathToFileURL} from 'url';
 /**
  * Utility class to build a {@link Document}.
  */
 export class DocumentBuilder {
   private doc: Document;
+  private permissions: NonNullable<Document['permissions']>;
   /**
    *
    * @param uri The URI of the document. See {@link Document.uri}
    * @param title The title of the document. See {@link Document.title}
    */
   constructor(private uri: string, title: string) {
+    this.permissions = [];
     this.doc = {
       uri,
       title,
       metadata: {},
+      permissions: this.permissions,
     };
   }
 
@@ -211,8 +216,7 @@ export class DocumentBuilder {
    * See [Simple Permission Model Definition Examples](https://docs.coveo.com/en/107)
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
-    this.doc.permissions = this.doc.permissions || [];
-    this.doc.permissions.push(permissionSetBuilder.build());
+    this.permissions.push(permissionSetBuilder.build());
     return this;
   }
 
@@ -234,11 +238,10 @@ export class DocumentBuilder {
     permissionLevelName: string,
     permissionSetBuilders: PermissionSetBuilder[]
   ) {
-    this.doc.permissions = this.doc.permissions || [];
     const permissionSets = permissionSetBuilders.map((permissionSet) =>
       permissionSet.build()
     );
-    this.doc.permissions.push({
+    this.permissions.push({
       name: permissionLevelName,
       permissionSets,
     });
@@ -262,9 +265,17 @@ export class DocumentBuilder {
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
       ...this.marshalPermissions(),
-      documentId: uri,
+      ...this.marshalDocumentId(),
     };
     return out;
+  }
+
+  private marshalDocumentId() {
+    return {
+      documentId: z.string().url().safeParse(this.uri).success
+        ? this.uri
+        : pathToFileURL(this.uri).toString(),
+    };
   }
 
   private marshalMetadata() {
@@ -289,8 +300,8 @@ export class DocumentBuilder {
   }
 
   private marshalPermissions() {
-    const permissions = this.doc.permissions;
-    return {...(permissions && {permissions})};
+    const permissions = this.permissions;
+    return {...(permissions.length && {permissions})};
   }
 
   private validateAndFillMissing() {
