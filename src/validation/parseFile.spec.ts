@@ -2,6 +2,17 @@ import {join} from 'path';
 import {cwd} from 'process';
 import {parseAndGetDocumentBuilderFromJSONDocument} from './parseFile';
 import {InvalidDocument} from '../errors/validatorErrors';
+import {readFileSync} from 'fs';
+
+const stripFilePathFromSnapshot = () => {
+  const fileJsonFileErrorRegex = new RegExp(
+    /^.*?(\w+\.json)(?= is not a valid JSON)/m
+  );
+  expect.addSnapshotSerializer({
+    test: (val: string) => Boolean(val.match(fileJsonFileErrorRegex)),
+    print: (val) => `${val}`.replace(fileJsonFileErrorRegex, '$1'),
+  });
+};
 
 describe('parseFile', () => {
   const pathToStub = join(cwd(), 'src', '__stub__');
@@ -69,9 +80,11 @@ describe('parseFile', () => {
     },
   ])('$title', async ({fileName, error}) => {
     const file = join(pathToStub, 'jsondocuments', fileName);
+    const fileContent = readFileSync(file).toString();
     await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
+        JSON.parse(fileContent),
         `Document contains an invalid value for ${error}`
       )
     );
@@ -86,12 +99,20 @@ describe('parseFile', () => {
 
   it('should fail on reserved keyword', async () => {
     const file = join(pathToStub, 'jsondocuments', 'reservedKeyword.json');
+    const fileContent = readFileSync(file).toString();
     await expect(parse(file)).rejects.toThrow(
       new InvalidDocument(
         file,
+        JSON.parse(fileContent),
         'Cannot use parentid as a metadata key: It is a reserved key name. See https://docs.coveo.com/en/78/index-content/push-api-reference#json-document-reserved-key-names'
       )
     );
+  });
+
+  it('should fail on reserved keyword', async () => {
+    const file = join(pathToStub, 'jsondocuments', 'brokenBatch.json');
+    stripFilePathFromSnapshot();
+    await expect(parse(file)).rejects.toThrowErrorMatchingSnapshot();
   });
 
   it('should fail on unsupported metadata key', async () => {

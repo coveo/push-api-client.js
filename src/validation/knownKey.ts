@@ -16,10 +16,10 @@ export class KnownKeys<T extends PrimitivesValues> {
 
   public get value() {
     const found = this.keys.find(
-      (k) => !isNullOrUndefined(this.doc.documentRecord[k.toLowerCase()])
+      (k) => !isNullOrUndefined(this.doc.getRecordValue(k))
     );
     if (found) {
-      return this.doc.documentRecord[found.toLowerCase()];
+      return this.doc.getRecordValue(found);
     }
 
     return null;
@@ -36,7 +36,7 @@ export class KnownKeys<T extends PrimitivesValues> {
   public whenDoesNotExist<U = T>(cb: (v: U) => void) {
     const value = this.value;
     if (isNullOrUndefined(value)) {
-      cb(this.doc.documentRecord as U);
+      cb(this.doc.remainingRecord as U);
     }
     return this;
   }

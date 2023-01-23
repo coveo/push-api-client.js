@@ -20,7 +20,7 @@ export class RequiredKeyValidator<T extends PrimitivesValues> {
 
   private doValidations() {
     this.validations = this.keys.map((k) => {
-      const value = this.doc.documentRecord[k.toLowerCase()];
+      const value = this.doc.getRecordValue(k);
       if (this.isValueCorrectType(value)) {
         return {value, message: null};
       }
