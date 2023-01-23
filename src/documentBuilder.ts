@@ -15,17 +15,19 @@ import {pathToFileURL} from 'url';
  */
 export class DocumentBuilder {
   private doc: Document;
+  private permissions: NonNullable<Document['permissions']>;
   /**
    *
    * @param uri The URI of the document. See {@link Document.uri}
    * @param title The title of the document. See {@link Document.title}
    */
   constructor(private uri: string, title: string) {
+    this.permissions = [];
     this.doc = {
       uri,
       title,
       metadata: {},
-      permissions: [], // TODO: CDX-1282 Prevent pushing empty permission arrays
+      permissions: this.permissions,
     };
   }
 
@@ -214,7 +216,7 @@ export class DocumentBuilder {
    * See [Simple Permission Model Definition Examples](https://docs.coveo.com/en/107)
    */
   public withPermissionSet(permissionSetBuilder: PermissionSetBuilder) {
-    this.doc.permissions?.push(permissionSetBuilder.build());
+    this.permissions.push(permissionSetBuilder.build());
     return this;
   }
 
@@ -239,7 +241,7 @@ export class DocumentBuilder {
     const permissionSets = permissionSetBuilders.map((permissionSet) =>
       permissionSet.build()
     );
-    this.doc.permissions?.push({
+    this.permissions.push({
       name: permissionLevelName,
       permissionSets,
     });
@@ -298,7 +300,8 @@ export class DocumentBuilder {
   }
 
   private marshalPermissions() {
-    return {permissions: this.doc.permissions || []};
+    const permissions = this.permissions;
+    return {...(permissions.length && {permissions})};
   }
 
   private validateAndFillMissing() {
