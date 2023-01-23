@@ -63,6 +63,13 @@ describe('parseFile', () => {
     );
   });
 
+  it('should not throw if allowedPermissions or deniedPermissions are omitted', async () => {
+    const file = join(pathToStub, 'jsondocuments', 'limitedPermissionSet.json');
+    await expect(
+      parseAndGetDocumentBuilderFromJSONDocument(file)
+    ).resolves.not.toThrow();
+  });
+
   it('should fail on reserved keyword', async () => {
     const file = join(pathToStub, 'jsondocuments', 'reservedKeyword.json');
     await expect(parse(file)).rejects.toThrow(

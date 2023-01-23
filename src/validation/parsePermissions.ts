@@ -184,7 +184,7 @@ const validateRequiredPermissionSetKeysAndGetPermissionSetBuilder = (
 
 const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
   return new ArrayValue({
-    required: true,
+    required: false,
     each: new RecordValue({
       values: {
         identity: new StringValue({required: true, emptyAllowed: false}),
@@ -194,8 +194,8 @@ const getSecurityIdentitySchemaValidation = (): ArrayValue<Permission> => {
           emptyAllowed: false,
         }),
         securityProvider: new StringValue({
-          emptyAllowed: false,
-          required: true,
+          emptyAllowed: true,
+          required: false,
         }),
       },
     }),
