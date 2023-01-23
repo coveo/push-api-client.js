@@ -51,7 +51,7 @@ class PermissionParser {
         }
       );
 
-      this.caseInsensitiveDoc.delete('permissions');
+      this.caseInsensitiveDoc.remove('permissions');
     });
   }
 
@@ -205,7 +205,7 @@ class PermissionParser {
 
     if (!requiredAtLeastOnePermission.isValid) {
       // simply discard empty array permission instead of throwing
-      this.caseInsensitiveDoc.delete('permissions');
+      this.caseInsensitiveDoc.remove('permissions');
     }
   }
 

@@ -112,7 +112,7 @@ const validateRequiredKeysAndGetDocumentBuilder = (
     );
   }
 
-  caseInsensitiveDoc.delete('documentid', 'uri', 'title');
+  caseInsensitiveDoc.remove('documentid', 'uri', 'title');
 
   return new DocumentBuilder(
     requiredDocumentId.value!,
@@ -126,38 +126,38 @@ const processKnownKeys = (
 ) => {
   new KnownKeys<string>('author', caseInsensitiveDoc).whenExists((author) => {
     documentBuilder.withAuthor(author);
-    caseInsensitiveDoc.delete('author');
+    caseInsensitiveDoc.remove('author');
   });
   new KnownKeys<string>('clickableuri', caseInsensitiveDoc).whenExists(
     (clickuri) => {
       documentBuilder.withClickableUri(clickuri);
-      caseInsensitiveDoc.delete('clickableuri');
+      caseInsensitiveDoc.remove('clickableuri');
     }
   );
   new KnownKeys<string>('data', caseInsensitiveDoc).whenExists((data) => {
     documentBuilder.withData(data);
-    caseInsensitiveDoc.delete('data');
+    caseInsensitiveDoc.remove('data');
   });
   new KnownKeys<string>('date', caseInsensitiveDoc).whenExists((date) => {
     documentBuilder.withDate(date);
-    caseInsensitiveDoc.delete('date');
+    caseInsensitiveDoc.remove('date');
   });
   new KnownKeys<string>('modifieddate', caseInsensitiveDoc).whenExists(
     (modifiedDate) => {
       documentBuilder.withModifiedDate(modifiedDate);
-      caseInsensitiveDoc.delete('modifieddate');
+      caseInsensitiveDoc.remove('modifieddate');
     }
   );
   new KnownKeys<string>('fileextension', caseInsensitiveDoc).whenExists(
     (fileExtension) => {
       documentBuilder.withFileExtension(fileExtension);
-      caseInsensitiveDoc.delete('fileextension');
+      caseInsensitiveDoc.remove('fileextension');
     }
   );
   new KnownKeys<string>('permanentid', caseInsensitiveDoc).whenExists(
     (permanentId) => {
       documentBuilder.withPermanentId(permanentId);
-      caseInsensitiveDoc.delete('permanentid');
+      caseInsensitiveDoc.remove('permanentid');
     }
   );
 };

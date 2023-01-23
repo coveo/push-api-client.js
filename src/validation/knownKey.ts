@@ -16,10 +16,10 @@ export class KnownKeys<T extends PrimitivesValues> {
 
   public get value() {
     const found = this.keys.find(
-      (k) => !isNullOrUndefined(this.doc.remainingRecord[k.toLowerCase()])
+      (k) => !isNullOrUndefined(this.doc.getRecordValue(k))
     );
     if (found) {
-      return this.doc.remainingRecord[found.toLowerCase()];
+      return this.doc.getRecordValue(found);
     }
 
     return null;

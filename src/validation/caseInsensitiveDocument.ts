@@ -14,10 +14,14 @@ export class CaseInsensitiveDocument<T> {
     });
   }
 
-  public delete(...keys: string[]) {
+  public remove(...keys: string[]) {
     keys.forEach((key) => {
-      delete this._remainingRecord[key];
+      delete this._remainingRecord[key.toLowerCase()];
     });
+  }
+
+  public getRecordValue(key: string) {
+    return this._remainingRecord[key.toLowerCase()];
   }
 
   public get remainingRecord(): Readonly<Record<string, T>> {
