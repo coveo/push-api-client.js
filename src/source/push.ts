@@ -1,5 +1,4 @@
-require('isomorphic-fetch');
-require('abortcontroller-polyfill');
+import 'fetch-undici-polyfill';
 
 import {
   PlatformClient,
@@ -164,7 +163,7 @@ export class PushSource {
     const deleteURL = new URL(`${this.urlBuilder(sourceID).baseURL}/documents`);
     deleteURL.searchParams.append('documentId', documentId);
     deleteURL.searchParams.append('deleteChildren', `${deleteChildren}`);
-    return this.api.delete(deleteURL.toString());
+    return this.api.delete(deleteURL.toString(), false);
   }
 
   /**
@@ -182,19 +181,22 @@ export class PushSource {
       `${this.urlBuilder(sourceID).baseURL}/documents/olderthan`
     );
     deleteURL.searchParams.append('orderingId', `${date.valueOf()}`);
-    return this.api.delete(deleteURL.toString());
+    return this.api.delete(deleteURL.toString(), false);
   }
 
   /**
    * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
    * @param sourceID
    * @param status
-   * @returns
+   * @returns {Promise<void>}
    */
-  public setSourceStatus(sourceID: string, status: SourceStatus) {
+  public async setSourceStatus(
+    sourceID: string,
+    status: SourceStatus
+  ): Promise<void> {
     const urlStatus = new URL(`${this.urlBuilder(sourceID).baseURL}/status`);
     urlStatus.searchParams.append('statusType', status);
-    return this.api.post(urlStatus.toString());
+    await this.api.post(urlStatus.toString());
   }
 
   public async createFields(analyser: FieldAnalyser) {

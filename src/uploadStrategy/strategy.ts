@@ -1,4 +1,4 @@
-import type {AxiosResponse} from 'axios';
+import type {Response} from 'undici';
 import type {BatchUpdateDocuments} from '../interfaces';
 
 export interface UploadStrategy {
@@ -7,7 +7,7 @@ export interface UploadStrategy {
    *
    * @param {BatchUpdateDocuments} batch
    */
-  upload: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>;
+  upload: (batch: BatchUpdateDocuments) => Promise<Response>;
 
   /**
    * Async operation to run before starting the upload

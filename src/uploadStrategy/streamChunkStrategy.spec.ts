@@ -37,25 +37,21 @@ const doMockAPICore = () => {
   mockedAPICore.prototype.post.mockImplementation(mockedPost);
 };
 
-const doAxiosMockFileContainerResponse = () => ({
-  data: fileContainerResponse,
+const doFetchMockFileContainerResponse = () => fileContainerResponse;
+
+const doFetchMockOpenStream = () => ({
+  streamId: 'the_stream_id',
 });
 
-const doAxiosMockOpenStream = () => ({
-  data: {
-    streamId: 'the_stream_id',
-  },
-});
-
-const mockSuccessAxiosCalls = () => {
+const mockSuccessFetchCalls = () => {
   mockedPost.mockImplementation((url: string) => {
     if (url.match(/chunk/)) {
-      return doAxiosMockFileContainerResponse();
+      return doFetchMockFileContainerResponse();
     }
     if (url.match(/stream\/open/)) {
-      return doAxiosMockOpenStream();
+      return doFetchMockOpenStream();
     }
-    return {data: {}};
+    return {};
   });
 };
 
@@ -63,7 +59,7 @@ describe('StreamChunkStrategy', () => {
   let strategy: StreamChunkStrategy;
   beforeAll(() => {
     doMockAPICore();
-    mockSuccessAxiosCalls();
+    mockSuccessFetchCalls();
   });
 
   beforeEach(async () => {
