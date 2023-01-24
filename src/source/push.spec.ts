@@ -141,7 +141,8 @@ describe('PushSource', () => {
   it('should call #APICore on delete', () => {
     defaultSource.deleteDocument('the_id', 'the_uri', true);
     expect(mockedDelete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true'
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
+      false
     );
   });
 
@@ -155,7 +156,8 @@ describe('PushSource', () => {
   describe('calls #APICore when doing delete olderthan', () => {
     const expectCorrectOrderingId = (id: number | string) => {
       expect(mockedDelete).toHaveBeenCalledWith(
-        `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`
+        `https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents/olderthan?orderingId=${id}`,
+        false
       );
     };
 
@@ -180,7 +182,8 @@ describe('PushSource', () => {
   it('should call #APICore on delete', () => {
     defaultSource.deleteDocument('the_id', 'the_uri', true);
     expect(mockedDelete).toHaveBeenCalledWith(
-      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true'
+      'https://api.cloud.coveo.com/push/v1/organizations/the_org/sources/the_id/documents?documentId=the_uri&deleteChildren=true',
+      false
     );
   });
 

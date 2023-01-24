@@ -1,5 +1,4 @@
-require('isomorphic-fetch');
-require('abortcontroller-polyfill');
+import 'fetch-undici-polyfill';
 
 import {
   PlatformClient,

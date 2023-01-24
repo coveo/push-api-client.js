@@ -27,12 +27,12 @@ export class FileContainerStrategy implements UploadStrategy {
   private async createFileContainer() {
     const fileContainerURL = this.urlBuilder.fileContainerUrl.toString();
     const res = await this.api.post<FileContainerResponse>(fileContainerURL);
-    return res.data;
+    return res;
   }
 
   private pushFileContainerContent(fileContainer: FileContainerResponse) {
     const pushURL = this.urlBuilder.baseAPIURLForUpdate;
     pushURL.searchParams.append('fileId', fileContainer.fileId);
-    return this.api.put(pushURL.toString());
+    return this.api.put(pushURL.toString(), undefined, false);
   }
 }

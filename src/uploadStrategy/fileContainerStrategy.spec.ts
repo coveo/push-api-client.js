@@ -47,7 +47,7 @@ const doMockAPICore = () => {
 };
 
 const doMockFileContainerResponse = () => {
-  mockedPost.mockResolvedValue({data: fileContainerResponse});
+  mockedPost.mockResolvedValue(fileContainerResponse);
 };
 
 describe('FileContainerStrategy', () => {
@@ -109,7 +109,7 @@ describe('FileContainerStrategy', () => {
 
     it('should push file container content', () => {
       expect(mockedPut).toHaveBeenCalledTimes(1);
-      expect(mockedPut).toHaveBeenCalledWith(pushUrl);
+      expect(mockedPut).toHaveBeenCalledWith(pushUrl, undefined, false);
     });
   });
 });

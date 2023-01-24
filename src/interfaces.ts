@@ -1,4 +1,4 @@
-import type {AxiosResponse} from 'axios';
+import type {Response} from 'undici';
 import {PathLike} from 'fs';
 import type {DocumentBuilder} from './documentBuilder';
 import type {Transformer} from './validation/transformers/transformer';
@@ -25,13 +25,13 @@ export interface UploadProgress {
  * @param {string[]} files Files from which the documentBuilders were generated
  * @param {DocumentBuilder[]} batch List of the uploaded DocumentBuilders
  * @param {UploadProgress} progress Progress of the upload process
- * @param {AxiosResponse} res Axios response
+ * @param {Response} res fetch response
  */
 export interface UploadBatchCallbackData {
   files: string[];
   batch: DocumentBuilder[];
   progress?: UploadProgress;
-  res?: AxiosResponse;
+  res?: Response;
 }
 
 export interface BatchUpdateDocumentsOptions {

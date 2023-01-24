@@ -1,4 +1,3 @@
-jest.mock('axios');
 jest.mock('../validation/parseFile');
 import {
   DocumentBuilder,
@@ -69,8 +68,8 @@ describe('FileConsumer', () => {
         'https://url.com/5',
       ].values();
       const handleBatchUpload = (data: UploadBatchCallbackData) => {
-        for (let i = 0; i < data.batch.length; i++) {
-          const documentBuilder = data.batch[i];
+        for (const element of data.batch) {
+          const documentBuilder = element;
           const {documentId} = documentBuilder.marshal();
           expect(documentId).toEqual(expectedSequence.next().value);
         }

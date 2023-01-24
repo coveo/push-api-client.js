@@ -9,7 +9,7 @@ import {
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
 import {consumeGenerator} from './generator';
-import {AxiosResponse} from 'axios';
+import type {Response} from 'undici';
 import {isUndefined} from '@coveo/bueno';
 
 export type SuccessfulUploadCallback = (data: UploadBatchCallbackData) => void;
@@ -30,11 +30,11 @@ export class FileConsumer {
 
   /**
    * Creates an instance of FileConsumer.
-   * @param {(batch: BatchUpdateDocuments) => Promise<AxiosResponse>} upload the upload operation to apply to every document batch
+   * @param {(batch: BatchUpdateDocuments) => Promise<Response>} upload the upload operation to apply to every document batch
    * @param {Required<ConcurrentProcessing>} processingConfig
    */
   public constructor(
-    private upload: (batch: BatchUpdateDocuments) => Promise<AxiosResponse>,
+    private upload: (batch: BatchUpdateDocuments) => Promise<Response>,
     private processingConfig: Required<ConcurrentProcessing>
   ) {}
 
@@ -119,7 +119,7 @@ export class FileConsumer {
   }
 
   private async uploadBatch(batch: DocumentBuilder[], fileNames: string[]) {
-    let res: AxiosResponse | undefined;
+    let res: Response | undefined;
     const progress = this.getProgress(batch);
     try {
       res = await this.upload({

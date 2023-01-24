@@ -11,11 +11,9 @@
   "dependencies": {
     "@coveo/bueno": "^0.43.0",
     "@coveo/platform-client": "40.2.0",
-    "abortcontroller-polyfill": "^1.7.1",
-    "axios": "^1.2.0",
     "dayjs": "^1.10.4",
     "exponential-backoff": "^3.1.0",
-    "isomorphic-fetch": "^3.0.0",
+    "fetch-undici-polyfill": "^1.1.2",
     "zod": "^3.20.2"
   },
   "devDependencies": {
@@ -39,7 +37,8 @@
     "ts-jest": "29.0.5",
     "ts-node": "10.9.1",
     "typedoc": "0.23.24",
-    "typescript": "4.9.4"
+    "typescript": "4.9.4",
+    "undici": "^5.16.0"
   },
   "husky": {
     "hooks": {
@@ -62,7 +61,7 @@
     "**/*.ts": "eslint --fix"
   },
   "engines": {
-    "node": ">=14.16.1"
+    "node": ">=16.x"
   },
   "scripts": {
     "build": "tsc",

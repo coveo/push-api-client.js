@@ -1,7 +1,7 @@
-const mockedPut = jest.fn();
-jest.mock('axios', () => ({
-  default: {put: mockedPut},
-}));
+import 'fetch-undici-polyfill';
+jest.mock('fetch-undici-polyfill', () => {
+  Object.assign(global, {fetch: jest.fn()});
+});
 
 import {BatchUpdateDocuments, DocumentBuilder} from '..';
 import {
@@ -10,6 +10,7 @@ import {
 } from './fileContainer';
 
 describe('#uploadContentToFileContainer', () => {
+  const fetchMocked: jest.Mock = fetch as jest.Mock;
   const fileContainerResponse: FileContainerResponse = {
     uploadUri: 'https://fake.upload.url',
     fileId: 'file_id',
@@ -21,65 +22,61 @@ describe('#uploadContentToFileContainer', () => {
     delete: [],
   };
 
-  const doMockAxiosPut = () => {
-    mockedPut.mockImplementation(() => Promise.resolve());
+  const doMockFetch = () => {
+    fetchMocked.mockImplementation(() => Promise.resolve());
   };
 
   beforeEach(() => {
-    doMockAxiosPut();
+    doMockFetch();
   });
 
   it('should perform an PUT request with the right params', async () => {
     await uploadContentToFileContainer(fileContainerResponse, batch);
 
-    expect(mockedPut).toHaveBeenCalledWith(
-      'https://fake.upload.url/',
-      expect.objectContaining({
-        addOrUpdate: expect.arrayContaining([
-          expect.objectContaining({
-            documentId: 'http://some.url',
-          }),
-        ]),
-        delete: expect.arrayContaining([]),
-      }),
-      {
-        headers: {
-          foo: 'bar',
-        },
-        maxBodyLength: 256e6,
-      }
-    );
+    expect(fetchMocked).toBeCalled();
+    expect(fetchMocked.mock.lastCall).toMatchSnapshot();
   });
 
-  describe('when an MaxBodyLengthExceededError is thrown', () => {
+  describe('when the server respond with 413', () => {
     beforeEach(() => {
-      mockedPut.mockImplementationOnce(() =>
-        Promise.reject(new FakeMaxBodyLengthExceededError())
+      fetchMocked.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: false,
+          status: 413,
+        })
       );
     });
 
     it('should give some info on how to fix it', async () => {
-      await expect(
-        uploadContentToFileContainer(fileContainerResponse, batch)
-      ).rejects.toThrowErrorMatchingSnapshot();
+      try {
+        await uploadContentToFileContainer(fileContainerResponse, batch);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AggregateError);
+        expect((error as AggregateError).errors).toMatchSnapshot(`
+          [
+            [Error: File container size limit exceeded.
+          See <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.],
+          ]
+        `);
+      }
+      expect.assertions(2);
     });
   });
 
   describe('when anything else than MaxBodyLengthExceededError is thrown', () => {
     const thrownError = new Error();
     beforeEach(() => {
-      mockedPut.mockImplementationOnce(() => Promise.reject(thrownError));
+      fetchMocked.mockImplementationOnce(() => Promise.reject(thrownError));
     });
 
-    it('should just bubble up the error', async () => {
-      await expect(
-        uploadContentToFileContainer(fileContainerResponse, batch)
-      ).rejects.toBe(thrownError);
+    it('should bubble up the error', async () => {
+      try {
+        await uploadContentToFileContainer(fileContainerResponse, batch);
+      } catch (error) {
+        expect(error).toBeInstanceOf(AggregateError);
+        expect((error as AggregateError).errors).toContain(thrownError);
+      }
+      expect.assertions(2);
     });
   });
 });
-
-class FakeMaxBodyLengthExceededError extends Error {
-  code = 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED';
-  message = 'some initial message';
-}

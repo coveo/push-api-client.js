@@ -42,7 +42,7 @@ export class StreamChunkStrategy implements UploadStrategy {
     const openStreamUrl = new URL(`${this.urlBuilder.baseStreamURL}/open`);
     const res = await this.api.post<StreamResponse>(openStreamUrl.toString());
 
-    this._openedStream = res.data;
+    this._openedStream = res;
   }
 
   public async closeOpenedStream() {
@@ -55,12 +55,12 @@ export class StreamChunkStrategy implements UploadStrategy {
 
     const res = await this.api.post(openStreamUrl.toString());
     this._openedStream = null;
-    return res.data;
+    return res;
   }
 
   private async requestStreamChunk(): Promise<StreamResponse> {
     if (this._openedStream === null) {
-      throw 'No open stream found';
+      throw new Error('No open stream found');
     }
 
     const {streamId} = this._openedStream;
@@ -69,6 +69,6 @@ export class StreamChunkStrategy implements UploadStrategy {
     );
 
     const res = await this.api.post<StreamResponse>(openStreamUrl.toString());
-    return res.data;
+    return res;
   }
 }

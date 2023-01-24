@@ -1,48 +1,53 @@
 import {backOff} from 'exponential-backoff';
-import axios, {AxiosRequestConfig, AxiosResponse} from 'axios';
-
+import type {RequestInit, Response} from 'undici';
 export class APICore {
   public constructor(private accessToken: string) {}
 
-  private async request<T>(
-    config: AxiosRequestConfig
-  ): Promise<AxiosResponse<T>> {
+  private async request(url: string, config: RequestInit): Promise<Response> {
     const req = async () => {
-      const response = await axios.request<T>({
+      const response = await fetch(url, {
         ...config,
-        ...this.axiosRequestHeaders,
+        headers: {...this.requestHeaders, ...config.headers},
       });
-
-      if (this.isThrottled(response.status)) {
-        throw response;
-      }
       return response;
     };
 
-    return backOff(req, {
-      retry: (res: AxiosResponse<T>) => this.isThrottled(res.status),
+    return await backOff(req, {
+      retry: (res: Response) => this.isThrottled(res.status),
     });
   }
 
-  public async post<T>(
-    url: string,
-    data: unknown = {}
-  ): Promise<AxiosResponse<T>> {
-    return this.request<T>({url, data, method: 'post'});
+  private async requestJson<T>(url: string, config: RequestInit): Promise<T> {
+    return (await this.request(url, config)).json() as Promise<T>;
   }
 
-  public async put<T>(
-    url: string,
-    data: unknown = {}
-  ): Promise<AxiosResponse<T>> {
-    return this.request({url, data, method: 'put'});
+  public async post<T>(url: string, data: unknown = {}): Promise<T> {
+    return this.requestJson(url, {body: JSON.stringify(data), method: 'post'});
   }
 
-  public async delete<T>(url: string): Promise<AxiosResponse<T>> {
-    return this.request({url, method: 'delete'});
+  public async put<T>(url: string): Promise<T>;
+  public async put<T>(url: string, data: unknown): Promise<T>;
+  public async put<T>(url: string, data: unknown, parse: true): Promise<T>;
+  public async put(url: string, data: unknown, parse: false): Promise<Response>;
+  public async put<T>(url: string, data: unknown = {}, parse = true) {
+    return this.selectRequester<T>(parse)(url, {
+      body: JSON.stringify(data),
+      method: 'put',
+    });
   }
 
-  private get axiosRequestHeaders(): AxiosRequestConfig {
+  private selectRequester<T>(parse: boolean) {
+    return parse ? this.requestJson<T> : this.request;
+  }
+
+  public async delete<T>(url: string): Promise<T>;
+  public async delete(url: string, parse: false): Promise<Response>;
+  public async delete<T>(url: string, parse: true): Promise<T>;
+  public async delete<T>(url: string, parse = true) {
+    return this.selectRequester<T>(parse)(url, {method: 'delete'});
+  }
+
+  private get requestHeaders(): Record<string, string> {
     const authorizationHeader = {
       Authorization: `Bearer ${this.accessToken}`,
     };
@@ -53,7 +58,7 @@ export class APICore {
       Accept: 'application/json',
     };
 
-    return {headers: documentsRequestHeaders};
+    return documentsRequestHeaders;
   }
 
   private isThrottled(status: number): boolean {

@@ -1,5 +1,5 @@
-import axios, {AxiosRequestConfig} from 'axios';
-import {URL} from 'url';
+import type {Response} from 'undici';
+import {URL} from 'node:url';
 import {BatchUpdateDocuments} from '../interfaces';
 
 export interface FileContainerResponse {
@@ -13,35 +13,57 @@ export const uploadContentToFileContainer = async (
   batch: BatchUpdateDocuments
 ) => {
   const uploadURL = new URL(fileContainer.uploadUri);
-  return axios
-    .put(
-      uploadURL.toString(),
-      {
+  let response: Response | undefined;
+  const errors = [];
+  try {
+    response = await fetch(uploadURL.toString(), {
+      method: 'PUT',
+      body: JSON.stringify({
         addOrUpdate: batch.addOrUpdate.map((docBuilder) =>
           docBuilder.marshal()
         ),
         delete: batch.delete,
-      },
-      getFileContainerAxiosConfig(fileContainer)
-    )
-    .catch((err) => {
-      if (isMaxBodyLengthExceededError(err)) {
-        err.message +=
-          '\nFile container size limit exceeded.\nSee <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.';
-      }
-      throw err;
+      }),
+      headers: fileContainer.requiredHeaders,
     });
+  } catch (error) {
+    errors.push(error);
+  } finally {
+    if (response?.ok === false) {
+      if (isMaxBodyLengthExceededError(response)) {
+        addMaxBodyLengthError(errors, response);
+      } else {
+        addGenericFetchError(errors, response);
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new AggregateError(errors);
+  } else {
+    return response!;
+  }
 };
 
-export const getFileContainerAxiosConfig = (
-  fileContainer: FileContainerResponse
-): AxiosRequestConfig => {
-  return {
-    headers: fileContainer.requiredHeaders,
-    maxBodyLength: 256e6,
-  };
-};
+function addGenericFetchError(
+  errors: unknown[],
+  response: Response | undefined
+) {
+  errors.push(new Error('Request failed', {cause: response}));
+}
 
-function isMaxBodyLengthExceededError(err: Error & {code?: string}) {
-  return err?.code === 'ERR_FR_MAX_BODY_LENGTH_EXCEEDED';
+function addMaxBodyLengthError(
+  errors: unknown[],
+  response: Response | undefined
+) {
+  errors.push(
+    new Error(
+      'File container size limit exceeded.\nSee <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.',
+      {cause: response}
+    )
+  );
+}
+
+function isMaxBodyLengthExceededError(response: Response | undefined) {
+  return response?.status === 413;
 }

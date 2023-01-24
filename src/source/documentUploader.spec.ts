@@ -60,7 +60,8 @@ describe('documentUploader', () => {
         expect.objectContaining({
           documentId: 'http://some.url',
           title: 'Some document',
-        })
+        }),
+        false
       );
     });
   });
@@ -119,8 +120,8 @@ describe('documentUploader', () => {
   describe('#uploadBatchFromFile', () => {
     const dummyCallback = jest.fn();
 
-    it('should call BatchUploadDocumentsFromFilesReturn with default options', async () => {
-      await uploadBatchFromFile(dummyClient, dummyStrategy, [
+    it('should call BatchUploadDocumentsFromFilesReturn with default options', () => {
+      uploadBatchFromFile(dummyClient, dummyStrategy, [
         'path/to/file',
         'other/path',
       ]);
@@ -137,8 +138,8 @@ describe('documentUploader', () => {
       );
     });
 
-    it('should call BatchUploadDocumentsFromFilesReturn with custom options', async () => {
-      await uploadBatchFromFile(
+    it('should call BatchUploadDocumentsFromFilesReturn with custom options', () => {
+      uploadBatchFromFile(
         dummyClient,
         dummyStrategy,
         ['path/to/file', 'other/path'],

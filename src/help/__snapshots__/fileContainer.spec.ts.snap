@@ -1,7 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`#uploadContentToFileContainer when an MaxBodyLengthExceededError is thrown should give some info on how to fix it 1`] = `
-"some initial message
-File container size limit exceeded.
-See <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>."
+exports[`#uploadContentToFileContainer should perform an PUT request with the right params 1`] = `
+[
+  "https://fake.upload.url/",
+  {
+    "body": "{"addOrUpdate":[{"title":"Some document","permanentId":"427e281a23a7766e03c22fb60649b171cabc701b6e49f1323c4cbbe597f1","documentId":"http://some.url"}],"delete":[]}",
+    "headers": {
+      "foo": "bar",
+    },
+    "method": "PUT",
+  },
+]
+`;
+
+exports[`#uploadContentToFileContainer when the server respond with 413 should give some info on how to fix it: 
+          [
+            [Error: File container size limit exceeded.
+          See <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.],
+          ]
+         1`] = `
+[
+  [Error: File container size limit exceeded.
+See <https://docs.coveo.com/en/63/index-content/push-api-limits#request-size-limits>.],
+]
 `;
