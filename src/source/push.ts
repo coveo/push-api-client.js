@@ -188,7 +188,7 @@ export class PushSource {
    * Set the status of a push source. See [Updating the Status of a Push Source](https://docs.coveo.com/en/35/)
    * @param sourceID
    * @param status
-   * @v
+   * @returns {Promise<void>}
    */
   public async setSourceStatus(
     sourceID: string,

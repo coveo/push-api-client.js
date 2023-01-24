@@ -12,7 +12,7 @@ export class APICore {
       return response;
     };
 
-    return await backOff(req, {
+    return backOff(req, {
       retry: (res: Response) => this.isThrottled(res.status),
     });
   }
