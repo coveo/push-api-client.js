@@ -34,7 +34,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Deploy doc
-        uses: peaceiris/actions-gh-pages@45065d5c037d5494afaa90cde1976c7ba16a4fb7
+        uses: peaceiris/actions-gh-pages@cc91d0e9f804fa5261b641d08030b9ea7fa59de1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/docs
