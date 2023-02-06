@@ -10,6 +10,7 @@ import {
   writeChangelog,
   gitPushTags,
   gitTag,
+  gitSetupUser,
   npmPublish,
   gitCreateBranch,
   gitCheckoutBranch,
