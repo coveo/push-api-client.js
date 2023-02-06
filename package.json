@@ -77,8 +77,7 @@
     "prettier:check": "prettier .",
     "prettier:fix": "prettier --write .",
     "commit": "git-cz",
-    "release": "node release.mjs",
-    "prepublishOnly": "npm run release && npm run doc",
+    "release": "node release.mjs && npm run doc",
     "doc": "typedoc --out ./dist/docs ./src/index.ts"
   },
   "repository": {
