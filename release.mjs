@@ -12,14 +12,9 @@ import {
   gitTag,
   gitSetupUser,
   npmPublish,
-  gitCreateBranch,
-  gitCheckoutBranch,
   gitAdd,
-  getCurrentBranchName,
-  getSHA1fromRef,
   gitCommit,
   gitPush,
-  gitDeleteRemoteBranch,
 } from '@coveo/semantic-monorepo-tools';
 import angularChangelogConvention from 'conventional-changelog-angular';
 import {Octokit} from 'octokit';
@@ -82,8 +77,8 @@ import {createActionAuth} from '@octokit/auth-action';
   //#endregion
 
   //#region Commit changelog, tag version and push
-  await gitAdd('.');
-  await gitCommit(`chore(release): ${newVersion} [skip ci]`);
+  await gitAdd(PATH);
+  await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
   await gitPush();
   //#endregion
 
