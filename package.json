@@ -10,7 +10,7 @@
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
     "@coveo/bueno": "^0.43.0",
-    "@coveo/platform-client": "40.6.0",
+    "@coveo/platform-client": "40.7.0",
     "dayjs": "^1.10.4",
     "exponential-backoff": "^3.1.0",
     "fetch-undici-polyfill": "^1.1.2",
@@ -18,12 +18,12 @@
   },
   "devDependencies": {
     "@coveo/push-api-client": "file:.",
-    "@coveo/semantic-monorepo-tools": "1.5.19",
+    "@coveo/semantic-monorepo-tools": "1.5.21",
     "@octokit/auth-action": "^2.0.3",
     "@types/jest": "29.4.0",
-    "@types/node": "18.11.18",
-    "@typescript-eslint/eslint-plugin": "5.49.0",
-    "@typescript-eslint/parser": "5.49.0",
+    "@types/node": "18.11.19",
+    "@typescript-eslint/eslint-plugin": "5.50.0",
+    "@typescript-eslint/parser": "5.50.0",
     "conventional-changelog-angular": "5.0.13",
     "cz-conventional-changelog": "3.3.0",
     "detect-indent": "7.0.1",
@@ -40,7 +40,7 @@
     "ts-jest": "29.0.5",
     "ts-node": "10.9.1",
     "typedoc": "0.23.24",
-    "typescript": "4.9.4",
+    "typescript": "4.9.5",
     "undici": "^5.16.0"
   },
   "husky": {
