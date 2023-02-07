@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "paths": {
-      "@coveo/push-api-client": ["../src/index.ts"], 
+      "@coveo/push-api-client": ["../src/index.ts"]
     }
   },
   "exclude": ["node_modules"]
