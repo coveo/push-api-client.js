@@ -262,12 +262,6 @@ export class DocumentBuilder {
     const {uri, metadata, permissions, permanentId, ...omitSomeProperties} =
       this.doc;
     const out = {
-      /**
-       * TODO: remove quick fix
-       * Not sure if all the payload keys should be in lower-case or if only PermanentId is case-sensitive.
-       * In the meantime, we simply set a lower-case `permanentid` and wait to see what is the reply from the API team.
-       * More info here: https://discuss.coveo.com/t/support-00095229-push-source-with-specific-permanentid-values
-       * */
       permanentid: permanentId,
       ...omitSomeProperties,
       ...this.marshalMetadata(),
