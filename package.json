@@ -6,6 +6,12 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/definitions/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "type": "commonjs",
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
@@ -17,7 +23,6 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@coveo/push-api-client": "file:.",
     "@coveo/semantic-monorepo-tools": "1.5.21",
     "@octokit/auth-action": "^2.0.3",
     "@types/jest": "29.4.0",
