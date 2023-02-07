@@ -10,19 +10,11 @@ import {
   writeChangelog,
   gitPushTags,
   gitTag,
+  gitSetupUser,
   npmPublish,
-  gitCreateBranch,
-  gitCheckoutBranch,
   gitAdd,
-  getCurrentBranchName,
-  getSHA1fromRef,
-  gitWriteTree,
-  gitCommitTree,
-  gitUpdateRef,
-  gitPublishBranch,
-  gitSetRefOnCommit,
+  gitCommit,
   gitPush,
-  gitDeleteRemoteBranch,
 } from '@coveo/semantic-monorepo-tools';
 import angularChangelogConvention from 'conventional-changelog-angular';
 import {Octokit} from 'octokit';
@@ -85,50 +77,9 @@ import {createActionAuth} from '@octokit/auth-action';
   //#endregion
 
   //#region Commit changelog, tag version and push
-  const tempBranchName = `release/${newVersion}`;
-  const mainBranchName = await getCurrentBranchName();
-  const mainBranchCurrentSHA = await getSHA1fromRef(mainBranchName);
-
-  // Create a temporary branch and check it out.
-  await gitCreateBranch(tempBranchName);
-  await gitCheckoutBranch(tempBranchName);
-  // Stage all the changes (mainly the changelog)...
-  await gitAdd('.');
-
-  //... and create a Git tree object with the changes).
-  const treeSHA = await gitWriteTree();
-  // Create a new commit that references the Git tree object.
-  const commitTree = await gitCommitTree(treeSHA, tempBranchName, 'tempcommit');
-
-  // Update the HEAD of the temp branch to point to the new commit, then publish the temp branch.
-  await gitUpdateRef('HEAD', commitTree);
-  await gitPublishBranch('origin', tempBranchName);
-
-  /**
-   * Once we pushed the temp branch, the tree object is then known to the remote repository.
-   * We can now create a new commit that references the tree object using the GitHub API.
-   * The fact that we use the API makes the commit 'verified'.
-   * The commit is directly created on the GitHub repository, not on the local repository.
-   */
-  const commit = await octokit.rest.git.createCommit({
-    message: `chore(release): ${newVersion} [skip ci]`,
-    owner: REPO_OWNER,
-    repo: REPO_NAME,
-    tree: treeSHA,
-    parents: [mainBranchCurrentSHA],
-  });
-  // Forcefully reset `main` to the commit we just created with the GitHub API.
-  await gitSetRefOnCommit(
-    'origin',
-    `refs/heads/${mainBranchName}`,
-    commit.data.sha
-  );
-
-  // Push the branch using the SSH remote to bypass any GitHub checks.
-  await gitCheckoutBranch(mainBranchName);
-  await gitPush('origin', mainBranchName);
-  // Finally, delete the temp branch.
-  await gitDeleteRemoteBranch('origin', tempBranchName);
+  await gitAdd(PATH);
+  await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
+  await gitPush();
   //#endregion
 
   //#region Create & push tag
