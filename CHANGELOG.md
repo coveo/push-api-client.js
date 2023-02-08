@@ -1,42 +1,34 @@
 ## 3.0.1 (2023-02-07)
 
-
-
 # 3.0.0 (2023-02-06)
-
 
 ### Bug Fixes
 
-* **deps:** update all dependencies j:cdx-227 ([#259](https://github.com/coveo/push-api-client.js/issues/259)) ([0701a3d](https://github.com/coveo/push-api-client.js/commits/0701a3d6dab2c616bc19eca8cad921a457ebbd35))
-* **deps:** update all dependencies j:cdx-227 ([#265](https://github.com/coveo/push-api-client.js/issues/265)) ([b5eafc8](https://github.com/coveo/push-api-client.js/commits/b5eafc87b6b5c2033972921c2bd4ff195cce71a0))
-* **deps:** update all dependencies j:cdx-227 ([#267](https://github.com/coveo/push-api-client.js/issues/267)) ([2f44d70](https://github.com/coveo/push-api-client.js/commits/2f44d70e2e0b0a2d4f15c79fc66904e0d586f380))
-* discard undefined security provider ([#238](https://github.com/coveo/push-api-client.js/issues/238)) ([e3212b5](https://github.com/coveo/push-api-client.js/commits/e3212b5842a3ccf06461413b0a1be8c94c1e62f3))
-* make allowed and denied keys optional ([#242](https://github.com/coveo/push-api-client.js/issues/242)) ([eb6157d](https://github.com/coveo/push-api-client.js/commits/eb6157de0ff4028fbd568998936c2684a38af9bb))
-* prevent pushing empty permission array ([#243](https://github.com/coveo/push-api-client.js/issues/243)) ([5099328](https://github.com/coveo/push-api-client.js/commits/5099328ae1ce15e714921d485a5be21c76d8e989))
-* set `identitytype` value case insensitive ([#247](https://github.com/coveo/push-api-client.js/issues/247)) ([1b7ddb4](https://github.com/coveo/push-api-client.js/commits/1b7ddb46940c4e64e346e9b9148b8c14fae41b0e))
+- **deps:** update all dependencies j:cdx-227 ([#259](https://github.com/coveo/push-api-client.js/issues/259)) ([0701a3d](https://github.com/coveo/push-api-client.js/commits/0701a3d6dab2c616bc19eca8cad921a457ebbd35))
+- **deps:** update all dependencies j:cdx-227 ([#265](https://github.com/coveo/push-api-client.js/issues/265)) ([b5eafc8](https://github.com/coveo/push-api-client.js/commits/b5eafc87b6b5c2033972921c2bd4ff195cce71a0))
+- **deps:** update all dependencies j:cdx-227 ([#267](https://github.com/coveo/push-api-client.js/issues/267)) ([2f44d70](https://github.com/coveo/push-api-client.js/commits/2f44d70e2e0b0a2d4f15c79fc66904e0d586f380))
+- discard undefined security provider ([#238](https://github.com/coveo/push-api-client.js/issues/238)) ([e3212b5](https://github.com/coveo/push-api-client.js/commits/e3212b5842a3ccf06461413b0a1be8c94c1e62f3))
+- make allowed and denied keys optional ([#242](https://github.com/coveo/push-api-client.js/issues/242)) ([eb6157d](https://github.com/coveo/push-api-client.js/commits/eb6157de0ff4028fbd568998936c2684a38af9bb))
+- prevent pushing empty permission array ([#243](https://github.com/coveo/push-api-client.js/issues/243)) ([5099328](https://github.com/coveo/push-api-client.js/commits/5099328ae1ce15e714921d485a5be21c76d8e989))
+- set `identitytype` value case insensitive ([#247](https://github.com/coveo/push-api-client.js/issues/247)) ([1b7ddb4](https://github.com/coveo/push-api-client.js/commits/1b7ddb46940c4e64e346e9b9148b8c14fae41b0e))
 
-
-* feat!: replace axios by fetch (#262) ([da6e62c](https://github.com/coveo/push-api-client.js/commits/da6e62c6dca0bcef61ba7ab4e90d479dbac6c8ba)), closes [#262](https://github.com/coveo/push-api-client.js/issues/262)
-* BREAKING CHANGE: `PermissionSetBuilder` should now be used for document permissions (#240) ([9e38289](https://github.com/coveo/push-api-client.js/commits/9e3828978cccbf734e25418084baada1059bf87f)), closes [#240](https://github.com/coveo/push-api-client.js/issues/240)
-
+- feat!: replace axios by fetch (#262) ([da6e62c](https://github.com/coveo/push-api-client.js/commits/da6e62c6dca0bcef61ba7ab4e90d479dbac6c8ba)), closes [#262](https://github.com/coveo/push-api-client.js/issues/262)
+- BREAKING CHANGE: `PermissionSetBuilder` should now be used for document permissions (#240) ([9e38289](https://github.com/coveo/push-api-client.js/commits/9e3828978cccbf734e25418084baada1059bf87f)), closes [#240](https://github.com/coveo/push-api-client.js/issues/240)
 
 ### Features
 
-* return invalid document in error message ([#248](https://github.com/coveo/push-api-client.js/issues/248)) ([4db778a](https://github.com/coveo/push-api-client.js/commits/4db778a7f09748181273052654f81e80a7b8a2e9))
-
+- return invalid document in error message ([#248](https://github.com/coveo/push-api-client.js/issues/248)) ([4db778a](https://github.com/coveo/push-api-client.js/commits/4db778a7f09748181273052654f81e80a7b8a2e9))
 
 ### BREAKING CHANGES
 
-* Drop support for Node14
-* Return types changes from AxiosResponse to Response at a few places
-* uploadContentToFileContainer() now throws AggretateError
-* remove deprecated methods
+- Drop support for Node14
+- Return types changes from AxiosResponse to Response at a few places
+- uploadContentToFileContainer() now throws AggretateError
+- remove deprecated methods
 
-* chore: remove unused imports
+- chore: remove unused imports
 
-* lock
-
-
+- lock
 
 # Changelog
 
