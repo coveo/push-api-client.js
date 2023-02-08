@@ -1,3 +1,12 @@
+## 3.0.4 (2023-02-08)
+
+
+### Bug Fixes
+
+* make permanentid lower-case ([#270](https://github.com/coveo/push-api-client.js/issues/270)) ([8ba5dd7](https://github.com/coveo/push-api-client.js/commits/8ba5dd7b8299e179f83ed67b2db638f90a3b8d73))
+
+
+
 ## 3.0.2 (2023-02-07)
 
 
