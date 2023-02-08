@@ -259,8 +259,10 @@ export class DocumentBuilder {
    */
   public marshal() {
     this.validateAndFillMissing();
-    const {uri, metadata, permissions, ...omitSomeProperties} = this.doc;
+    const {uri, metadata, permissions, permanentId, ...omitSomeProperties} =
+      this.doc;
     const out = {
+      permanentid: permanentId,
       ...omitSomeProperties,
       ...this.marshalMetadata(),
       ...this.marshalCompressedBinaryData(),
