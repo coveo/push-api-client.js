@@ -1,10 +1,6 @@
 name: Create release
 on:
-  workflow_run:
-    workflows:
-      - Build
-    types:
-      - completed
+  workflow_call:
 permissions:
   contents: write
   pages: write
