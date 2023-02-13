@@ -26,4 +26,3 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: CI
     uses: ./.github/workflows/release.yml
-
