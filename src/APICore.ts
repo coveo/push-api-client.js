@@ -37,7 +37,7 @@ export class APICore {
   }
 
   private selectRequester<T>(parse: boolean) {
-    return parse ? this.requestJson<T> : this.request;
+    return (parse ? this.requestJson<T> : this.request).bind(this);
   }
 
   public async delete<T>(url: string): Promise<T>;
