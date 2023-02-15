@@ -1,3 +1,12 @@
+## 3.0.120 (2023-02-15)
+
+
+### Bug Fixes
+
+* don't drop this ([#275](https://github.com/coveo/push-api-client.js/issues/275)) ([0b5263d](https://github.com/coveo/push-api-client.js/commits/0b5263dbad338329c4fa264f9421dae79dc02cde))
+
+
+
 ## 3.0.119 (2023-02-13)
 
 
