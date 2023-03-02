@@ -48,6 +48,11 @@ main();
 
 See more examples in the `./samples` folder.
 
+### Proxy configuration
+
+You can use the `HTTPS_PROXY` or `https_proxy` environment variable for proxy configuration.
+Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/).
+
 ## Local development
 
 - `npm i`
