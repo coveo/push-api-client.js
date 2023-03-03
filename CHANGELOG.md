@@ -1,3 +1,17 @@
+# 3.1.0 (2023-03-03)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#279](https://github.com/coveo/push-api-client.js/issues/279)) ([dc6b6ce](https://github.com/coveo/push-api-client.js/commits/dc6b6ced5e26a31717f34d0a67aeae42e1dbe02f))
+
+
+### Features
+
+* support https proxy ([#281](https://github.com/coveo/push-api-client.js/issues/281)) ([9f31ed7](https://github.com/coveo/push-api-client.js/commits/9f31ed76a3fd79de31398948f986ba9c100d3215))
+
+
+
 ## 3.0.124 (2023-02-20)
 
 
