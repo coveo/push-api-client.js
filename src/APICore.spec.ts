@@ -63,7 +63,9 @@ describe('APICore', () => {
       await expect(apiCore.post('whatever')).rejects.toBe(fakeFetchError);
       expect(fetchMock).toBeCalledTimes(1);
       expect(mockedFetchErrorBuild).toBeCalledTimes(1);
-      expect(mockedFetchErrorBuild).toBeCalledWith(await fetchMock.mock.results[0].value);
+      expect(mockedFetchErrorBuild).toBeCalledWith(
+        await fetchMock.mock.results[0].value
+      );
     });
   });
 });
