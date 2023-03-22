@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FetchError when json returns a stringifiable object uses its stringify value in the message 1`] = `
+"Response body:
+{"hello":"world"}"
+`;
+
+exports[`FetchError when json returns a unstringifiable object uses the text value in the message 1`] = `
+"Response body:
+hello there"
+`;
