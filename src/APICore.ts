@@ -1,5 +1,7 @@
 import {backOff} from 'exponential-backoff';
 import type {RequestInit, Response} from 'undici';
+import {FetchError} from './errors/fetchError';
+import {ThrottleError} from './errors/throttleError';
 export class APICore {
   public constructor(private accessToken: string) {}
 
@@ -9,12 +11,23 @@ export class APICore {
         ...config,
         headers: {...this.requestHeaders, ...config.headers},
       });
+      await this.handleResponse(response);
       return response;
     };
 
     return backOff(req, {
-      retry: (res: Response) => this.isThrottled(res.status),
+      retry: (err: unknown) => err instanceof ThrottleError,
     });
+  }
+
+  private async handleResponse(response: Response) {
+    if (response.ok) {
+      return;
+    }
+    if (this.isThrottled(response)) {
+      throw new ThrottleError();
+    }
+    throw await FetchError.build(response);
   }
 
   private async requestJson<T>(url: string, config: RequestInit): Promise<T> {
@@ -61,7 +74,7 @@ export class APICore {
     return documentsRequestHeaders;
   }
 
-  private isThrottled(status: number): boolean {
-    return status === 429;
+  private isThrottled(res: Response): boolean {
+    return res.status === 429;
   }
 }
