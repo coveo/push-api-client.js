@@ -1,3 +1,12 @@
+## 3.1.6 (2023-03-23)
+
+
+### Bug Fixes
+
+* **fetch:** throw when request is nok ([#291](https://github.com/coveo/push-api-client.js/issues/291)) ([38038b5](https://github.com/coveo/push-api-client.js/commits/38038b5b739192104e6aa20e1d255b86afce24cd))
+
+
+
 ## 3.1.5 (2023-03-20)
 
 
