@@ -24,7 +24,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@coveo/semantic-monorepo-tools": "1.7.2",
+    "@coveo/semantic-monorepo-tools": "2.0.1",
     "@octokit/auth-action": "^2.0.3",
     "@types/jest": "29.5.0",
     "@types/node": "18.15.11",
