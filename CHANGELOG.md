@@ -1,3 +1,12 @@
+## 3.1.19 (2023-05-15)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#304](https://github.com/coveo/push-api-client.js/issues/304)) ([ce6780e](https://github.com/coveo/push-api-client.js/commits/ce6780e506971939e3bfe5f1cf70b4f2f7045610))
+
+
+
 ## 3.1.18 (2023-05-08)
 
 
