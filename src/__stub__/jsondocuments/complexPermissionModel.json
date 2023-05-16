@@ -1,0 +1,60 @@
+[
+  {
+    "author": "Sample Group",
+    "documenttype": "Video",
+    "duration": 180.72,
+    "filename": "myvideo.avi",
+    "language": [
+      "English"
+    ],
+    "permanentid": "my94293video03938permanent93892id",
+    "sourcetype": "Push",
+    "title": "My Video",
+    "compressionType": "LZMA",
+    "documentId": "http://www.example.com/myvideo.avi",
+    "fileExtension": ".avi",
+    "permissions": [
+      {
+        "name": "MyPermissionLevel1",
+        "permissionSets": [
+          {
+            "allowAnonymous": false,
+            "allowedPermissions": [
+              {
+                "identity": "SampleGroup",
+                "identityType": "GrOup"
+              }
+            ],
+            "deniedPermissions": [
+              {
+                "identity": "asmith@example.com",
+                "identityType": "User",
+                "securityProvider": "My Security Identity Provider"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "MyPermissionLevel2",
+        "permissionSets": [
+          {
+            "allowAnonymous": false,
+            "allowedPermissions": [
+              {
+                "identity": "SampleGroup2",
+                "identityType": "Group"
+              }
+            ],
+            "deniedPermissions": [
+              {
+                "identity": "bjones@example.com",
+                "identityType": "User"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

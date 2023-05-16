@@ -42,12 +42,8 @@ class PermissionParser {
             new CaseInsensitiveDocument<PrimitivesValues>(permission);
 
           new KnownKeys('permissionsets', caseInsensitivePermission)
-            .whenExists<PermissionLevel>((permissionLevel) =>
-              this.processPermissionLevel(permissionLevel)
-            )
-            .whenDoesNotExist<PermissionSet>((permissionSet) =>
-              this.processPermissionSet(permissionSet)
-            );
+            .whenExists(() => this.processPermissionLevel(permission))
+            .whenDoesNotExist(() => this.processPermissionSet(permission));
         }
       );
 
