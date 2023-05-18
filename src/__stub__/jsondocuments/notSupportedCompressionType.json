@@ -1,8 +1,8 @@
-  {
-    "uri": "file://example.html",
-    "title": "file://example.html",
-    "documentId": "file://example.html",
-    "compressedBinaryData": "ZUp5enlTakp6YkhqVWdBQ200elV4QlFvVXgrSm5aU2ZVZ2xoUWxRWjJybFdKT1lXNUtRQ1ZSa2lTUlRZaFdSa0Zpc0FVV0tlUWlwRWlaNk5mb0VkRjZlTlBzUVFvQTZRZFFETWhCOEU=",
-    "compressionType": "NOT_SUPPORTED",
-    "fileExtension": ".html"
-  }
+{
+  "uri": "file://example.html",
+  "title": "file://example.html",
+  "documentId": "file://example.html",
+  "compressedBinaryData": "ZUp5enlTakp6YkhqVWdBQ200elV4QlFvVXgrSm5aU2ZVZ2xoUWxRWjJybFdKT1lXNUtRQ1ZSa2lTUlRZaFdSa0Zpc0FVV0tlUWlwRWlaNk5mb0VkRjZlTlBzUVFvQTZRZFFETWhCOEU=",
+  "compressionType": "NOT_SUPPORTED",
+  "fileExtension": ".html"
+}
