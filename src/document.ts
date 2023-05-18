@@ -5,15 +5,18 @@ type DictionaryMetadataValue = Record<string, BaseMetadataValue>;
 export type MetadataValue = BaseMetadataValue | DictionaryMetadataValue;
 export type Metadata = Record<string, MetadataValue>;
 
+export enum CompressionTypeEnum {
+  Uncompressed = 'UNCOMPRESSED',
+  Deflate = 'DEFLATE',
+  Gzip = 'GZIP',
+  Lzma = 'LZMA',
+  Zlib = 'ZLIB',
+}
+
 /**
  * The compression type that was applied to your compressed document.
  */
-export type CompressionType =
-  | 'UNCOMPRESSED'
-  | 'DEFLATE'
-  | 'GZIP'
-  | 'LZMA'
-  | 'ZLIB';
+export type CompressionType = Uppercase<keyof typeof CompressionTypeEnum>;
 
 /**
  * A Coveo document.

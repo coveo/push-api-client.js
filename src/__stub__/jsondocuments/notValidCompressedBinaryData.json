@@ -1,0 +1,7 @@
+  {
+    "uri": "file://example.html",
+    "title": "file://example.html",
+    "documentId": "file://example.html",
+    "compressedBinaryData": "NOT_BASE_64_ENCODED_STRING",
+    "fileExtension": ".html"
+  }
