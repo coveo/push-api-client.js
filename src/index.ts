@@ -1,4 +1,4 @@
-export * from './document';
+export {CompressionType, Document, Metadata, MetadataValue} from './document';
 export * from './validation/transformers/transformer';
 export * as errors from './errors';
 export {PushSource} from './source/push';
