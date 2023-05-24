@@ -78,16 +78,22 @@ describe('parseFile', () => {
       fileName: 'notAPermissionArray.json',
       error: 'permissions: value is not an array',
     },
+    {
+      title: 'should fail on CompressionType not being a supported value',
+      fileName: 'notValidCompressedBinaryData.json',
+      error:
+        'Invalid compressedBinaryData: When using compressedBinaryData, the data must be base64 encoded.',
+    },
+    {
+      title: 'should fail on CompressionType not being a supported value',
+      fileName: 'notSupportedCompressionType.json',
+      error:
+        'compressionType: value is not in enum.\nSupported values are: UNCOMPRESSED, DEFLATE, GZIP, LZMA, ZLIB',
+    },
   ])('$title', async ({fileName, error}) => {
     const file = join(pathToStub, 'jsondocuments', fileName);
-    const fileContent = readFileSync(file).toString();
-    await expect(parse(file)).rejects.toThrow(
-      new InvalidDocument(
-        file,
-        JSON.parse(fileContent),
-        `Document contains an invalid value for ${error}`
-      )
-    );
+    await expect(parse(file)).rejects.toThrowError(InvalidDocument);
+    await expect(parse(file)).rejects.toThrow(error);
   });
 
   it('should not throw if allowedPermissions or deniedPermissions are omitted', async () => {

@@ -1,4 +1,6 @@
-import {PrimitivesValues, StringValue} from '@coveo/bueno';
+import dedent from 'ts-dedent';
+import {CompressionType, CompressionTypeEnum} from './../document';
+import {PrimitivesValues, StringValue, EnumValue} from '@coveo/bueno';
 import {DocumentBuilder, MetadataValue} from '..';
 import {existsSync, lstatSync, PathLike, readFileSync} from 'fs';
 import {CaseInsensitiveDocument} from './caseInsensitiveDocument';
@@ -160,6 +162,44 @@ const processKnownKeys = (
       caseInsensitiveDoc.remove('permanentid');
     }
   );
+  new KnownKeys<string>('compressedBinaryData', caseInsensitiveDoc).whenExists(
+    (compressedBinaryData) =>
+      processCompressedBinaryData(
+        compressedBinaryData,
+        caseInsensitiveDoc,
+        documentBuilder
+      )
+  );
+};
+
+const processCompressedBinaryData = (
+  compressedBinaryData: string,
+  caseInsensitiveDoc: CaseInsensitiveDocument<PrimitivesValues>,
+  documentBuilder: DocumentBuilder
+) => {
+  const compressionType = new RequiredKeyValidator<CompressionType>(
+    ['compressionType'],
+    caseInsensitiveDoc,
+    new EnumValue({enum: CompressionTypeEnum, required: false})
+  );
+
+  if (!compressionType.isValid || compressionType.value === null) {
+    const options: CompressionTypeEnum[] = [];
+    for (const compressionType in CompressionTypeEnum) {
+      options.push(
+        CompressionTypeEnum[compressionType as keyof typeof CompressionTypeEnum]
+      );
+    }
+    throw dedent`${compressionType.explanation}
+    Supported values are: ${options.join(', ')}`;
+  }
+
+  documentBuilder.withCompressedBinaryData(
+    compressedBinaryData,
+    compressionType.value
+  );
+  caseInsensitiveDoc.remove('compressedBinaryData');
+  caseInsensitiveDoc.remove('compressionType');
 };
 
 const processMetadata = (
