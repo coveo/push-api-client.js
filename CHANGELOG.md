@@ -1,3 +1,12 @@
+## 3.1.22 (2023-05-24)
+
+
+### Bug Fixes
+
+* support `compressedBinaryData` property from Json ([#307](https://github.com/coveo/push-api-client.js/issues/307)) ([5bf4f41](https://github.com/coveo/push-api-client.js/commits/5bf4f41a5ad197b760e29179860545657097d540))
+
+
+
 ## 3.1.21 (2023-05-22)
 
 
