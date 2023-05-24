@@ -185,8 +185,10 @@ const processCompressedBinaryData = (
 
   if (!compressionType.isValid || compressionType.value === null) {
     const options: CompressionTypeEnum[] = [];
-    for (const a in CompressionTypeEnum) {
-      options.push(CompressionTypeEnum[a as keyof typeof CompressionTypeEnum]);
+    for (const compressionType in CompressionTypeEnum) {
+      options.push(
+        CompressionTypeEnum[compressionType as keyof typeof CompressionTypeEnum]
+      );
     }
     throw dedent`${compressionType.explanation}
     Supported values are: ${options.join(', ')}`;
