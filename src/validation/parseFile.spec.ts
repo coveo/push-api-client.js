@@ -96,6 +96,17 @@ describe('parseFile', () => {
     await expect(parse(file)).rejects.toThrow(error);
   });
 
+  it('should support complex permission models', async () => {
+    const file = join(
+      pathToStub,
+      'jsondocuments',
+      'complexPermissionModel.json'
+    );
+    await expect(
+      parseAndGetDocumentBuilderFromJSONDocument(file)
+    ).resolves.not.toThrow();
+  });
+
   it('should not throw if allowedPermissions or deniedPermissions are omitted', async () => {
     const file = join(pathToStub, 'jsondocuments', 'limitedPermissionSet.json');
     await expect(
