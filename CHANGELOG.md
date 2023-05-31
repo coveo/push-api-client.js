@@ -1,3 +1,12 @@
+## 3.1.23 (2023-05-31)
+
+
+### Bug Fixes
+
+* correctly parse permission models from json file ([#306](https://github.com/coveo/push-api-client.js/issues/306)) ([6a28622](https://github.com/coveo/push-api-client.js/commits/6a28622b091d7fe8577d579edb65c9d4cc778ee6))
+
+
+
 ## 3.1.22 (2023-05-24)
 
 
