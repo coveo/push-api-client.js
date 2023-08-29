@@ -23,7 +23,7 @@ export class APICore {
       retry: (err: unknown) => err instanceof ThrottleError,
       jitter: 'full',
       timeMultiple: 1,
-      maxDelay: this.options.retryAfter,
+      startingDelay: this.options.retryAfter,
       numOfAttempts: Math.floor(
         this.options.ejectAfter / this.options.retryAfter
       ),
