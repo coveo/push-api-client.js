@@ -61,8 +61,8 @@ export class PushSource {
     private organizationid: string,
     options?: PlatformUrlOptions
   ) {
-    this.api = new APICore(this.apikey);
     this.options = {...PushSource.defaultOptions, ...options};
+    this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),

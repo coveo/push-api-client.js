@@ -3,8 +3,8 @@ jest.mock('../fieldAnalyser/fieldUtils');
 jest.mock('../APICore');
 jest.mock('./batchUploadDocumentsFromFile');
 
-import PlatformClient from '@coveo/platform-client';
-import {DocumentBuilder} from '..';
+import PlatformClient, {Region} from '@coveo/platform-client';
+import {DocumentBuilder, PlatformEnvironment} from '..';
 import {APICore} from '../APICore';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {createFieldsFromReport} from '../fieldAnalyser/fieldUtils';
@@ -18,9 +18,16 @@ import {
   uploadBatchFromFile,
   uploadDocument,
 } from './documentUploader';
+import {DEFAULT_EJECT_AFTER, DEFAULT_RETRY_AFTER} from '../environment';
 
 const dummyClient = new PlatformClient({accessToken: 'my_token'});
-const dummyAPI = new APICore('my_token');
+const platformOptions = {
+  region: Region.US,
+  environment: PlatformEnvironment.Prod,
+  retryAfter: DEFAULT_RETRY_AFTER,
+  ejectAfter: DEFAULT_EJECT_AFTER,
+};
+const dummyAPI = new APICore('my_token', platformOptions);
 const dummyStrategy: UploadStrategy = {
   upload: jest.fn(),
   preUpload: jest.fn(),

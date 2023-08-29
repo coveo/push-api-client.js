@@ -4,7 +4,11 @@ jest.mock('../help/fileContainer');
 import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
-import {DEFAULT_EJECT_AFTER, DEFAULT_RETRY_AFTER, PlatformEnvironment} from '../environment';
+import {
+  DEFAULT_EJECT_AFTER,
+  DEFAULT_RETRY_AFTER,
+  PlatformEnvironment,
+} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {PushUrlBuilder, StreamUrlBuilder} from '../help/urlUtils';
 import {BatchUpdateDocuments} from '../interfaces';
@@ -79,7 +83,7 @@ describe('FileContainerStrategy', () => {
       const builder = new builderClass('source-id', 'org-id', platformOptions);
       strategy = new FileContainerStrategy(
         builder,
-        new APICore('access_token')
+        new APICore('access_token', platformOptions)
       );
       await strategy.upload(documentBatch);
     });

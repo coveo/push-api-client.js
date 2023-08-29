@@ -2,12 +2,23 @@ import type {Response} from 'undici';
 
 jest.mock('./errors/fetchError');
 import {FetchError} from './errors/fetchError';
-
 import {APICore} from './APICore';
+import {Region} from '@coveo/platform-client';
+import {
+  DEFAULT_EJECT_AFTER,
+  DEFAULT_RETRY_AFTER,
+  PlatformEnvironment,
+} from './environment';
 
 describe('APICore', () => {
   const mockedFetchJson = jest.fn();
   let fetchMock: jest.SpyInstance;
+  const platformOptions = {
+    region: Region.US,
+    environment: PlatformEnvironment.Prod,
+    retryAfter: DEFAULT_RETRY_AFTER,
+    ejectAfter: DEFAULT_EJECT_AFTER,
+  };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -20,7 +31,7 @@ describe('APICore', () => {
 
   describe('when request is OK', () => {
     it('resolve with json', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);
     });
   });
@@ -35,7 +46,7 @@ describe('APICore', () => {
     });
 
     it('try again and then resolve with json', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);
       expect(fetchMock).toBeCalledTimes(2);
     });
@@ -59,7 +70,7 @@ describe('APICore', () => {
     });
 
     it('rejects a FetchError', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).rejects.toBe(fakeFetchError);
       expect(fetchMock).toBeCalledTimes(1);
       expect(mockedFetchErrorBuild).toBeCalledTimes(1);

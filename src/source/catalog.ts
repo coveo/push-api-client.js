@@ -52,7 +52,7 @@ export class CatalogSource {
     opts: PlatformUrlOptions = CatalogSource.defaultOptions
   ) {
     this.options = {...CatalogSource.defaultOptions, ...opts};
-    this.api = new APICore(this.apikey);
+    this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),

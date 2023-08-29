@@ -74,7 +74,10 @@ describe('StreamChunkStrategy', () => {
       'org-id',
       platformOptions
     );
-    strategy = new StreamChunkStrategy(builder, new APICore('access_token'));
+    strategy = new StreamChunkStrategy(
+      builder,
+      new APICore('access_token', platformOptions)
+    );
     await strategy.preUpload();
     await strategy.upload(documentBatch);
     await strategy.postUpload();
