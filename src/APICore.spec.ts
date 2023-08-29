@@ -52,18 +52,6 @@ describe('APICore', () => {
       expect(fetchMock).toBeCalledTimes(2);
     });
 
-    /* TODO:
-    it('try again after specified amount of time', async () => {
-      const apiCore = new APICore('suchsecret', {
-        ...platformOptions,
-      });
-      await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);
-      expect(fetchMock).toHaveBeenLastCalledWith(
-        expect.any(Function),
-        platformOptions.retryAfter
-      );
-    });*/
-
     it('try again until limit', async () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
