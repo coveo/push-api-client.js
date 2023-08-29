@@ -7,8 +7,10 @@ import {
 } from '@coveo/platform-client';
 import {
   castEnvironmentToPlatformClient,
+  DEFAULT_EJECT_AFTER,
   DEFAULT_ENVIRONMENT,
   DEFAULT_REGION,
+  DEFAULT_RETRY_AFTER,
   PlatformUrlOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
@@ -34,6 +36,8 @@ export class CatalogSource {
   private static defaultOptions: Required<PlatformUrlOptions> = {
     region: DEFAULT_REGION,
     environment: DEFAULT_ENVIRONMENT,
+    retryAfter: DEFAULT_RETRY_AFTER,
+    ejectAfter: DEFAULT_EJECT_AFTER,
   };
 
   /**

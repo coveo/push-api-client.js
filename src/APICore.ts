@@ -2,8 +2,12 @@ import {backOff} from 'exponential-backoff';
 import type {RequestInit, Response} from 'undici';
 import {FetchError} from './errors/fetchError';
 import {ThrottleError} from './errors/throttleError';
+import {PlatformUrlOptions} from './environment';
 export class APICore {
-  public constructor(private accessToken: string) {}
+  public constructor(
+    private accessToken: string,
+    private options: Required<PlatformUrlOptions>
+  ) {}
 
   private async request(url: string, config: RequestInit): Promise<Response> {
     const req = async () => {
@@ -17,6 +21,12 @@ export class APICore {
 
     return backOff(req, {
       retry: (err: unknown) => err instanceof ThrottleError,
+      jitter: 'full',
+      timeMultiple: 1,
+      maxDelay: this.options.retryAfter,
+      numOfAttempts: Math.floor(
+        this.options.ejectAfter / this.options.retryAfter
+      ),
     });
   }
 

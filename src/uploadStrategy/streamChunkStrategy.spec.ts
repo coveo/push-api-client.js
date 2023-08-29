@@ -4,7 +4,11 @@ jest.mock('../help/fileContainer');
 import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
-import {PlatformEnvironment} from '../environment';
+import {
+  DEFAULT_EJECT_AFTER,
+  DEFAULT_RETRY_AFTER,
+  PlatformEnvironment,
+} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {StreamUrlBuilder} from '../help/urlUtils';
 import {BatchUpdateDocuments} from '../interfaces';
@@ -17,6 +21,8 @@ const mockedPost = jest.fn();
 const platformOptions = {
   region: Region.US,
   environment: PlatformEnvironment.Prod,
+  retryAfter: DEFAULT_RETRY_AFTER,
+  ejectAfter: DEFAULT_EJECT_AFTER,
 };
 
 const documentBatch: BatchUpdateDocuments = {
