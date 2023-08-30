@@ -27,6 +27,7 @@ export class APICore {
       numOfAttempts: Math.floor(
         this.options.ejectAfter / this.options.retryAfter
       ),
+      delayFirstAttempt: false,
     });
   }
 

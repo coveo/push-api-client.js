@@ -4,7 +4,10 @@ import {
   DocumentBuilder,
 } from '@coveo/push-api-client';
 async function main() {
-  const source = new PushSource('my_api_key', 'my_coveo_organization_id');
+  const source = new PushSource('my_api_key', 'my_coveo_organization_id', {
+    retryAfter: 10000,
+    ejectAfter: 600000,
+  });
   source.setSourceStatus('my_source_id', 'REFRESH');
 
   const myBatchOfDocuments: BatchUpdateDocuments = {

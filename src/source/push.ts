@@ -53,8 +53,9 @@ export class PushSource {
   };
   /**
    *
-   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
-   * @param organizationid The Coveo Organization identifier.
+   * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
+   * @param {string} organizationid The Coveo Organization identifier.
+   * @param {PlatformUrlOptions} [opts=CatalogSource.defaultOptions] Platform request options.
    */
   constructor(
     private apikey: string,
