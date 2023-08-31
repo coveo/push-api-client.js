@@ -11,10 +11,7 @@ import dayjs = require('dayjs');
 import {URL} from 'url';
 import {
   castEnvironmentToPlatformClient,
-  DEFAULT_EJECT_AFTER,
-  DEFAULT_ENVIRONMENT,
-  DEFAULT_REGION,
-  DEFAULT_RETRY_AFTER,
+  defaultOptions,
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
@@ -45,12 +42,6 @@ export class PushSource {
   public platformClient: PlatformClient;
   private api: APICore;
   private options: Required<PlatformUrlOptions>;
-  private static defaultOptions: Required<PlatformUrlOptions> = {
-    region: DEFAULT_REGION,
-    environment: DEFAULT_ENVIRONMENT,
-    retryAfter: DEFAULT_RETRY_AFTER,
-    ejectAfter: DEFAULT_EJECT_AFTER,
-  };
   /**
    *
    * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
@@ -62,7 +53,7 @@ export class PushSource {
     private organizationid: string,
     options?: PlatformUrlOptions
   ) {
-    this.options = {...PushSource.defaultOptions, ...options};
+    this.options = {...defaultOptions, ...options};
     this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,

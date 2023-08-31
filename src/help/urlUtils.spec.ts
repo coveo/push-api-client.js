@@ -1,17 +1,7 @@
-import {Region} from '@coveo/platform-client';
-import {
-  DEFAULT_EJECT_AFTER,
-  DEFAULT_RETRY_AFTER,
-  PlatformEnvironment,
-} from '../environment';
+import {defaultOptions} from '../environment';
 import {PushUrlBuilder, StreamUrlBuilder} from './urlUtils';
 
-const platformOptions = {
-  region: Region.US,
-  environment: PlatformEnvironment.Prod,
-  retryAfter: DEFAULT_RETRY_AFTER,
-  ejectAfter: DEFAULT_EJECT_AFTER,
-};
+const platformOptions = defaultOptions;
 
 describe('UrlBuilder', () => {
   describe('PushUrlBuilder', () => {

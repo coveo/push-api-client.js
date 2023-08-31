@@ -24,10 +24,7 @@ export class APICore {
       jitter: 'full',
       timeMultiple: 1,
       startingDelay: this.options.retryAfter,
-      numOfAttempts: Math.floor(
-        this.options.ejectAfter / this.options.retryAfter
-      ),
-      delayFirstAttempt: false,
+      numOfAttempts: this.options.maxRetries,
     });
   }
 

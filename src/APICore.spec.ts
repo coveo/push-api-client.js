@@ -3,23 +3,13 @@ import type {Response} from 'undici';
 jest.mock('./errors/fetchError');
 import {FetchError} from './errors/fetchError';
 import {APICore} from './APICore';
-import {Region} from '@coveo/platform-client';
-import {
-  DEFAULT_EJECT_AFTER,
-  DEFAULT_RETRY_AFTER,
-  PlatformEnvironment,
-} from './environment';
+import {defaultOptions} from './environment';
 import {ThrottleError} from './errors';
 
 describe('APICore', () => {
   const mockedFetchJson = jest.fn();
   let fetchMock: jest.SpyInstance;
-  const platformOptions = {
-    region: Region.US,
-    environment: PlatformEnvironment.Prod,
-    retryAfter: DEFAULT_RETRY_AFTER,
-    ejectAfter: DEFAULT_EJECT_AFTER,
-  };
+  const platformOptions = defaultOptions;
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -62,7 +52,7 @@ describe('APICore', () => {
       const apiCore = new APICore('suchsecret', {
         ...platformOptions,
         retryAfter: 200,
-        ejectAfter: 450,
+        maxRetries: 2,
       });
       await expect(apiCore.post('whatever')).rejects.toThrowError(
         ThrottleError

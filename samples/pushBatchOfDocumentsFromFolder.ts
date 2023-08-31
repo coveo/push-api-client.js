@@ -21,7 +21,7 @@ function onErrorCallback(err: unknown, {files}: UploadBatchCallbackData) {
 
 async function main() {
   const source = new PushSource('my_api_key', 'my_coveo_organization_id', {
-    ejectAfter: 600000,
+    maxRetries: 150,
   });
   source.setSourceStatus('my_source_id', 'REFRESH');
 

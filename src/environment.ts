@@ -11,20 +11,20 @@ export enum PlatformEnvironment {
 export const DEFAULT_ENVIRONMENT = PlatformEnvironment.Prod as const;
 export const DEFAULT_REGION = Region.US as const;
 export const DEFAULT_RETRY_AFTER = 5000;
-export const DEFAULT_EJECT_AFTER = 3600000;
+export const DEFAULT_MAX_RETRIES = 50;
 
 export type PlatformUrlOptions = {
   environment?: PlatformEnvironment;
   region?: Region;
   retryAfter?: number;
-  ejectAfter?: number;
+  maxRetries?: number;
 };
 
-const defaultOptions: PlatformUrlOptions = {
+export const defaultOptions: Required<PlatformUrlOptions> = {
   environment: DEFAULT_ENVIRONMENT,
   region: DEFAULT_REGION,
   retryAfter: DEFAULT_RETRY_AFTER,
-  ejectAfter: DEFAULT_EJECT_AFTER,
+  maxRetries: DEFAULT_MAX_RETRIES,
 };
 
 export function platformUrl(options?: PlatformUrlOptions) {

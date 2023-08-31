@@ -6,7 +6,7 @@ import {
 async function main() {
   const source = new PushSource('my_api_key', 'my_coveo_organization_id', {
     retryAfter: 10000,
-    ejectAfter: 600000,
+    maxRetries: 20,
   });
   source.setSourceStatus('my_source_id', 'REFRESH');
 
