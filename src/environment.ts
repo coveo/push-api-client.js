@@ -12,7 +12,7 @@ export const DEFAULT_ENVIRONMENT = PlatformEnvironment.Prod as const;
 export const DEFAULT_REGION = Region.US as const;
 export const DEFAULT_RETRY_AFTER = 5000;
 export const DEFAULT_MAX_RETRIES = 50;
-export const DEFAULT_TIME_MULTIPLE = 1;
+export const DEFAULT_TIME_MULTIPLE = 2;
 
 export type PlatformUrlOptions = {
   environment?: PlatformEnvironment;
