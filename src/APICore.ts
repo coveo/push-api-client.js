@@ -22,9 +22,9 @@ export class APICore {
     return backOff(req, {
       retry: (err: unknown) => err instanceof ThrottleError,
       jitter: 'full',
-      timeMultiple: 1,
       startingDelay: this.options.retryAfter,
       numOfAttempts: this.options.maxRetries,
+      timeMultiple: this.options.timeMultiple,
     });
   }
 

@@ -12,12 +12,14 @@ export const DEFAULT_ENVIRONMENT = PlatformEnvironment.Prod as const;
 export const DEFAULT_REGION = Region.US as const;
 export const DEFAULT_RETRY_AFTER = 5000;
 export const DEFAULT_MAX_RETRIES = 50;
+export const DEFAULT_TIME_MULTIPLE = 1;
 
 export type PlatformUrlOptions = {
   environment?: PlatformEnvironment;
   region?: Region;
   retryAfter?: number;
   maxRetries?: number;
+  timeMultiple?: number;
 };
 
 export const defaultOptions: Required<PlatformUrlOptions> = {
@@ -25,6 +27,7 @@ export const defaultOptions: Required<PlatformUrlOptions> = {
   region: DEFAULT_REGION,
   retryAfter: DEFAULT_RETRY_AFTER,
   maxRetries: DEFAULT_MAX_RETRIES,
+  timeMultiple: DEFAULT_TIME_MULTIPLE,
 };
 
 export function platformUrl(options?: PlatformUrlOptions) {
