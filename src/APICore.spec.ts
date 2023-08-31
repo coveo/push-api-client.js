@@ -2,12 +2,14 @@ import type {Response} from 'undici';
 
 jest.mock('./errors/fetchError');
 import {FetchError} from './errors/fetchError';
-
 import {APICore} from './APICore';
+import {defaultOptions} from './environment';
+import {ThrottleError} from './errors';
 
 describe('APICore', () => {
   const mockedFetchJson = jest.fn();
   let fetchMock: jest.SpyInstance;
+  const platformOptions = defaultOptions;
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -20,7 +22,7 @@ describe('APICore', () => {
 
   describe('when request is OK', () => {
     it('resolve with json', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);
     });
   });
@@ -35,8 +37,26 @@ describe('APICore', () => {
     });
 
     it('try again and then resolve with json', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);
+      expect(fetchMock).toBeCalledTimes(2);
+    });
+
+    it('try again until limit', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        json: () => Promise.resolve(mockedFetchJson),
+      });
+
+      const apiCore = new APICore('suchsecret', {
+        ...platformOptions,
+        retryAfter: 200,
+        maxRetries: 2,
+      });
+      await expect(apiCore.post('whatever')).rejects.toThrowError(
+        ThrottleError
+      );
       expect(fetchMock).toBeCalledTimes(2);
     });
   });
@@ -59,7 +79,7 @@ describe('APICore', () => {
     });
 
     it('rejects a FetchError', async () => {
-      const apiCore = new APICore('suchsecret');
+      const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).rejects.toBe(fakeFetchError);
       expect(fetchMock).toBeCalledTimes(1);
       expect(mockedFetchErrorBuild).toBeCalledTimes(1);

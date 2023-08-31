@@ -1,10 +1,9 @@
 jest.mock('../APICore');
 jest.mock('../help/fileContainer');
 
-import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
-import {PlatformEnvironment} from '../environment';
+import {defaultOptions} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {StreamUrlBuilder} from '../help/urlUtils';
 import {BatchUpdateDocuments} from '../interfaces';
@@ -14,10 +13,7 @@ import {StreamChunkStrategy} from './streamChunkStrategy';
 const mockedAPICore = jest.mocked(APICore);
 const mockedPost = jest.fn();
 
-const platformOptions = {
-  region: Region.US,
-  environment: PlatformEnvironment.Prod,
-};
+const platformOptions = defaultOptions;
 
 const documentBatch: BatchUpdateDocuments = {
   addOrUpdate: [
@@ -68,7 +64,10 @@ describe('StreamChunkStrategy', () => {
       'org-id',
       platformOptions
     );
-    strategy = new StreamChunkStrategy(builder, new APICore('access_token'));
+    strategy = new StreamChunkStrategy(
+      builder,
+      new APICore('access_token', platformOptions)
+    );
     await strategy.preUpload();
     await strategy.upload(documentBatch);
     await strategy.postUpload();

@@ -7,8 +7,7 @@ import {
 } from '@coveo/platform-client';
 import {
   castEnvironmentToPlatformClient,
-  DEFAULT_ENVIRONMENT,
-  DEFAULT_REGION,
+  defaultOptions,
   PlatformUrlOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
@@ -31,10 +30,6 @@ export class CatalogSource {
   private platformClient: PlatformClient;
   private api: APICore;
   private options: Required<PlatformUrlOptions>;
-  private static defaultOptions: Required<PlatformUrlOptions> = {
-    region: DEFAULT_REGION,
-    environment: DEFAULT_ENVIRONMENT,
-  };
 
   /**
    * Creates an instance of CatalogSource.
@@ -45,10 +40,10 @@ export class CatalogSource {
   constructor(
     private apikey: string,
     private organizationid: string,
-    opts: PlatformUrlOptions = CatalogSource.defaultOptions
+    opts: PlatformUrlOptions = defaultOptions
   ) {
-    this.options = {...CatalogSource.defaultOptions, ...opts};
-    this.api = new APICore(this.apikey);
+    this.options = {...defaultOptions, ...opts};
+    this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),

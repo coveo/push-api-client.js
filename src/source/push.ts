@@ -11,8 +11,7 @@ import dayjs = require('dayjs');
 import {URL} from 'url';
 import {
   castEnvironmentToPlatformClient,
-  DEFAULT_ENVIRONMENT,
-  DEFAULT_REGION,
+  defaultOptions,
   PlatformUrlOptions,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
@@ -43,22 +42,19 @@ export class PushSource {
   public platformClient: PlatformClient;
   private api: APICore;
   private options: Required<PlatformUrlOptions>;
-  private static defaultOptions: Required<PlatformUrlOptions> = {
-    region: DEFAULT_REGION,
-    environment: DEFAULT_ENVIRONMENT,
-  };
   /**
    *
-   * @param apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
-   * @param organizationid The Coveo Organization identifier.
+   * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
+   * @param {string} organizationid The Coveo Organization identifier.
+   * @param {PlatformUrlOptions} [opts=CatalogSource.defaultOptions] Platform request options.
    */
   constructor(
     private apikey: string,
     private organizationid: string,
     options?: PlatformUrlOptions
   ) {
-    this.api = new APICore(this.apikey);
-    this.options = {...PushSource.defaultOptions, ...options};
+    this.options = {...defaultOptions, ...options};
+    this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: this.apikey,
       environment: castEnvironmentToPlatformClient(this.options.environment),

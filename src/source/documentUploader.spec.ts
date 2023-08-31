@@ -18,9 +18,11 @@ import {
   uploadBatchFromFile,
   uploadDocument,
 } from './documentUploader';
+import {defaultOptions} from '../environment';
 
 const dummyClient = new PlatformClient({accessToken: 'my_token'});
-const dummyAPI = new APICore('my_token');
+const platformOptions = defaultOptions;
+const dummyAPI = new APICore('my_token', platformOptions);
 const dummyStrategy: UploadStrategy = {
   upload: jest.fn(),
   preUpload: jest.fn(),

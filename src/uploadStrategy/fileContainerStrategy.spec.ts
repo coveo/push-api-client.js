@@ -1,10 +1,9 @@
 jest.mock('../APICore');
 jest.mock('../help/fileContainer');
 
-import {Region} from '@coveo/platform-client';
 import {DocumentBuilder} from '..';
 import {APICore} from '../APICore';
-import {PlatformEnvironment} from '../environment';
+import {defaultOptions} from '../environment';
 import {uploadContentToFileContainer} from '../help/fileContainer';
 import {PushUrlBuilder, StreamUrlBuilder} from '../help/urlUtils';
 import {BatchUpdateDocuments} from '../interfaces';
@@ -17,10 +16,7 @@ const mockedAPICore = jest.mocked(APICore);
 const mockedPut = jest.fn();
 const mockedPost = jest.fn();
 
-const platformOptions = {
-  region: Region.US,
-  environment: PlatformEnvironment.Prod,
-};
+const platformOptions = defaultOptions;
 
 const documentBatch: BatchUpdateDocuments = {
   addOrUpdate: [
@@ -77,7 +73,7 @@ describe('FileContainerStrategy', () => {
       const builder = new builderClass('source-id', 'org-id', platformOptions);
       strategy = new FileContainerStrategy(
         builder,
-        new APICore('access_token')
+        new APICore('access_token', platformOptions)
       );
       await strategy.upload(documentBatch);
     });
