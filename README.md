@@ -37,7 +37,7 @@ You can also upload your data into a catalog source
 
 ```js
 async function main() {
-  const source = new CatalogSource('my_api_key', 'my_coveo_organization_id', {maxRetries=10, retryAfter: 2000, timeMultiple: 3});
+  const source = new CatalogSource('my_api_key', 'my_coveo_organization_id');
   await source
     .batchStreamDocumentsFromFiles('my_source_id', ['path/to/file_or_folder'])
     .batch();
@@ -55,9 +55,16 @@ Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-ta
 
 ### Exponential backoff configuration
 
-You can configure exponential that will be applied to all outgoing requests from the SDK. You may configure this through a `Options` object.
+By default, the SDK leverages an exponential backoff mechanism. Exponential backoff allows for the SDK to make multiple attempts to resolve throttled requests, increasing the amount of time to wait for each subsequent attempt. Outgoing requests will retry when a `429` status code is returned from the platform.
 
-Outgoing requests will retry when a `429` status code is returned from the platform. By default, the will wait retry a maximum of 50 times, waiting 5 seconds between attempts, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
+You may configure the exponential backoff that will be applied to all outgoing requests. To do so, specify a `PlatformOptions` object when creating either a `CatalogSource` or `PushSource` object:
+
+```js
+  const catalogSource = new CatalogSource('my_api_key', 'my_coveo_organization_id', {maxRetries: 10, retryAfter: 2000, timeMultiple: 3});
+  const pushSource = new PushSource('my_api_other_key', 'my_other_coveo_organization_id', {maxRetries: 3, retryAfter: 600000});
+```
+
+By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
 
 ## Local development
 

@@ -14,7 +14,7 @@ export const DEFAULT_RETRY_AFTER = 5000;
 export const DEFAULT_MAX_RETRIES = 10;
 export const DEFAULT_TIME_MULTIPLE = 2;
 
-export type Options = {
+export type PlatformOptions = {
   /**
    * The platform environment in which to execute all outgoing requests.
    *
@@ -47,7 +47,7 @@ export type Options = {
   timeMultiple?: number;
 };
 
-export const defaultOptions: Required<Options> = {
+export const defaultOptions: Required<PlatformOptions> = {
   environment: DEFAULT_ENVIRONMENT,
   region: DEFAULT_REGION,
   retryAfter: DEFAULT_RETRY_AFTER,
@@ -55,7 +55,7 @@ export const defaultOptions: Required<Options> = {
   timeMultiple: DEFAULT_TIME_MULTIPLE,
 };
 
-export function platformUrl(options?: Options) {
+export function platformUrl(options?: PlatformOptions) {
   options = {...defaultOptions, ...options};
   const urlEnv =
     options.environment === DEFAULT_ENVIRONMENT ? '' : options.environment;

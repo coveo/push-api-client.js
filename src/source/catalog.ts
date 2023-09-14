@@ -8,7 +8,7 @@ import {
 import {
   castEnvironmentToPlatformClient,
   defaultOptions,
-  Options,
+  PlatformOptions,
 } from '../environment';
 import {SecurityIdentity} from './securityIdenty';
 import {StreamChunkStrategy, FileContainerStrategy} from '../uploadStrategy';
@@ -29,18 +29,18 @@ import {APICore} from '../APICore';
 export class CatalogSource {
   private platformClient: PlatformClient;
   private api: APICore;
-  private options: Required<Options>;
+  private options: Required<PlatformOptions>;
 
   /**
    * Creates an instance of CatalogSource.
    * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param {string} organizationid The Coveo Organization identifier.
-   * @param {Options} [opts=defaultOptions] Platform request options.
+   * @param {PlatformOptions} [opts=defaultOptions] Platform request options.
    */
   constructor(
     private apikey: string,
     private organizationid: string,
-    opts: Options = defaultOptions
+    opts: PlatformOptions = defaultOptions
   ) {
     this.options = {...defaultOptions, ...opts};
     this.api = new APICore(this.apikey, this.options);
