@@ -60,8 +60,16 @@ By default, the SDK leverages an exponential backoff mechanism. Exponential back
 You may configure the exponential backoff that will be applied to all outgoing requests. To do so, specify a `PlatformOptions` object when creating either a `CatalogSource` or `PushSource` object:
 
 ```js
-  const catalogSource = new CatalogSource('my_api_key', 'my_coveo_organization_id', {maxRetries: 10, retryAfter: 2000, timeMultiple: 3});
-  const pushSource = new PushSource('my_api_other_key', 'my_other_coveo_organization_id', {maxRetries: 3, retryAfter: 600000});
+const catalogSource = new CatalogSource(
+  'my_api_key',
+  'my_coveo_organization_id',
+  {maxRetries: 10, retryAfter: 2000, timeMultiple: 3}
+);
+const pushSource = new PushSource(
+  'my_api_other_key',
+  'my_other_coveo_organization_id',
+  {maxRetries: 3, retryAfter: 600000}
+);
 ```
 
 By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
