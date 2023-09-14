@@ -57,6 +57,19 @@ Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-ta
 
 By default, the SDK leverages an exponential backoff mechanism. Exponential backoff allows for the SDK to make multiple attempts to resolve throttled requests, increasing the amount of time to wait for each subsequent attempt. Outgoing requests will retry when a `429` status code is returned from the platform.
 
+The exponential backoff parameters are as follows:
+* `retryAfter` - The platform environment in which to execute all outgoing requests.
+
+  Optional, will default to production.
+
+* `maxRetries` - The maximum number of times to retry throttled requests.
+
+  Optional, will default to 10.
+
+* `timeMultiple` - The multiple by which to increase the wait time between each throttled request attempt.
+
+  Optional, will default to 2.
+
 You may configure the exponential backoff that will be applied to all outgoing requests. To do so, specify a `PlatformOptions` object when creating either a `CatalogSource` or `PushSource` object:
 
 ```js

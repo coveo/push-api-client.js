@@ -35,14 +35,14 @@ export class CatalogSource {
    * Creates an instance of CatalogSource.
    * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param {string} organizationid The Coveo Organization identifier.
-   * @param {PlatformOptions} [opts=defaultOptions] Platform request options.
+   * @param {PlatformOptions} [options=defaultOptions] Platform request options.
    */
   constructor(
     private apikey: string,
     private organizationid: string,
-    opts: PlatformOptions = defaultOptions
+    options: PlatformOptions = defaultOptions
   ) {
-    this.options = {...defaultOptions, ...opts};
+    this.options = {...defaultOptions, ...options};
     this.api = new APICore(this.apikey, this.options);
     this.platformClient = new PlatformClient({
       accessToken: apikey,

@@ -40,7 +40,7 @@ export type PlatformOptions = {
    */
   maxRetries?: number;
   /**
-   * The multiple by which to increase the wait time between each throttled request attempt
+   * The multiple by which to increase the wait time between each throttled request attempt.
    *
    * Optional, will default to 2.
    */
