@@ -99,7 +99,7 @@ export class APICore {
     }
 
     if (totalMs > 5400000) {
-      throw 'The specified retry options can not exceed the maximum execution time limit of 1 hour. Update your options and try again.';
+      throw new Error('Maximum time exceeded');
     }
   }
 }

@@ -66,6 +66,8 @@ You may configure the exponential backoff that will be applied to all outgoing r
 
 By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
 
+> Note that your configuration for exponential backoff **must** result in an execution that can be fully resolved (e.g., all configured attempts finished) in under 1.5 hours.
+
 ## Local development
 
 - `npm i`
