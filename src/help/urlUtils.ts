@@ -1,4 +1,4 @@
-import {Options} from '..';
+import {PlatformOptions} from '..';
 import {platformUrl} from '../environment';
 
 export interface URLBuilder {
@@ -9,7 +9,7 @@ export interface URLBuilder {
 abstract class BaseUrlBuilder {
   protected constructor(
     private organizationId: string,
-    private options: Required<Options>
+    private options: Required<PlatformOptions>
   ) {}
   protected get platformURL() {
     return `${platformUrl(this.options)}/${this.organizationId}`;
@@ -24,7 +24,7 @@ export class PushUrlBuilder extends BaseUrlBuilder implements URLBuilder {
   public constructor(
     private sourceId: string,
     organizationId: string,
-    options: Required<Options>
+    options: Required<PlatformOptions>
   ) {
     super(organizationId, options);
   }
@@ -40,7 +40,7 @@ export class StreamUrlBuilder extends BaseUrlBuilder implements URLBuilder {
   public constructor(
     private sourceId: string,
     organizationId: string,
-    options: Required<Options>
+    options: Required<PlatformOptions>
   ) {
     super(organizationId, options);
   }
