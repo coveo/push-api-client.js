@@ -12,7 +12,7 @@ import {URL} from 'url';
 import {
   castEnvironmentToPlatformClient,
   defaultOptions,
-  PlatformUrlOptions,
+  Options,
 } from '../environment';
 import {FieldAnalyser} from '../fieldAnalyser/fieldAnalyser';
 import {SecurityIdentity} from './securityIdenty';
@@ -41,17 +41,17 @@ export type SourceStatus = 'REBUILD' | 'REFRESH' | 'INCREMENTAL' | 'IDLE';
 export class PushSource {
   public platformClient: PlatformClient;
   private api: APICore;
-  private options: Required<PlatformUrlOptions>;
+  private options: Required<Options>;
   /**
    *
    * @param {string} apikey An apiKey capable of pushing documents and managing sources in a Coveo organization. See [Manage API Keys](https://docs.coveo.com/en/1718).
    * @param {string} organizationid The Coveo Organization identifier.
-   * @param {PlatformUrlOptions} [opts=CatalogSource.defaultOptions] Platform request options.
+   * @param {Options} [opts=CatalogSource.defaultOptions] Platform request options.
    */
   constructor(
     private apikey: string,
     private organizationid: string,
-    options?: PlatformUrlOptions
+    options?: Options
   ) {
     this.options = {...defaultOptions, ...options};
     this.api = new APICore(this.apikey, this.options);

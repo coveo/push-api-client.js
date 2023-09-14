@@ -2,14 +2,16 @@ import {backOff} from 'exponential-backoff';
 import type {RequestInit, Response} from 'undici';
 import {FetchError} from './errors/fetchError';
 import {ThrottleError} from './errors/throttleError';
-import {PlatformUrlOptions} from './environment';
+import {Options} from './environment';
 export class APICore {
   public constructor(
     private accessToken: string,
-    private options: Required<PlatformUrlOptions>
+    private options: Required<Options>
   ) {}
 
   private async request(url: string, config: RequestInit): Promise<Response> {
+    this.validateRetryOptions();
+
     const req = async () => {
       const response = await fetch(url, {
         ...config,
@@ -84,5 +86,20 @@ export class APICore {
 
   private isThrottled(res: Response): boolean {
     return res.status === 429;
+  }
+
+  private validateRetryOptions() {
+    let waitTime = this.options.retryAfter;
+    let totalMs = this.options.retryAfter;
+
+    // Compute the theoretical maximum execution time to ensure it's less than 1.5 hours.
+    for (let i = 1; i < this.options.maxRetries; i++) {
+      waitTime *= this.options.timeMultiple;
+      totalMs += waitTime;
+    }
+
+    if (totalMs > 5400000) {
+      throw 'The specified retry options can not exceed the maximum execution time limit of 1 hour. Update your options and try again.';
+    }
   }
 }

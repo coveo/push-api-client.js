@@ -55,7 +55,7 @@ Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-ta
 
 ### Exponential backoff configuration
 
-You can configure exponential that will be applied to all outgoing requests from the SDK. You may configure this through a `PlatformUrlOptions` object.
+You can configure exponential that will be applied to all outgoing requests from the SDK. You may configure this through a `Options` object.
 
 Outgoing requests will retry when a `429` status code is returned from the platform. By default, the will wait retry a maximum of 50 times, waiting 5 seconds between attempts, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
 
