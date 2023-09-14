@@ -2,7 +2,6 @@ import {
   PushSource,
   BatchUpdateDocuments,
   DocumentBuilder,
-  CatalogSource,
 } from '@coveo/push-api-client';
 async function main() {
   const source = new PushSource('my_api_key', 'my_coveo_organization_id', {
@@ -10,7 +9,6 @@ async function main() {
     maxRetries: 20,
     timeMultiple: 2,
   });
-  const something = new CatalogSource("", "",)
   source.setSourceStatus('my_source_id', 'REFRESH');
 
   const myBatchOfDocuments: BatchUpdateDocuments = {
