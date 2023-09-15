@@ -88,8 +88,6 @@ const pushSource = new PushSource(
 
 By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (which will equate to a maximum execution time of roughly 1.5 hours).
 
-> Note that your configuration for exponential backoff **must** result in an execution that can be fully resolved (e.g., all configured attempts finished) in under 1.5 hours.
-
 ## Local development
 
 - `npm i`
