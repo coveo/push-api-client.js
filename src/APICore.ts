@@ -10,8 +10,6 @@ export class APICore {
   ) {}
 
   private async request(url: string, config: RequestInit): Promise<Response> {
-    this.validateRetryOptions();
-
     const req = async () => {
       const response = await fetch(url, {
         ...config,
