@@ -61,7 +61,7 @@ The exponential backoff parameters are as follows:
 
 - `retryAfter` - The amount of time, in milliseconds, to wait between throttled request attempts.
 
-  Optional, will default to production.
+  Optional, will default to 5,000.
 
 - `maxRetries` - The maximum number of times to retry throttled requests.
 
