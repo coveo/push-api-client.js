@@ -36,20 +36,6 @@ describe('APICore', () => {
       });
     });
 
-    it('when invalid retry options are specified', async () => {
-      const apiCore = new APICore('suchsecret', {
-        ...defaultOptions,
-        ...{
-          maxRetries: 15,
-          retryAfter: 10000,
-          timeMultiple: 5,
-        },
-      });
-      await expect(apiCore.post('whatever')).rejects.toThrowError(
-        'Maximum time exceeded'
-      );
-    });
-
     it('try again and then resolve with json', async () => {
       const apiCore = new APICore('suchsecret', platformOptions);
       await expect(apiCore.post('whatever')).resolves.toBe(mockedFetchJson);

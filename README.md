@@ -53,13 +53,13 @@ See more examples in the `./samples` folder.
 You can use the `HTTPS_PROXY` or `https_proxy` environment variable for proxy configuration.
 Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/).
 
-### Exponential backoff configuration
+### Exponential backoff retry configuration
 
-By default, the SDK leverages an exponential backoff mechanism. Exponential backoff allows for the SDK to make multiple attempts to resolve throttled requests, increasing the amount of time to wait for each subsequent attempt. Outgoing requests will retry when a `429` status code is returned from the platform.
+By default, the SDK leverages an exponential backoff retry mechanism. Exponential backoff allows for the SDK to make multiple attempts to resolve throttled requests, increasing the amount of time to wait for each subsequent attempt. Outgoing requests will retry when a `429` status code is returned from the platform.
 
 The exponential backoff parameters are as follows:
 
-- `retryAfter` - The platform environment in which to execute all outgoing requests.
+- `retryAfter` - The amount of time, in milliseconds, to wait between throttled request attempts.
 
   Optional, will default to production.
 
@@ -86,7 +86,7 @@ const pushSource = new PushSource(
 );
 ```
 
-By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (5 seconds for first attempt, 10 for second, 20 for third, etc).
+By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (which will equate to a maximum execution time of roughly 1.5 hours).
 
 > Note that your configuration for exponential backoff **must** result in an execution that can be fully resolved (e.g., all configured attempts finished) in under 1.5 hours.
 

@@ -87,19 +87,4 @@ export class APICore {
   private isThrottled(res: Response): boolean {
     return res.status === 429;
   }
-
-  private validateRetryOptions() {
-    let waitTime = this.options.retryAfter;
-    let totalMs = this.options.retryAfter;
-
-    // Compute the theoretical maximum execution time to ensure it's less than 1.5 hours.
-    for (let i = 1; i < this.options.maxRetries; i++) {
-      waitTime *= this.options.timeMultiple;
-      totalMs += waitTime;
-    }
-
-    if (totalMs > 5400000) {
-      throw new Error('Maximum time exceeded');
-    }
-  }
 }
