@@ -14,6 +14,11 @@ export const DEFAULT_RETRY_AFTER = 5000;
 export const DEFAULT_MAX_RETRIES = 10;
 export const DEFAULT_TIME_MULTIPLE = 2;
 
+/**
+ * @deprecated use {@link PlatformOptions}
+ */
+export type PlatformUrlOptions = PlatformOptions;
+
 export type PlatformOptions = {
   /**
    * The platform environment in which to execute all outgoing requests.
