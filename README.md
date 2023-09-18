@@ -80,7 +80,7 @@ const catalogSource = new CatalogSource(
   {maxRetries: 10, retryAfter: 2000, timeMultiple: 3}
 );
 const pushSource = new PushSource(
-  'my_api_other_key',
+  'my_other_api_key',
   'my_other_coveo_organization_id',
   {maxRetries: 3, retryAfter: 600000}
 );
