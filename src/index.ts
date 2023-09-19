@@ -15,7 +15,7 @@ export {
 export {FieldAnalyser} from './fieldAnalyser/fieldAnalyser';
 export {DocumentBuilder} from './documentBuilder';
 export * from './securityIdentityBuilder';
-export {PlatformEnvironment, Region, PlatformUrlOptions} from './environment';
+export {PlatformEnvironment, Region, PlatformOptions} from './environment';
 export {SourceVisibility} from '@coveo/platform-client';
 export {PermissionSetBuilder} from './permissionSetBuilder';
 

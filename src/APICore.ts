@@ -2,11 +2,11 @@ import {backOff} from 'exponential-backoff';
 import type {RequestInit, Response} from 'undici';
 import {FetchError} from './errors/fetchError';
 import {ThrottleError} from './errors/throttleError';
-import {PlatformUrlOptions} from './environment';
+import {PlatformOptions} from './environment';
 export class APICore {
   public constructor(
     private accessToken: string,
-    private options: Required<PlatformUrlOptions>
+    private options: Required<PlatformOptions>
   ) {}
 
   private async request(url: string, config: RequestInit): Promise<Response> {

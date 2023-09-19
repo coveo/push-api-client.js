@@ -1,6 +1,6 @@
 ## 3.1.27 (2023-08-31)
 
-
+* **feat:** add configuration support for retry mechanism ([#316](https://github.com/coveo/push-api-client.js/issues/316)) ([284a92b](https://github.com/coveo/push-api-client.js/commit/284a92b7774a3ddb92e57d0895018d40d9524a07)) 
 
 ## 3.1.26 (2023-08-01)
 

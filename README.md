@@ -53,6 +53,41 @@ See more examples in the `./samples` folder.
 You can use the `HTTPS_PROXY` or `https_proxy` environment variable for proxy configuration.
 Read more about it [here](https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/).
 
+### Exponential backoff retry configuration
+
+By default, the SDK leverages an exponential backoff retry mechanism. Exponential backoff allows for the SDK to make multiple attempts to resolve throttled requests, increasing the amount of time to wait for each subsequent attempt. Outgoing requests will retry when a `429` status code is returned from the platform.
+
+The exponential backoff parameters are as follows:
+
+- `retryAfter` - The amount of time, in milliseconds, to wait between throttled request attempts.
+
+  Optional, will default to 5,000.
+
+- `maxRetries` - The maximum number of times to retry throttled requests.
+
+  Optional, will default to 10.
+
+- `timeMultiple` - The multiple by which to increase the wait time between each throttled request attempt.
+
+  Optional, will default to 2.
+
+You may configure the exponential backoff that will be applied to all outgoing requests. To do so, specify a `PlatformOptions` object when creating either a `CatalogSource` or `PushSource` object:
+
+```js
+const catalogSource = new CatalogSource(
+  'my_api_key',
+  'my_coveo_organization_id',
+  {maxRetries: 10, retryAfter: 2000, timeMultiple: 3}
+);
+const pushSource = new PushSource(
+  'my_other_api_key',
+  'my_other_coveo_organization_id',
+  {maxRetries: 3, retryAfter: 600000}
+);
+```
+
+By default, requests will retry a maximum of 10 times, waiting 5 seconds after the first attempt, with a time multiple of 2 (which will equate to a maximum execution time of roughly 1.5 hours).
+
 ## Local development
 
 - `npm i`
