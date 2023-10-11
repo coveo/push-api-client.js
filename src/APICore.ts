@@ -79,7 +79,7 @@ export class APICore {
       ...authorizationHeader,
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'User-Agent': `CoveoNodeJSSDK/${version}`,
+      'User-Agent': `CoveoSDKNodeJS/${version}`,
     };
 
     return documentsRequestHeaders;
