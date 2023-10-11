@@ -69,14 +69,17 @@ export class APICore {
   }
 
   private get requestHeaders(): Record<string, string> {
+    const {version} = require('../package.json');
+
     const authorizationHeader = {
       Authorization: `Bearer ${this.accessToken}`,
     };
 
     const documentsRequestHeaders = {
       ...authorizationHeader,
-      'Content-Type': 'application/json',
       Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'User-Agent': `CoveoSDKNodeJS/${version}`,
     };
 
     return documentsRequestHeaders;
