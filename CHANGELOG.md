@@ -1,3 +1,13 @@
+## 3.1.30 (2023-11-14)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#315](https://github.com/coveo/push-api-client.js/issues/315)) ([fbdfbf0](https://github.com/coveo/push-api-client.js/commits/fbdfbf021e8919c17d6796c31bfa5140ef375ed2))
+* **deps:** update dependency zod to v3.22.3 [security] ([#320](https://github.com/coveo/push-api-client.js/issues/320)) ([326da51](https://github.com/coveo/push-api-client.js/commits/326da5158a8c164d350f8a038fa61028b79cfee0))
+
+
+
 ## 3.1.29 (2023-10-11)
 
 
