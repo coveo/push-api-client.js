@@ -1,4 +1,3 @@
-import type {Response} from 'undici';
 import {URL} from 'node:url';
 import {BatchUpdateDocuments} from '../interfaces';
 

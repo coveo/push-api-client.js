@@ -1,4 +1,3 @@
-import type {Response} from 'undici';
 import {PathLike} from 'fs';
 import type {DocumentBuilder} from './documentBuilder';
 import type {Transformer} from './validation/transformers/transformer';

@@ -1,5 +1,3 @@
-import type {Response} from 'undici';
-
 jest.mock('./errors/fetchError');
 import {FetchError} from './errors/fetchError';
 import {APICore} from './APICore';

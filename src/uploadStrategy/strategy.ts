@@ -1,4 +1,3 @@
-import type {Response} from 'undici';
 import type {BatchUpdateDocuments} from '../interfaces';
 
 export interface UploadStrategy {

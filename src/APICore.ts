@@ -1,5 +1,4 @@
 import {backOff} from 'exponential-backoff';
-import type {RequestInit, Response} from 'undici';
 import {FetchError} from './errors/fetchError';
 import {ThrottleError} from './errors/throttleError';
 import {PlatformOptions} from './environment';
