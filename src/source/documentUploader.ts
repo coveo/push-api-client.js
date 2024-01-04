@@ -1,5 +1,4 @@
 import PlatformClient from '@coveo/platform-client';
-import type {Response} from 'undici';
 import {FieldAnalyser} from '..';
 import {APICore} from '../APICore';
 import {DocumentBuilder} from '../documentBuilder';

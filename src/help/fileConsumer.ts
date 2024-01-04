@@ -9,7 +9,6 @@ import {
 import {parseAndGetDocumentBuilderFromJSONDocument} from '../validation/parseFile';
 import {basename} from 'path';
 import {consumeGenerator} from './generator';
-import type {Response} from 'undici';
 import {isUndefined} from '@coveo/bueno';
 
 export type SuccessfulUploadCallback = (data: UploadBatchCallbackData) => void;

@@ -1,4 +1,3 @@
-import type {Response} from 'undici';
 import {PushApiClientBaseError} from './baseError';
 import {FetchError} from './fetchError';
 
