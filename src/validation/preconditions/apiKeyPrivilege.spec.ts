@@ -12,7 +12,7 @@ const doMockPlatformClient = () => {
     () =>
       ({
         privilegeEvaluator: {evaluate: mockEvaluate},
-      } as unknown as PlatformClient)
+      }) as unknown as PlatformClient
   );
 };
 

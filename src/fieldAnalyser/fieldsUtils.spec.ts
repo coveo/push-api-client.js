@@ -24,7 +24,7 @@ const doMockPlatformClient = () => {
           createFields: mockedCreateField,
           list: mockedListFields,
         },
-      } as unknown as PlatformClient)
+      }) as unknown as PlatformClient
   );
 };
 

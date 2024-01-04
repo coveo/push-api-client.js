@@ -21,7 +21,10 @@ export class DocumentBuilder {
    * @param uri The URI of the document. See {@link Document.uri}
    * @param title The title of the document. See {@link Document.title}
    */
-  constructor(private uri: string, title: string) {
+  constructor(
+    private uri: string,
+    title: string
+  ) {
     this.permissions = [];
     this.doc = {
       uri,

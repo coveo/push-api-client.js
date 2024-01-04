@@ -16,7 +16,10 @@ export interface FileContainerResponse {
  * @implements {UploadStrategy}
  */
 export class FileContainerStrategy implements UploadStrategy {
-  public constructor(private urlBuilder: URLBuilder, private api: APICore) {}
+  public constructor(
+    private urlBuilder: URLBuilder,
+    private api: APICore
+  ) {}
 
   public async upload(batch: BatchUpdateDocuments) {
     const fileContainer = await this.createFileContainer();
