@@ -38,7 +38,7 @@ const doMockAPICore = () => {
       ({
         put: mockedPut,
         post: mockedPost,
-      } as unknown as APICore)
+      }) as unknown as APICore
   );
 };
 

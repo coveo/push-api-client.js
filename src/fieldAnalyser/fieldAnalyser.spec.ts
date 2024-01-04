@@ -78,7 +78,7 @@ describe('FieldAnalyser', () => {
         ({
           privilegeEvaluator: {evaluate: mockEvaluate},
           field: {list: mockedListFields},
-        } as unknown as PlatformClient)
+        }) as unknown as PlatformClient
     );
   };
 
