@@ -9,7 +9,7 @@
     "target": "es2017",
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["fetch-undici-polyfill", "jest", "node"]
+    "types": ["jest", "node"]
   },
   "include": ["src/**/*"]
 }
