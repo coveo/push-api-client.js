@@ -16,10 +16,10 @@
   "types": "./dist/definitions/index.d.ts",
   "dependencies": {
     "@coveo/bueno": "^0.45.0",
-    "@coveo/platform-client": "52.0.0",
+    "@coveo/platform-client": "^52.1.0",
     "dayjs": "^1.10.4",
     "exponential-backoff": "^3.1.0",
-    "ts-dedent": "2.2.0",
+    "ts-dedent": "^2.2.0",
     "zod": "^3.20.2"
   },
   "devDependencies": {
