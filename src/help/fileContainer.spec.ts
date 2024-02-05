@@ -18,7 +18,11 @@ describe('#uploadContentToFileContainer', () => {
   };
 
   const doMockFetch = () => {
-    mockedFetch = jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({ok:true, status:200} as Response));
+    mockedFetch = jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve({ok: true, status: 200} as Response)
+      );
   };
 
   beforeEach(() => {
