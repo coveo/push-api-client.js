@@ -25,7 +25,7 @@ import {createActionAuth} from '@octokit/auth-action';
   //#region Constants
   const PATH = '.';
   const VERSION_PREFIX = 'v';
-  const CONVENTION = await angularChangelogConvention;
+  const CONVENTION = await angularChangelogConvention();
   const REPO_OWNER = 'coveo';
   const REPO_NAME = 'push-api-client.js';
   const GIT_USERNAME = 'github-actions';
