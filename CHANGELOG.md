@@ -1,3 +1,22 @@
+# 4.0.0 (2024-02-05)
+
+
+### Bug Fixes
+
+* **deps:** update all dependencies j:cdx-227 ([#329](https://github.com/coveo/push-api-client.js/issues/329)) ([8611899](https://github.com/coveo/push-api-client.js/commits/861189920558ba164160e249c765900c0e5b4767))
+* **deps:** update all dependencies j:cdx-227 (major) ([#311](https://github.com/coveo/push-api-client.js/issues/311)) ([5054b8d](https://github.com/coveo/push-api-client.js/commits/5054b8da6d9227006f659e3a009cfe95a7620e7a))
+* **deps:** update all dependencies j:cdx-227 (major) ([#330](https://github.com/coveo/push-api-client.js/issues/330)) ([540e840](https://github.com/coveo/push-api-client.js/commits/540e840da3a363ff30845043de629c06be02fa25))
+
+
+* fix!: remove polyfill, deprecate old nodejs (#331) ([98711b5](https://github.com/coveo/push-api-client.js/commits/98711b59fb0a682e67f1da4cebdb95d5a279be1a)), closes [#331](https://github.com/coveo/push-api-client.js/issues/331)
+
+
+### BREAKING CHANGES
+
+* Drop support for Node 16 and below
+
+
+
 ## 3.1.33 (2024-01-04)
 
 
