@@ -1,8 +1,3 @@
-import 'fetch-undici-polyfill';
-jest.mock('fetch-undici-polyfill', () => {
-  Object.assign(global, {fetch: jest.fn()});
-});
-
 import {BatchUpdateDocuments, DocumentBuilder} from '..';
 import {
   FileContainerResponse,
@@ -10,7 +5,7 @@ import {
 } from './fileContainer';
 
 describe('#uploadContentToFileContainer', () => {
-  const fetchMocked: jest.Mock = fetch as jest.Mock;
+  let mockedFetch: jest.SpyInstance;
   const fileContainerResponse: FileContainerResponse = {
     uploadUri: 'https://fake.upload.url',
     fileId: 'file_id',
@@ -23,7 +18,11 @@ describe('#uploadContentToFileContainer', () => {
   };
 
   const doMockFetch = () => {
-    fetchMocked.mockImplementation(() => Promise.resolve());
+    mockedFetch = jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve({ok: true, status: 200} as Response)
+      );
   };
 
   beforeEach(() => {
@@ -33,13 +32,13 @@ describe('#uploadContentToFileContainer', () => {
   it('should perform an PUT request with the right params', async () => {
     await uploadContentToFileContainer(fileContainerResponse, batch);
 
-    expect(fetchMocked).toBeCalled();
-    expect(fetchMocked.mock.lastCall).toMatchSnapshot();
+    expect(mockedFetch).toHaveBeenCalled();
+    expect(mockedFetch.mock.lastCall).toMatchSnapshot();
   });
 
   describe('when the server respond with 413', () => {
     beforeEach(() => {
-      fetchMocked.mockImplementationOnce(() =>
+      mockedFetch.mockImplementationOnce(() =>
         Promise.resolve({
           ok: false,
           status: 413,
@@ -66,7 +65,7 @@ describe('#uploadContentToFileContainer', () => {
   describe('when anything else than MaxBodyLengthExceededError is thrown', () => {
     const thrownError = new Error();
     beforeEach(() => {
-      fetchMocked.mockImplementationOnce(() => Promise.reject(thrownError));
+      mockedFetch.mockImplementationOnce(() => Promise.reject(thrownError));
     });
 
     it('should bubble up the error', async () => {

@@ -1,5 +1,3 @@
-import 'fetch-undici-polyfill';
-
 import {
   PlatformClient,
   SourceType,
