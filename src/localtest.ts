@@ -1,4 +1,3 @@
-// eslint-disable-next-line node/no-unpublished-import
 import 'dotenv/config';
 import {DocumentBuilder} from './documentBuilder';
 import {UserSecurityIdentityBuilder} from './securityIdentityBuilder';
