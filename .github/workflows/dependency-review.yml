@@ -16,3 +16,4 @@ jobs:
     with:
       public: true
       distributed: true
+      runs-on: '["ubuntu-latest"]'
