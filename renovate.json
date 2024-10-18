@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "extends": [":semanticPrefixFixDepsChoreOthers", "schedule:earlyMondays"],
+  "extends": ["github>coveo/renovate-presets", ":semanticPrefixFixDepsChoreOthers", "schedule:earlyMondays"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
