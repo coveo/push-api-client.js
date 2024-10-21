@@ -23,10 +23,10 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@coveo/semantic-monorepo-tools": "2.4.56",
+    "@coveo/semantic-monorepo-tools": "2.4.59",
     "@octokit/auth-action": "^5.0.0",
     "@types/jest": "29.5.13",
-    "@types/node": "20.16.12",
+    "@types/node": "20.16.13",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "conventional-changelog-angular": "8.0.0",
