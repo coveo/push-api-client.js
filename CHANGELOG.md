@@ -1,3 +1,21 @@
+## <small>4.0.4 (2024-10-31)</small>
+
+* build(release): fix release workflow (#349) ([e960c5f](https://github.com/coveo/push-api-client.js/commits/e960c5f)), closes [#349](https://github.com/coveo/push-api-client.js/issues/349)
+* chore(deps): lock file maintenance j:cdx-227 ([b068aa1](https://github.com/coveo/push-api-client.js/commits/b068aa1))
+* chore(deps): lock file maintenance j:cdx-227 ([dcf313f](https://github.com/coveo/push-api-client.js/commits/dcf313f))
+* chore(deps): lock file maintenance j:cdx-227 ([9655b6f](https://github.com/coveo/push-api-client.js/commits/9655b6f))
+* chore(deps): lock file maintenance j:cdx-227 (#328) ([3296144](https://github.com/coveo/push-api-client.js/commits/3296144)), closes [#328](https://github.com/coveo/push-api-client.js/issues/328)
+* chore(deps): update all dependencies j:cdx-227 ([7ed4094](https://github.com/coveo/push-api-client.js/commits/7ed4094))
+* chore(renovate): migrate to standard renovate config [CIA-611] (#343) ([2be9ecb](https://github.com/coveo/push-api-client.js/commits/2be9ecb)), closes [#343](https://github.com/coveo/push-api-client.js/issues/343)
+* fix: support latest node LTS (#348) ([151d9c9](https://github.com/coveo/push-api-client.js/commits/151d9c9)), closes [#348](https://github.com/coveo/push-api-client.js/issues/348)
+* fix(deps): update all dependencies j:cdx-227 ([23a40ca](https://github.com/coveo/push-api-client.js/commits/23a40ca))
+* fix(deps): update all dependencies j:cdx-227 ([b0d5d8a](https://github.com/coveo/push-api-client.js/commits/b0d5d8a))
+* fix(deps): update all dependencies j:cdx-227 (#335) ([f0c5874](https://github.com/coveo/push-api-client.js/commits/f0c5874)), closes [#335](https://github.com/coveo/push-api-client.js/issues/335)
+* fix(deps): update all dependencies j:cdx-227 (major) (#338) ([a9ea666](https://github.com/coveo/push-api-client.js/commits/a9ea666)), closes [#338](https://github.com/coveo/push-api-client.js/issues/338)
+* Target ubuntu-latest explicitely when running depency-review [DT-7006] (#341) ([fa508a7](https://github.com/coveo/push-api-client.js/commits/fa508a7)), closes [#341](https://github.com/coveo/push-api-client.js/issues/341)
+
+
+
 ## 4.0.3 (2024-03-06)
 
 
