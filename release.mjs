@@ -47,7 +47,7 @@ import {createActionAuth} from '@octokit/auth-action';
   // Passing an empty string allow empty commits (i.e. that does not modify any files) to be included.
   const commits = await getCommits('', lastTag);
   const parsedCommits = parseCommits(commits, CONVENTION.parserOpts);
-  const bumpInfo = CONVENTION.recommendedBumpOpts.whatBump(parsedCommits);
+  const bumpInfo = CONVENTION.whatBump(parsedCommits);
   const currentVersion = getCurrentVersion(PATH);
   const newVersion = getNextVersion(currentVersion, bumpInfo);
   const newVersionTag = `${VERSION_PREFIX}${newVersion}`;
