@@ -1,9 +1,9 @@
 {
-  "enabled": true,
   "extends": [
     "github>coveo/renovate-presets",
     ":semanticPrefixFixDepsChoreOthers",
-    "schedule:earlyMondays"
+    "schedule:earlyMondays",
+    "github>coveo-platform/renovate-presets//auto-merge.json"
   ],
   "packageRules": [
     {
@@ -12,10 +12,8 @@
       "groupSlug": "all"
     }
   ],
-  "rangeStrategy": "auto",
   "lockFileMaintenance": {
     "enabled": true
   },
-  "automerge": true,
   "commitMessageSuffix": "J:CDX-227"
 }
