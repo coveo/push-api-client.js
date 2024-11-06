@@ -1,3 +1,9 @@
+## <small>4.0.5 (2024-11-04)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 ([51a06f5](https://github.com/coveo/push-api-client.js/commits/51a06f5))
+
+
+
 ## <small>4.0.4 (2024-10-31)</small>
 
 * build(release): fix release workflow (#349) ([e960c5f](https://github.com/coveo/push-api-client.js/commits/e960c5f)), closes [#349](https://github.com/coveo/push-api-client.js/issues/349)
