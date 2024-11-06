@@ -1,3 +1,9 @@
+## <small>4.0.6 (2024-11-06)</small>
+
+* chore(renovate): use automerge preset and config simplification (#351) ([20801c6](https://github.com/coveo/push-api-client.js/commits/20801c6)), closes [#351](https://github.com/coveo/push-api-client.js/issues/351)
+
+
+
 ## <small>4.0.5 (2024-11-04)</small>
 
 * chore(deps): lock file maintenance j:cdx-227 ([51a06f5](https://github.com/coveo/push-api-client.js/commits/51a06f5))
