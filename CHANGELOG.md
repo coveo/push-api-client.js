@@ -1,3 +1,9 @@
+## <small>4.0.7 (2024-11-11)</small>
+
+* chore(deps): update all dependencies j:cdx-227 (#353) ([d272e4f](https://github.com/coveo/push-api-client.js/commits/d272e4f)), closes [#353](https://github.com/coveo/push-api-client.js/issues/353)
+
+
+
 ## <small>4.0.6 (2024-11-06)</small>
 
 * chore(renovate): use automerge preset and config simplification (#351) ([20801c6](https://github.com/coveo/push-api-client.js/commits/20801c6)), closes [#351](https://github.com/coveo/push-api-client.js/issues/351)
