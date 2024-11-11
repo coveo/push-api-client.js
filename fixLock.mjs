@@ -1,5 +1,3 @@
-// TODO: @louis-bompart 2023, Open a bug to NPM. lockfile doesn't update version of self-import. boo. If you read this past Jan 10th and you're not @louis-bompart, poke him.
-
 import {readFileSync, writeFileSync} from 'node:fs';
 import detectIndent from 'detect-indent';
 
