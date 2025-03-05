@@ -1,3 +1,9 @@
+## <small>4.0.8 (2025-03-05)</small>
+
+* ci: make workflows runnable (#357) ([c08f461](https://github.com/coveo/push-api-client.js/commits/c08f461)), closes [#357](https://github.com/coveo/push-api-client.js/issues/357)
+
+
+
 ## <small>4.0.7 (2024-11-11)</small>
 
 * chore(deps): update all dependencies j:cdx-227 (#353) ([d272e4f](https://github.com/coveo/push-api-client.js/commits/d272e4f)), closes [#353](https://github.com/coveo/push-api-client.js/issues/353)
