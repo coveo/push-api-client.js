@@ -1,3 +1,9 @@
+## <small>4.0.11 (2025-03-12)</small>
+
+* chore(release): 4.0.10 [skip ci] ([b7b2c92](https://github.com/coveo/push-api-client.js/commits/b7b2c92))
+
+
+
 ## <small>4.0.8 (2025-03-05)</small>
 
 * ci: make workflows runnable (#357) ([c08f461](https://github.com/coveo/push-api-client.js/commits/c08f461)), closes [#357](https://github.com/coveo/push-api-client.js/issues/357)
