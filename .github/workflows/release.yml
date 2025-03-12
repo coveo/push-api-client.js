@@ -44,6 +44,7 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
+      - run: npm whoami
       - name: Release
         run: npm run release
         env:
