@@ -77,14 +77,14 @@ import {createActionAuth} from '@octokit/auth-action';
   //#region Commit changelog, tag version and push
   await gitAdd(PATH);
   await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
-  await gitPush();
   console.log(2);
+  await gitPush();
+  console.log(3);
   //#endregion
 
   //#region Create & push tag
   await gitTag(newVersionTag);
   await gitPushTags();
-  console.log(3);
   //#endregion
 
   // Publish the new version on NPM

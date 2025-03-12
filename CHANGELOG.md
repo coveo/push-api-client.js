@@ -1,3 +1,15 @@
+## <small>4.0.17 (2025-03-12)</small>
+
+* chore(release): 4.0.10 [skip ci] ([b7b2c92](https://github.com/coveo/push-api-client.js/commits/b7b2c92))
+* chore(release): 4.0.11 [skip ci] ([d1ab70a](https://github.com/coveo/push-api-client.js/commits/d1ab70a))
+* chore(release): 4.0.12 [skip ci] ([efddd23](https://github.com/coveo/push-api-client.js/commits/efddd23))
+* chore(release): 4.0.13 [skip ci] ([76af844](https://github.com/coveo/push-api-client.js/commits/76af844))
+* chore(release): 4.0.14 [skip ci] ([ff5b803](https://github.com/coveo/push-api-client.js/commits/ff5b803))
+* chore(release): 4.0.15 [skip ci] ([7c99305](https://github.com/coveo/push-api-client.js/commits/7c99305))
+* chore(release): 4.0.16 [skip ci] ([a4f73e4](https://github.com/coveo/push-api-client.js/commits/a4f73e4))
+
+
+
 ## <small>4.0.16 (2025-03-12)</small>
 
 * chore(release): 4.0.10 [skip ci] ([b7b2c92](https://github.com/coveo/push-api-client.js/commits/b7b2c92))
