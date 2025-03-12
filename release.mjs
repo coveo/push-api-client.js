@@ -76,9 +76,9 @@ import {createActionAuth} from '@octokit/auth-action';
   console.log(1);
   //#region Commit changelog, tag version and push
   await gitAdd(PATH);
-  console.log(2);
   await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
   await gitPush();
+  console.log(2);
   //#endregion
 
   //#region Create & push tag
