@@ -78,7 +78,7 @@ import {createActionAuth} from '@octokit/auth-action';
   await gitAdd(PATH);
   await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
   console.log(2);
-  await gitPush().catch((e)=>console.warn);
+  await gitPush({force:true});
   console.log(3);
   //#endregion
 
