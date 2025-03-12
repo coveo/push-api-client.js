@@ -76,6 +76,7 @@ import {createActionAuth} from '@octokit/auth-action';
   console.log(1);
   //#region Commit changelog, tag version and push
   await gitAdd(PATH);
+  console.log(2);
   await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
   await gitPush();
   //#endregion
@@ -83,15 +84,14 @@ import {createActionAuth} from '@octokit/auth-action';
   //#region Create & push tag
   await gitTag(newVersionTag);
   await gitPushTags();
+  console.log(3);
   //#endregion
 
-  console.log(2);
   // Publish the new version on NPM
   await npmPublish(PATH);
 
   //#region Create GitHub Release on last tag
   const [, ...bodyArray] = changelog.split('\n');
-  console.log(3);
   await octokit.rest.repos.createRelease({
     owner: REPO_OWNER,
     repo: REPO_NAME,
