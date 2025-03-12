@@ -35,13 +35,11 @@ import {createActionAuth} from '@octokit/auth-action';
   // #region Setup Git
   await gitSetupUser(GIT_USERNAME, GIT_EMAIL);
   //#endregion
-  console.log(1);
   //#region GitHub authentication
   const octokit = new Octokit({
     authStrategy: createActionAuth,
   });
   //#endregion
-  console.log(2);
   //#region Find current and new versions
   const lastTag = await getLastTag(VERSION_PREFIX);
   // Passing an empty string allow empty commits (i.e. that does not modify any files) to be included.
@@ -55,7 +53,6 @@ import {createActionAuth} from '@octokit/auth-action';
 
   // Bump the NPM version.
   await npmBumpVersion(newVersion, PATH);
-  console.log(3);
   //#region Generate changelog if needed
   let changelog = '';
   if (parsedCommits.length > 0) {
@@ -76,6 +73,7 @@ import {createActionAuth} from '@octokit/auth-action';
   }
   //#endregion
 
+  console.log(1);
   //#region Commit changelog, tag version and push
   await gitAdd(PATH);
   await gitCommit(`chore(release): ${newVersion} [skip ci]`, PATH);
@@ -87,11 +85,13 @@ import {createActionAuth} from '@octokit/auth-action';
   await gitPushTags();
   //#endregion
 
+  console.log(2);
   // Publish the new version on NPM
   await npmPublish(PATH);
 
   //#region Create GitHub Release on last tag
   const [, ...bodyArray] = changelog.split('\n');
+  console.log(3);
   await octokit.rest.repos.createRelease({
     owner: REPO_OWNER,
     repo: REPO_NAME,
