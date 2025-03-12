@@ -35,13 +35,13 @@ import {createActionAuth} from '@octokit/auth-action';
   // #region Setup Git
   await gitSetupUser(GIT_USERNAME, GIT_EMAIL);
   //#endregion
-
+  console.log(1);
   //#region GitHub authentication
   const octokit = new Octokit({
     authStrategy: createActionAuth,
   });
   //#endregion
-
+  console.log(2);
   //#region Find current and new versions
   const lastTag = await getLastTag(VERSION_PREFIX);
   // Passing an empty string allow empty commits (i.e. that does not modify any files) to be included.
@@ -55,7 +55,7 @@ import {createActionAuth} from '@octokit/auth-action';
 
   // Bump the NPM version.
   await npmBumpVersion(newVersion, PATH);
-
+  console.log(3);
   //#region Generate changelog if needed
   let changelog = '';
   if (parsedCommits.length > 0) {
