@@ -1,3 +1,9 @@
+## <small>4.0.11 (2025-07-11)</small>
+
+* chore: fold dx into dxui (#358) ([9f85ac2](https://github.com/coveo/push-api-client.js/commits/9f85ac2)), closes [#358](https://github.com/coveo/push-api-client.js/issues/358)
+
+
+
 ## <small>4.0.8 (2025-03-05)</small>
 
 * ci: make workflows runnable (#357) ([c08f461](https://github.com/coveo/push-api-client.js/commits/c08f461)), closes [#357](https://github.com/coveo/push-api-client.js/issues/357)
