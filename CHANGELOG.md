@@ -1,3 +1,9 @@
+## <small>4.0.12 (2025-07-14)</small>
+
+* fix(deps): update all dependencies j:cdx-227 (#355) ([f5b4e3e](https://github.com/coveo/push-api-client.js/commits/f5b4e3e)), closes [#355](https://github.com/coveo/push-api-client.js/issues/355)
+
+
+
 ## <small>4.0.11 (2025-07-11)</small>
 
 * chore: fold dx into dxui (#358) ([9f85ac2](https://github.com/coveo/push-api-client.js/commits/9f85ac2)), closes [#358](https://github.com/coveo/push-api-client.js/issues/358)
