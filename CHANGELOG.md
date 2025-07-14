@@ -1,3 +1,9 @@
+## <small>4.0.13 (2025-07-14)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#354) ([2317370](https://github.com/coveo/push-api-client.js/commits/2317370)), closes [#354](https://github.com/coveo/push-api-client.js/issues/354)
+
+
+
 ## <small>4.0.12 (2025-07-14)</small>
 
 * fix(deps): update all dependencies j:cdx-227 (#355) ([f5b4e3e](https://github.com/coveo/push-api-client.js/commits/f5b4e3e)), closes [#355](https://github.com/coveo/push-api-client.js/issues/355)
