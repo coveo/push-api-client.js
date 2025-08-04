@@ -1,3 +1,10 @@
+## <small>4.0.17 (2025-08-04)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#364) ([87821b8](https://github.com/coveo/push-api-client.js/commits/87821b8)), closes [#364](https://github.com/coveo/push-api-client.js/issues/364)
+* chore(deps): update dependency typedoc to v0.28.8 j:cdx-227 (#363) ([33d58de](https://github.com/coveo/push-api-client.js/commits/33d58de)), closes [#363](https://github.com/coveo/push-api-client.js/issues/363)
+
+
+
 ## <small>4.0.16 (2025-07-30)</small>
 
 * chore(deps): update all dependencies j:cdx-227 (#361) ([a658023](https://github.com/coveo/push-api-client.js/commits/a658023)), closes [#361](https://github.com/coveo/push-api-client.js/issues/361)
