@@ -23,10 +23,10 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@coveo/semantic-monorepo-tools": "2.6.12",
+    "@coveo/semantic-monorepo-tools": "2.6.13",
     "@octokit/auth-action": "^5.0.0",
     "@types/jest": "29.5.14",
-    "@types/node": "20.19.9",
+    "@types/node": "20.19.10",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "conventional-changelog-angular": "8.0.0",
@@ -44,7 +44,7 @@
     "prettier": "3.6.2",
     "ts-jest": "29.4.1",
     "ts-node": "10.9.2",
-    "typedoc": "0.28.9",
+    "typedoc": "0.28.10",
     "typescript": "5.9.2"
   },
   "husky": {
