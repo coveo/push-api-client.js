@@ -1,3 +1,9 @@
+## <small>4.0.20 (2025-08-25)</small>
+
+* chore(deps): update dependency @types/node to v20.19.11 j:cdx-227 (#368) ([36e2687](https://github.com/coveo/push-api-client.js/commits/36e2687)), closes [#368](https://github.com/coveo/push-api-client.js/issues/368)
+
+
+
 ## <small>4.0.19 (2025-08-19)</small>
 
 * chore(deps): update all dependencies j:cdx-227 (#365) ([4482258](https://github.com/coveo/push-api-client.js/commits/4482258)), closes [#365](https://github.com/coveo/push-api-client.js/issues/365)
