@@ -23,7 +23,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@coveo/semantic-monorepo-tools": "2.6.13",
+    "@coveo/semantic-monorepo-tools": "2.6.14",
     "@octokit/auth-action": "^5.0.0",
     "@types/jest": "29.5.14",
     "@types/node": "20.19.11",
@@ -44,7 +44,7 @@
     "prettier": "3.6.2",
     "ts-jest": "29.4.1",
     "ts-node": "10.9.2",
-    "typedoc": "0.28.10",
+    "typedoc": "0.28.11",
     "typescript": "5.9.2"
   },
   "husky": {
