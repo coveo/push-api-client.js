@@ -1,3 +1,11 @@
+## <small>4.0.21 (2025-10-16)</small>
+
+* chore: shift to trusted publisher (#370) ([701242a](https://github.com/coveo/push-api-client.js/commits/701242a)), closes [#370](https://github.com/coveo/push-api-client.js/issues/370)
+* chore(deps): update dependency @types/node to v20.19.11 j:cdx-227 (#368) ([36e2687](https://github.com/coveo/push-api-client.js/commits/36e2687)), closes [#368](https://github.com/coveo/push-api-client.js/issues/368)
+* chore(release): 4.0.20 [skip ci] ([3706d85](https://github.com/coveo/push-api-client.js/commits/3706d85))
+
+
+
 ## <small>4.0.20 (2025-08-25)</small>
 
 * chore(deps): update dependency @types/node to v20.19.11 j:cdx-227 (#368) ([36e2687](https://github.com/coveo/push-api-client.js/commits/36e2687)), closes [#368](https://github.com/coveo/push-api-client.js/issues/368)
