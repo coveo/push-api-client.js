@@ -22,6 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: CD
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -62,6 +67,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
