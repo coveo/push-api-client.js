@@ -1,3 +1,73 @@
+## <small>4.0.20 (2025-08-25)</small>
+
+* chore(deps): update dependency @types/node to v20.19.11 j:cdx-227 (#368) ([36e2687](https://github.com/coveo/push-api-client.js/commits/36e2687)), closes [#368](https://github.com/coveo/push-api-client.js/issues/368)
+
+
+
+## <small>4.0.19 (2025-08-19)</small>
+
+* chore(deps): update all dependencies j:cdx-227 (#365) ([4482258](https://github.com/coveo/push-api-client.js/commits/4482258)), closes [#365](https://github.com/coveo/push-api-client.js/issues/365)
+* chore(deps): update all dependencies j:cdx-227 (#367) ([0f39b92](https://github.com/coveo/push-api-client.js/commits/0f39b92)), closes [#367](https://github.com/coveo/push-api-client.js/issues/367)
+* chore(release): 4.0.18 [skip ci] ([6b23832](https://github.com/coveo/push-api-client.js/commits/6b23832))
+
+
+
+## <small>4.0.18 (2025-08-11)</small>
+
+* chore(deps): update all dependencies j:cdx-227 (#365) ([4482258](https://github.com/coveo/push-api-client.js/commits/4482258)), closes [#365](https://github.com/coveo/push-api-client.js/issues/365)
+
+
+
+## <small>4.0.17 (2025-08-04)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#364) ([87821b8](https://github.com/coveo/push-api-client.js/commits/87821b8)), closes [#364](https://github.com/coveo/push-api-client.js/issues/364)
+* chore(deps): update dependency typedoc to v0.28.8 j:cdx-227 (#363) ([33d58de](https://github.com/coveo/push-api-client.js/commits/33d58de)), closes [#363](https://github.com/coveo/push-api-client.js/issues/363)
+
+
+
+## <small>4.0.16 (2025-07-30)</small>
+
+* chore(deps): update all dependencies j:cdx-227 (#361) ([a658023](https://github.com/coveo/push-api-client.js/commits/a658023)), closes [#361](https://github.com/coveo/push-api-client.js/issues/361)
+
+
+
+## <small>4.0.15 (2025-07-28)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#362) ([c6b61d9](https://github.com/coveo/push-api-client.js/commits/c6b61d9)), closes [#362](https://github.com/coveo/push-api-client.js/issues/362)
+
+
+
+## <small>4.0.14 (2025-07-21)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#360) ([de4f3d6](https://github.com/coveo/push-api-client.js/commits/de4f3d6)), closes [#360](https://github.com/coveo/push-api-client.js/issues/360)
+* chore(deps): update all dependencies j:cdx-227 (#359) ([b5e04c5](https://github.com/coveo/push-api-client.js/commits/b5e04c5)), closes [#359](https://github.com/coveo/push-api-client.js/issues/359)
+
+
+
+## <small>4.0.13 (2025-07-14)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#354) ([2317370](https://github.com/coveo/push-api-client.js/commits/2317370)), closes [#354](https://github.com/coveo/push-api-client.js/issues/354)
+
+
+
+## <small>4.0.12 (2025-07-14)</small>
+
+* fix(deps): update all dependencies j:cdx-227 (#355) ([f5b4e3e](https://github.com/coveo/push-api-client.js/commits/f5b4e3e)), closes [#355](https://github.com/coveo/push-api-client.js/issues/355)
+
+
+
+## <small>4.0.11 (2025-07-11)</small>
+
+* chore: fold dx into dxui (#358) ([9f85ac2](https://github.com/coveo/push-api-client.js/commits/9f85ac2)), closes [#358](https://github.com/coveo/push-api-client.js/issues/358)
+
+
+
+## <small>4.0.8 (2025-03-05)</small>
+
+* ci: make workflows runnable (#357) ([c08f461](https://github.com/coveo/push-api-client.js/commits/c08f461)), closes [#357](https://github.com/coveo/push-api-client.js/issues/357)
+
+
+
 ## <small>4.0.7 (2024-11-11)</small>
 
 * chore(deps): update all dependencies j:cdx-227 (#353) ([d272e4f](https://github.com/coveo/push-api-client.js/commits/d272e4f)), closes [#353](https://github.com/coveo/push-api-client.js/issues/353)
