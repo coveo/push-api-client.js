@@ -1,3 +1,9 @@
+## <small>4.0.22 (2025-11-28)</small>
+
+* chore(deps): lock file maintenance j:cdx-227 (#372) ([cde41d5](https://github.com/coveo/push-api-client.js/commits/cde41d5)), closes [#372](https://github.com/coveo/push-api-client.js/issues/372)
+
+
+
 ## <small>4.0.21 (2025-10-16)</small>
 
 * chore: shift to trusted publisher (#370) ([701242a](https://github.com/coveo/push-api-client.js/commits/701242a)), closes [#370](https://github.com/coveo/push-api-client.js/issues/370)
