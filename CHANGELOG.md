@@ -1,3 +1,10 @@
+## <small>4.0.24 (2025-12-09)</small>
+
+* chore: remove todo that won't be done (#332) ([bce4fec](https://github.com/coveo/push-api-client.js/commits/bce4fec)), closes [#332](https://github.com/coveo/push-api-client.js/issues/332)
+* [StepSecurity] ci: Harden GitHub Actions DEF-2843 [skip ci] (#356) ([98d3f55](https://github.com/coveo/push-api-client.js/commits/98d3f55)), closes [#356](https://github.com/coveo/push-api-client.js/issues/356)
+
+
+
 ## <small>4.0.23 (2025-11-28)</small>
 
 * chore(deps): update all dependencies j:cdx-227 (#371) ([b74f3d5](https://github.com/coveo/push-api-client.js/commits/b74f3d5)), closes [#371](https://github.com/coveo/push-api-client.js/issues/371)
