@@ -27,12 +27,12 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
       - run: git fetch --all --tags
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
@@ -44,7 +44,7 @@ jobs:
           git config --global user.email action@github.com
           git config --global user.name GitHub Action
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Build
         run: npm run build
       - name: Test
@@ -55,7 +55,7 @@ jobs:
           DEBUG: '*'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload doc folder
           path: './dist/docs'
@@ -74,4 +74,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
